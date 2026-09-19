@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+/>
+<meta
+name="description"
+content="RepairIQ AI Repair Intelligence Platform prototype for HGX server repair workflows."
+/>
+<title>RepairIQ | AI Repair Intelligence Platform</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app-shell">
+<!-- Sidebar -->
+<aside class="sidebar">
+<div class="brand">
+<div class="brand-mark">
+<span>R</span>
+</div>
+<div>
+<div class="brand-name">RepairIQ</div>
+<div class="brand-subtitle">AI Repair Intelligence</div>
+</div>
+</div>
+<nav class="main-nav">
+<button class="nav-item active" data-view="dashboard">
+<span class="nav-icon">⌂</span>
+Dashboard
+</button>
+<button class="nav-item" data-view="analyzer">
+<span class="nav-icon"> </span>
+Log Analyzer
+</button>
+<button class="nav-item" data-view="cases">
+<span class="nav-icon">▣</span>
+Case History
+</button>
+<button class="nav-item" data-view="knowledge">
+<span class="nav-icon"> </span>
+Knowledge Base
+</button>
+<button class="nav-item" data-view="metrics">
+<span class="nav-icon">▥</span>
+Pilot Metrics
+</button>
+</nav>
+<div class="sidebar-bottom">
+<div class="system-status">
+<span class="status-dot"></span>
+Prototype Online
+</div>
+<div class="version-label">
+HGX Pilot v0.1
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="main-content">
+<!-- Topbar -->
+<header class="topbar">
+<div>
+<div class="eyebrow">BG V SERVER REPAIR OPERATIONS</div>
+<h1 id="page-title">Repair Operations Dashboard</h1>
+</div>
+<div class="topbar-actions">
+<button class="icon-button" id="load-demo-button" title="Load demo case">
+▶
+</button>
+<div class="user-chip">
+<div class="avatar">AC</div>
+<div>
+<strong>Alex Chen</strong>
+<span>Repair Technician</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard View -->
+<section class="view active" id="dashboard-view">
+<div class="hero-card">
+<div class="hero-content">
+<div class="hero-badge">
+<span class="pulse"></span>
+HGX PILOT ENVIRONMENT
+</div>
+<h2>
+Turn complex failure logs into
+<span>evidence-based repair decisions.</span>
+</h2>
+<p>
+RepairIQ prioritizes failure evidence, recommends the least
+disruptive approved action, and keeps the technician in control.
+</p>
+<div class="hero-actions">
+<button class="primary-button" id="start-analysis-button">
+Analyze a Failure Log
+<span>→</span>
+</button>
+<button class="secondary-button" id="view-demo-button">
+View Demonstration
+</button>
+</div>
+</div>
+<div class="hero-visual">
+<div class="orbit orbit-one"></div>
+<div class="orbit orbit-two"></div>
+<div class="core-node">
+<div class="core-symbol"> </div>
+<span>RepairIQ</span>
+<small>Decision Engine</small>
+</div>
+<div class="floating-node node-top">
+<strong>LOG</strong>
+<small>Parsed</small>
+</div>
+<div class="floating-node node-right">
+<strong>GPU7</strong>
+<small>Prioritized</small>
+</div>
+<div class="floating-node node-bottom">
+<strong>RETEST</strong>
+<small>Guided</small>
+</div>
+</div>
+</div>
+<div class="section-heading">
+<div>
+<div class="eyebrow">PILOT SNAPSHOT</div>
+<h2>Operational impact</h2>
+</div>
+<span class="demo-label">ILLUSTRATIVE PROTOTYPE DATA</span>
+</div>
+<div class="metric-grid">
+<div class="metric-card">
+<div class="metric-top">
+<span>Avg. Diagnosis Time</span>
+<span class="metric-icon blue"> </span>
+</div>
+<div class="metric-value">32<span> min</span></div>
+<div class="metric-change positive">↓ 33% vs baseline</div>
+<div class="sparkline">
+<span style="height: 48%"></span>
+<span style="height: 62%"></span>
+<span style="height: 55%"></span>
+<span style="height: 73%"></span>
+<span style="height: 68%"></span>
+<span style="height: 46%"></span>
+<span style="height: 34%"></span>
+</div>
+</div>
+<div class="metric-card">
+<div class="metric-top">
+<span>First-Time Fix Rate</span>
+<span class="metric-icon green">✓</span>
+</div>
+<div class="metric-value">78<span>%</span></div>
+<div class="metric-change positive">↑ 10 pts vs baseline</div>
+<div class="progress-track">
+<div class="progress-fill green-fill" style="width: 78%"></div>
+</div>
+</div>
+<div class="metric-card">
+<div class="metric-top">
+<span>Documentation</span>
+<span class="metric-icon purple">▤</span>
+</div>
+<div class="metric-value">95<span>%</span></div>
+<div class="metric-change positive">↑ 23 pts vs baseline</div>
+<div class="progress-track">
+<div class="progress-fill purple-fill" style="width: 95%"></div>
+</div>
+</div>
+<div class="metric-card">
+<div class="metric-top">
+<span>Escalation Rate</span>
+<span class="metric-icon orange">↗</span>
+</div>
+<div class="metric-value">19<span>%</span></div>
+<div class="metric-change positive">↓ 21% vs baseline</div>
+<div class="progress-track">
+<div class="progress-fill orange-fill" style="width: 19%"></div>
+</div>
+</div>
+</div>
+<div class="dashboard-columns">
+<div class="panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">RECENT ACTIVITY</div>
+<h3>Repair intelligence feed</h3>
+</div>
+<button class="text-button" data-view-target="cases">
+View all →
+</button>
+</div>
+<div class="activity-list" id="activity-list">
+<!-- Populated by JavaScript -->
+</div>
+</div>
+<div class="panel readiness-panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">PILOT READINESS</div>
+<h3>Knowledge coverage</h3>
+</div>
+<span class="coverage-score">82%</span>
+</div>
+<div class="coverage-ring">
+<div class="ring-inner">
+<strong>82%</strong>
+<span>Coverage</span>
+</div>
+</div>
+<div class="coverage-list">
+<div>
+<span><i class="dot green-dot"></i> GPU failures</span>
+<strong>94%</strong>
+</div>
+<div>
+<span><i class="dot blue-dot"></i> PCIe / NVLink</span>
+<strong>86%</strong>
+</div>
+<div>
+<span><i class="dot purple-dot"></i> Firmware</span>
+<strong>72%</strong>
+</div>
+<div>
+<span><i class="dot orange-dot"></i> Tester issues</span>
+<strong>61%</strong>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Analyzer View -->
+<section class="view" id="analyzer-view">
+<div class="view-heading">
+<div>
+<div class="eyebrow">CONTROLLED DECISION SUPPORT</div>
+<h2>HGX Log Analyzer</h2>
+<p>
+Upload a test log or use the demonstration case to generate a
+structured repair recommendation.
+</p>
+</div>
+<div class="human-control-badge">
+<span>●</span>
+Technician approval required
+</div>
+</div>
+<div class="analyzer-layout">
+<div class="analyzer-input-column">
+<div class="panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">CASE INPUT</div>
+<h3>Failure information</h3>
+</div>
+<span class="case-id" id="case-id-label">CASE-NEW</span>
+</div>
+<div class="form-grid">
+<label>
+Product family
+<select id="product-family">
+<option>HGX GPU Server</option>
+<option>AI Motherboard</option>
+<option>Accelerator Card</option>
+<option>Networking Equipment</option>
+</select>
+</label>
+<label>
+Product model
+<input id="product-model" value="HGX H100 8-GPU" />
+</label>
+<label>
+Tester
+<input id="tester-name" value="HGX-TESTER-04" />
+</label>
+<label>
+Technician
+<input id="technician-name" value="Alex Chen" />
+</label>
+</div>
+<label class="full-label">
+Technician notes
+<textarea
+id="technician-notes"
+rows="3"
+placeholder="Describe symptoms or observations..."
+></textarea>
+</label>
+<div
+class="drop-zone"
+id="drop-zone"
+tabindex="0"
+>
+<div class="upload-icon">⇧</div>
+<strong>Drop a test log here</strong>
+<span>or click to browse .txt, .log, or .json files</span>
+<input
+type="file"
+id="file-input"
+accept=".txt,.log,.json,text/plain,application/json"
+hidden
+/>
+</div>
+<div class="input-actions">
+<button class="secondary-button" id="demo-log-button">
+Load HGX Demo Log
+</button>
+<button class="primary-button" id="analyze-button">
+Run RepairIQ Analysis
+<span>→</span>
+</button>
+</div>
+</div>
+<div class="panel log-panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">RAW INPUT</div>
+<h3>Test log preview</h3>
+</div>
+<span id="log-status" class="status-pill neutral">
+Awaiting input
+</span>
+</div>
+<pre id="log-preview">No test log loaded.</pre>
+</div>
+</div>
+<div class="analysis-output-column">
+<div class="panel result-panel" id="result-panel">
+<div class="empty-result">
+<div class="empty-orb"> </div>
+<h3>Analysis results will appear here</h3>
+<p>
+Upload a log or load the demonstration case to generate a
+prioritized repair path.
+</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Cases View -->
+<section class="view" id="cases-view">
+<div class="view-heading">
+<div>
+<div class="eyebrow">TRACEABLE REPAIR KNOWLEDGE</div>
+<h2>Case History</h2>
+<p>
+Confirmed cases are stored locally in this prototype for review.
+</p>
+</div>
+<button class="secondary-button" id="clear-cases-button">
+Clear Local Cases
+</button>
+</div>
+<div class="panel">
+<div class="table-toolbar">
+<input
+id="case-search"
+class="search-input"
+placeholder="Search cases, components, or root causes..."
+/>
+<select id="case-filter">
+<option value="all">All statuses</option>
+<option value="Completed">Completed</option>
+<option value="Escalated">Escalated</option>
+<option value="Pending">Pending</option>
+</select>
+</div>
+<div class="case-table-wrapper">
+<table class="case-table">
+<thead>
+<tr>
+<th>Case</th>
+<th>Product</th>
+<th>Primary Issue</th>
+<th>Component</th>
+<th>Recommendation</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="case-table-body"></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Knowledge View -->
+<section class="view" id="knowledge-view">
+<div class="view-heading">
+<div>
+<div class="eyebrow">PRODUCT-SPECIFIC KNOWLEDGE MODULE</div>
+<h2>HGX Knowledge Base</h2>
+<p>
+Transparent repair rules used by the prototype decision engine.
+</p>
+</div>
+<span class="version-badge">HGX RULESET v0.1</span>
+</div>
+<div class="knowledge-grid">
+<div class="knowledge-card">
+<div class="knowledge-icon red">GPU</div>
+<h3>GPU MLE / Thermal</h3>
+<p>
+Prioritize threshold failures and correlate heartbeat and power
+symptoms before recommending replacement.
+</p>
+<div class="knowledge-footer">
+<span class="rule-status verified">Validated logic</span>
+<span>Rule HGX-GPU-001</span>
+</div>
+</div>
+<div class="knowledge-card">
+<div class="knowledge-icon blue">PCI</div>
+<h3>PCIe Link Width</h3>
+<p>
+Verify configuration, reseat the device, retest, then isolate the
+card or slot before replacement.
+</p>
+<div class="knowledge-footer">
+<span class="rule-status verified">Validated logic</span>
+<span>Rule HGX-PCI-002</span>
+</div>
+</div>
+<div class="knowledge-card">
+<div class="knowledge-icon purple">FW</div>
+<h3>Firmware Mismatch</h3>
+<p>
+Identify model and configuration first. Firmware actions require
+version validation and qualified approval.
+</p>
+<div class="knowledge-footer">
+<span class="rule-status review">Review required</span>
+<span>Rule HGX-FW-003</span>
+</div>
+</div>
+<div class="knowledge-card">
+<div class="knowledge-icon orange">TST</div>
+<h3>Tester Timeout</h3>
+<p>
+Check tester state, permissions, calibration, and repeatability
+before replacing hardware.
+</p>
+<div class="knowledge-footer">
+<span class="rule-status draft">Expansion module</span>
+<span>Rule HGX-TST-004</span>
+</div>
+</div>
+</div>
+<div class="panel rule-panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">TRANSPARENT REASONING</div>
+<h3>Example rule: HGX-GPU-001</h3>
+</div>
+<span class="rule-status verified">Approved for prototype</span>
+</div>
+<div class="rule-flow">
+<div class="rule-step">
+<span>01</span>
+<strong>Detect</strong>
+<p>MLE threshold exceeds specified limit.</p>
+</div>
+<div class="rule-arrow">→</div>
+<div class="rule-step">
+<span>02</span>
+<strong>Calculate</strong>
+<p>Compare adjusted value with failure limit.</p>
+</div>
+<div class="rule-arrow">→</div>
+<div class="rule-step">
+<span>03</span>
+<strong>Isolate</strong>
+<p>Reseat, retest, then swap if needed.</p>
+</div>
+<div class="rule-arrow">→</div>
+<div class="rule-step">
+<span>04</span>
+<strong>Decide</strong>
+<p>Technician approves replacement or escalation.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Metrics View -->
+<section class="view" id="metrics-view">
+<div class="view-heading">
+<div>
+<div class="eyebrow">PILOT MEASUREMENT PLAN</div>
+<h2>Performance Metrics</h2>
+<p>
+Illustrative planning data for prototype demonstration only.
+</p>
+</div>
+<span class="demo-label">NOT VERIFIED PRODUCTION DATA</span>
+</div>
+<div class="panel">
+<div class="chart-header">
+<div>
+<h3>Before vs. with RepairIQ</h3>
+<p>Illustrative HGX pilot comparison</p>
+</div>
+<div class="chart-legend">
+<span><i class="legend-dot baseline"></i> Baseline</span>
+<span><i class="legend-dot pilot"></i> With RepairIQ</span>
+</div>
+</div>
+<div class="bar-chart">
+<div class="bar-group">
+<div class="bar-values">
+<div class="bar baseline-bar" style="height: 88%">
+<span>48m</span>
+</div>
+<div class="bar pilot-bar" style="height: 58%">
+<span>32m</span>
+</div>
+</div>
+<strong>Diagnosis Time</strong>
+</div>
+<div class="bar-group">
+<div class="bar-values">
+<div class="bar baseline-bar" style="height: 80%">
+<span>3.2d</span>
+</div>
+<div class="bar pilot-bar" style="height: 63%">
+<span>2.5d</span>
+</div>
+</div>
+<strong>Repair Cycle</strong>
+</div>
+<div class="bar-group">
+<div class="bar-values">
+<div class="bar baseline-bar" style="height: 68%">
+<span>68%</span>
+</div>
+<div class="bar pilot-bar" style="height: 78%">
+<span>78%</span>
+</div>
+</div>
+<strong>First-Time Fix</strong>
+</div>
+<div class="bar-group">
+<div class="bar-values">
+<div class="bar baseline-bar" style="height: 72%">
+<span>72%</span>
+</div>
+<div class="bar pilot-bar" style="height: 95%">
+<span>95%</span>
+</div>
+</div>
+<strong>Documentation</strong>
+</div>
+</div>
+</div>
+<div class="success-criteria">
+<div class="panel">
+<div class="panel-header">
+<div>
+<div class="eyebrow">PILOT EXIT CRITERIA</div>
+<h3>Success conditions</h3>
+</div>
+</div>
+<div class="criteria-list">
+<div class="criteria-item complete">
+<span>✓</span>
+<div>
+<strong>Diagnosis time reduction</strong>
+<small>Target: at least 30%</small>
+</div>
+<b>Target</b>
+</div>
+<div class="criteria-item complete">
+<span>✓</span>
+<div>
+<strong>Repair cycle reduction</strong>
+<small>Target: at least 20%</small>
+</div>
+<b>Target</b>
+</div>
+<div class="criteria-item complete">
+<span>✓</span>
+<div>
+<strong>Documentation completeness</strong>
+<small>Target: at least 95%</small>
+</div>
+<b>Target</b>
+</div>
+<div class="criteria-item pending">
+<span>○</span>
+<div>
+<strong>No unacceptable quality impact</strong>
+<small>Requires controlled pilot validation</small>
+</div>
+<b>Pending</b>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+<span class="toast-icon">✓</span>
+<span id="toast-message">Complete</span>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
