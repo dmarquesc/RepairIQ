@@ -1,395 +1,950 @@
-/* =========================================================
-   REPAIRIQ V0.3
-   SXM REPAIR COMMAND CENTER
-   AI REPAIR INTELLIGENCE PROTOTYPE
+/*
 
-   Frontend-only demonstration.
+  ================================================================
 
-   IMPORTANT:
-   RepairIQ uses deterministic rules and synthetic
-   demonstration data in this prototype.
+  REPAIRIQ
 
-   It does not represent:
-   - A production AI model
-   - An official NVIDIA product or service
-   - A production repair authorization system
-   - Automated hardware replacement authority
+  SXM REPAIR INTELLIGENCE COMMAND CENTER
 
-   RepairIQ provides technician decision support only.
-   Consequential repair actions require qualified human
-   review and approval.
-========================================================= */
+ 
 
+  Version: 0.5 - Active Traveler / Diagnostic Result Contract
 
-/* =========================================================
-   DEMONSTRATION LOG
-========================================================= */
+ 
+
+  Author:
+
+  D'Marques Coleman
+
+ 
+
+  Organization:
+
+  DCENTRIC
+
+ 
+
+  PURPOSE
+
+  ---------------------------------------------------------------
+
+  This file controls the frontend-only RepairIQ prototype.
+
+ 
+
+  It supports:
+
+ 
+
+  - Application navigation
+
+  - Demo case loading
+
+  - Log upload and preview
+
+  - Evidence-oriented log parsing
+
+  - GPU topology interaction
+
+  - Structured diagnostic rendering
+
+  - Active traveler context
+
+  - Previous-action tracking
+
+  - Do-not-repeat guardrails
+
+  - Technician approval workflow
+
+  - Retest requirements
+
+  - Case history
+
+  - LocalStorage persistence
+
+  - Shift handoff data
+
+  - Parts-request data
+
+  - Report export
+
+  - Diagnostic modal
+
+  - Toast notifications
+
+ 
+
+  CONTROL MODEL
+
+  ---------------------------------------------------------------
+
+  RepairIQ recommends.
+
+ 
+
+  The technician decides.
+
+ 
+
+  RepairIQ does not control hardware, issue autonomous repair
+
+  commands, remove components, install components, order parts,
+
+  or authorize physical work.
+
+ 
+
+  DATA MODEL
+
+  ---------------------------------------------------------------
+
+  This prototype uses deterministic demonstration logic.
+
+ 
+
+  It does not connect to:
+
+ 
+
+  - Live hardware
+
+  - BMC
+
+  - HMC
+
+  - Telemetry
+
+  - Production test systems
+
+  - Warehouse systems
+
+  - Backend APIs
+
+  - Verified repair databases
+
+  - Production AI inference
+
+ 
+
+  All prototype analysis must remain clearly labeled as:
+
+ 
+
+  - Prototype data
+
+  - Demonstration data
+
+  - Simulated intelligence
+
+  - Technician decision support
+
+ 
+
+  ARCHITECTURE PRINCIPLE
+
+  ---------------------------------------------------------------
+
+  This controller does not replace #result-panel.
+
+ 
+
+  Instead, it updates the stable diagnostic contract already
+
+  defined in the HTML.
+
+ 
+
+  Main diagnostic flow:
+
+ 
+
+  Traveler
+
+  → Unit identity
+
+  → Test session
+
+  → Failure evidence
+
+  → Diagnostic reasoning
+
+  → Previous actions
+
+  → Recommendation
+
+  → Technician approval
+
+  → Parts planning
+
+  → Retest
+
+  → Case history
+
+  → Shift handoff
+
+  ================================================================
+
+*/
+
+ 
+
+"use strict";
+
+ 
+
+/* ================================================================
+
+   1. DEMONSTRATION DATA
+
+   ---------------------------------------------------------------
+
+   These values are intentionally synthetic.
+
+ 
+
+   They are used to make the prototype functional while preserving
+
+   a clear distinction between demonstration intelligence and
+
+   verified production data.
+
+   ================================================================ */
+
+ 
 
 const DEMO_LOG = `
+
 HGX TEST EXECUTION REPORT
-Product: HGX H100 8-GPU
+
+Product: VULCAN (HGX)
+
 Configuration: 8x SXM GPU / HMC / NVSwitch
-Tester: HGX-TESTER-04
+
+Tester: SXM-TESTER-04
+
 Test Date: 2026-09-18
 
+ 
+
 [PASS] GPU0 detected.
+
 [PASS] GPU1 detected.
-[PASS] GPU2 detected.
+
 [PASS] GPU3 detected.
+
 [PASS] GPU4 detected.
+
 [PASS] GPU5 detected.
+
 [PASS] GPU6 detected.
 
-[FAIL] GPU7_b6_00.0_SXM2:
-MLE_GPU_AVG exceeds failure specification.
+ 
 
-Limit_Fail: 92.00
-Adjusted_Value: 92.20
-Original_Value: 84.28
-Applied offset before calculation: 7.92
+[FAIL] GPU2 HMC_BIST_FAIL
 
-[FAIL] GPU7 did not receive heartbeat.
-[FAIL] GPU7 power is below specified limit.
+Initialization timeout detected.
 
-[WARN] NVLink retry observed on GPU7.
+[FAIL] GPU2 did not receive heartbeat.
+
+[WARN] HMC retry observed on GPU2.
+
+ 
 
 [PASS] NVSwitch detected.
-[PASS] HMC communication established.
 
-[INFO] Firmware package: HGX_FW_3.7.1
-[PASS] Firmware compatibility check completed.
+[PASS] BMC communication established.
+
+[INFO] Firmware compatibility check completed.
 
 [INFO] Test execution completed with failures.
+
 `;
 
-
-/* =========================================================
-   DEFAULT CASE HISTORY
-========================================================= */
+ 
 
 const DEFAULT_CASES = [
 
   {
+
     id: "CASE-2026-0918-001",
-    product: "HGX H100 8-GPU",
-    issue: "GPU7 MLE threshold failure",
-    component: "GPU7",
-    recommendation: "Reseat and retest",
+
+    travelerId: "TRAVELER-2026-0918-001",
+
+    product: "VULCAN (HGX) / SXM 8-GPU Demo",
+
+    issue: "GPU2 HMC BIST failure",
+
+    component: "GPU2 / HMC",
+
+    recommendation: "Inspect affected path and retest",
+
     status: "Pending",
-    decisionNotes: "",
-    timestamp: "Today, 09:42"
+
+    timestamp: "September 18, 2026, 09:42",
+
+    dataSource: "demo",
+
+    failureStage: "INIT / HMC BIST",
+
+    errorCode: "HMC_BIST_FAIL",
+
+    mpPartNumber: "DEMO-MP-PN-0001",
+
+    mpSerialNumber: "DEMO-MP-SN-0001",
+
+    pcbPartNumber: "DEMO-PCB-PN-0001",
+
+    pcbSerialNumber: "DEMO-PCB-SN-0001",
+
+    partsStatus: "Not requested",
+
+    retestResult: "Not run"
+
   },
 
   {
+
     id: "CASE-2026-0917-014",
+
+    travelerId: "TRAVELER-2026-0917-014",
+
     product: "HGX H100 8-GPU",
+
     issue: "PCIe link-width failure",
+
     component: "GPU3 / Slot B3",
+
     recommendation: "Verify seating and isolate slot",
+
     status: "Completed",
-    decisionNotes: "",
-    timestamp: "Yesterday, 16:18"
+
+    timestamp: "September 17, 2026, 16:18",
+
+    dataSource: "demo",
+
+    failureStage: "FLT",
+
+    errorCode: "PCIE_LINK_WIDTH",
+
+    mpPartNumber: "DEMO-MP-PN-0002",
+
+    mpSerialNumber: "DEMO-MP-SN-0002",
+
+    pcbPartNumber: "DEMO-PCB-PN-0002",
+
+    pcbSerialNumber: "DEMO-PCB-SN-0002",
+
+    partsStatus: "Not required",
+
+    retestResult: "Passed"
+
   },
 
   {
+
     id: "CASE-2026-0917-009",
+
+    travelerId: "TRAVELER-2026-0917-009",
+
     product: "HGX H100 8-GPU",
+
     issue: "Tester timeout",
+
     component: "Tester-02",
+
     recommendation: "Validate tester state",
+
     status: "Escalated",
-    decisionNotes: "",
-    timestamp: "Yesterday, 11:07"
+
+    timestamp: "September 17, 2026, 11:07",
+
+    dataSource: "demo",
+
+    failureStage: "Test execution",
+
+    errorCode: "TESTER_TIMEOUT",
+
+    mpPartNumber: "DEMO-MP-PN-0003",
+
+    mpSerialNumber: "DEMO-MP-SN-0003",
+
+    pcbPartNumber: "DEMO-PCB-PN-0003",
+
+    pcbSerialNumber: "DEMO-PCB-SN-0003",
+
+    partsStatus: "Not requested",
+
+    retestResult: "Not run"
+
   }
 
 ];
 
+ 
 
-/* =========================================================
-   RULESET
-========================================================= */
+/* ================================================================
 
-const RULESET = {
+   2. APPLICATION STATE
 
-  gpuThreshold: {
-    id: "HGX-GPU-001",
-    name: "GPU MLE / Thermal Threshold"
-  },
+   ---------------------------------------------------------------
 
-  heartbeat: {
-    id: "HGX-GPU-002",
-    name: "GPU Heartbeat Failure"
-  },
+   This object is the temporary frontend state store.
 
-  power: {
-    id: "HGX-GPU-003",
-    name: "GPU Power Failure"
-  },
+ 
 
-  pcie: {
-    id: "HGX-PCI-002",
-    name: "PCIe Link Width Failure"
-  },
+   A future backend can replace this with API-backed state without
 
-  firmware: {
-    id: "HGX-FW-003",
-    name: "Firmware Compatibility"
-  },
+   requiring the HTML contract to be redesigned.
 
-  tester: {
-    id: "HGX-TST-004",
-    name: "Tester Timeout"
-  }
+   ================================================================ */
+
+ 
+
+const state = {
+
+  currentLog: "",
+
+  currentFileName: "",
+
+  currentAnalysis: null,
+
+  activeComponent: "GPU2",
+
+  activeView: "dashboard",
+
+  toastTimer: null,
+
+  confidenceTimer: null,
+
+  lastFocusedElement: null,
+
+  modalOpen: false
 
 };
 
+ 
 
-/* =========================================================
-   APPLICATION STATE
-========================================================= */
+/* ================================================================
 
-let currentLog = "";
-let currentAnalysis = null;
-let toastTimer = null;
+   3. DOM HELPERS
 
+   ---------------------------------------------------------------
 
-/* =========================================================
-   DOM HELPERS
-========================================================= */
+   These helpers intentionally fail safely when an optional
 
-/*
-   $()
-   ----
-   Returns the first matching DOM element.
+   element does not exist.
 
-   The helper safely returns null if an element does
-   not exist. This makes the prototype more resilient
-   while individual views are being developed.
-*/
+ 
 
-const $ = selector =>
-  document.querySelector(selector);
+   This is important during phased development because some
 
+   future sections may be added later.
 
-/*
-   $$()
-   -----
-   Returns all matching DOM elements as an array.
+   ================================================================ */
 
-   Converting the NodeList to an array makes the result
-   easier to work with using forEach/map/filter.
-*/
+ 
 
-const $$ = selector =>
-  Array.from(document.querySelectorAll(selector));
+function $(selector, scope = document) {
 
-
-/*
-   setText()
-   ---------
-   Safely updates an element's text content.
-*/
-
-function setText(selector, value) {
-
-  const element = $(selector);
-
-  if (!element) return;
-
-  element.textContent = value;
+  return scope.querySelector(selector);
 
 }
 
+ 
 
-/*
-   addListener()
-   -------------
-   Safely attaches an event listener.
+function $$(selector, scope = document) {
 
-   This prevents one missing optional UI element from
-   stopping the rest of RepairIQ from initializing.
-*/
-
-function addListener(
-  selector,
-  eventName,
-  handler
-) {
-
-  const element = $(selector);
-
-  if (!element) return;
-
-  element.addEventListener(
-    eventName,
-    handler
-  );
+  return Array.from(scope.querySelectorAll(selector));
 
 }
 
+ 
 
-/* =========================================================
-   START APPLICATION
-========================================================= */
+function setText(selector, value, scope = document) {
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+  const element = $(selector, scope);
 
-    initializeNavigation();
-    initializeAnalyzer();
-    initializeCaseHistory();
-    initializeButtons();
-    initializeDecisionModal();
-    initializeTheme();
+ 
 
-    renderActivity();
-    renderCases();
+  if (element) {
+
+    element.textContent = value ?? "";
 
   }
-);
 
+ 
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
+  return element;
+
+}
+
+ 
+
+function setInputValue(selector, value) {
+
+  const element = $(selector);
+
+ 
+
+  if (element) {
+
+    element.value = value ?? "";
+
+  }
+
+ 
+
+  return element;
+
+}
+
+ 
+
+function getInputValue(selector) {
+
+  return String($(selector)?.value || "").trim();
+
+}
+
+ 
+
+function setHidden(selector, hidden) {
+
+  const element = $(selector);
+
+ 
+
+  if (element) {
+
+    element.hidden = Boolean(hidden);
+
+  }
+
+ 
+
+  return element;
+
+}
+
+ 
+
+function addListener(selector, eventName, handler) {
+
+  const element = $(selector);
+
+ 
+
+  if (element) {
+
+    element.addEventListener(eventName, handler);
+
+  }
+
+ 
+
+  return element;
+
+}
+
+ 
+
+function addListeners(selector, eventName, handler) {
+
+  $$(selector).forEach(element => {
+
+    element.addEventListener(eventName, handler);
+
+  });
+
+}
+
+ 
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+
+    .replaceAll("&", "&amp;")
+
+    .replaceAll("<", "&lt;")
+
+    .replaceAll(">", "&gt;")
+
+    .replaceAll('"', "&quot;")
+
+    .replaceAll("'", "&#039;");
+
+}
+
+ 
+
+function safeArray(value) {
+
+  return Array.isArray(value) ? value : [];
+
+}
+
+ 
+
+function clamp(value, minimum, maximum) {
+
+  return Math.max(minimum, Math.min(maximum, value));
+
+}
+
+ 
+
+function normalizeText(value) {
+
+  return String(value ?? "")
+
+    .replace(/\s+/g, " ")
+
+    .trim();
+
+}
+
+ 
+
+function titleCase(value) {
+
+  return String(value || "")
+
+    .toLowerCase()
+
+    .replace(/\b\w/g, character => character.toUpperCase());
+
+}
+
+ 
+
+/* ================================================================
+
+   4. APPLICATION INITIALIZATION
+
+   ---------------------------------------------------------------
+
+   All initialization begins after the DOM is ready.
+
+ 
+
+   Each subsystem is initialized separately so future teams can
+
+   test or replace one area without rewriting the entire file.
+
+   ================================================================ */
+
+ 
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  initializeNavigation();
+
+  initializeAnalyzer();
+
+  initializeTopology();
+
+  initializeCaseHistory();
+
+  initializeButtons();
+
+  initializeModal();
+
+  initializeKeyboardShortcuts();
+
+ 
+
+  renderCases();
+
+  renderActivity();
+
+ 
+
+  updateSelectedComponent("GPU2");
+
+  updateActiveCaseContext(createInitialCaseContext());
+
+});
+
+ 
+
+/* ================================================================
+
+   5. NAVIGATION
+
+   ---------------------------------------------------------------
+
+   The HTML uses:
+
+ 
+
+   data-view="dashboard"
+
+   data-view="analyzer"
+
+   data-view="cases"
+
+   data-view="knowledge"
+
+   data-view="metrics"
+
+ 
+
+   and matching sections:
+
+ 
+
+   #dashboard-view
+
+   #analyzer-view
+
+   #cases-view
+
+   #knowledge-view
+
+   #metrics-view
+
+   ================================================================ */
+
+ 
 
 function initializeNavigation() {
 
-  $$(".nav-item").forEach(button => {
+  addListeners(".nav-item", "click", event => {
 
-    button.addEventListener(
-      "click",
-      () => {
+    const viewName = event.currentTarget.dataset.view;
 
-        switchView(
-          button.dataset.view
-        );
+ 
 
-      }
-    );
+    if (viewName) {
+
+      switchView(viewName);
+
+    }
 
   });
 
+ 
 
-  $$("[data-view-target]").forEach(button => {
+  addListeners("[data-view-target]", "click", event => {
 
-    button.addEventListener(
-      "click",
-      () => {
+    const viewName = event.currentTarget.dataset.viewTarget;
 
-        switchView(
-          button.dataset.viewTarget
-        );
+ 
 
-      }
-    );
+    if (viewName) {
+
+      switchView(viewName);
+
+    }
 
   });
 
 }
 
+ 
 
 function switchView(viewName) {
 
+  const targetView = $(`#${viewName}-view`);
+
+ 
+
+  if (!targetView) {
+
+    showToast(`The ${viewName} view is not available in this prototype.`);
+
+    return;
+
+  }
+
+ 
+
+  state.activeView = viewName;
+
+ 
+
   $$(".nav-item").forEach(button => {
 
-    button.classList.toggle(
-      "active",
-      button.dataset.view === viewName
-    );
+    const isActive = button.dataset.view === viewName;
+
+ 
+
+    button.classList.toggle("active", isActive);
+
+ 
+
+    if (isActive) {
+
+      button.setAttribute("aria-current", "page");
+
+    } else {
+
+      button.removeAttribute("aria-current");
+
+    }
 
   });
 
+ 
 
   $$(".view").forEach(view => {
 
-    view.classList.remove(
-      "active"
-    );
+    view.classList.toggle("active", view.id === `${viewName}-view`);
 
   });
 
+ 
 
-  const target =
-    $(`#${viewName}-view`);
+  setText("#page-title", getViewTitle(viewName));
 
+ 
 
-  if (target) {
+  if (viewName === "analyzer") {
 
-    target.classList.add(
-      "active"
-    );
+    window.setTimeout(() => {
+
+      $("#diagnostic-search")?.focus();
+
+    }, 0);
 
   }
-
-
-  const titles = {
-
-    dashboard:
-      "Repair Operations Dashboard",
-
-    analyzer:
-      "HGX Log Analyzer",
-
-    cases:
-      "Case History",
-
-    knowledge:
-      "HGX Knowledge Base",
-
-    metrics:
-      "Pilot Performance Metrics"
-
-  };
-
-
-  setText(
-    "#page-title",
-    titles[viewName] || "RepairIQ"
-  );
 
 }
 
+ 
 
-/* =========================================================
-   ANALYZER INITIALIZATION
-========================================================= */
+function getViewTitle(viewName) {
+
+  const titles = {
+
+    dashboard: "Repair Operations Dashboard",
+
+    analyzer: "SXM Log Analyzer",
+
+    cases: "Case History",
+
+    knowledge: "SXM Knowledge Base",
+
+    metrics: "Performance Metrics"
+
+  };
+
+ 
+
+  return titles[viewName] || "RepairIQ";
+
+}
+
+ 
+
+/* ================================================================
+
+   6. KEYBOARD SHORTCUTS
+
+   ---------------------------------------------------------------
+
+   The previous JavaScript referenced a missing global search input.
+
+ 
+
+   This version routes "/" to the existing diagnostic search field.
+
+   ================================================================ */
+
+ 
+
+function initializeKeyboardShortcuts() {
+
+  document.addEventListener("keydown", event => {
+
+    const activeTag = document.activeElement?.tagName;
+
+ 
+
+    const isTyping =
+
+      activeTag === "INPUT" ||
+
+      activeTag === "TEXTAREA" ||
+
+      activeTag === "SELECT";
+
+ 
+
+    if (event.key === "/" && !isTyping) {
+
+      event.preventDefault();
+
+ 
+
+      switchView("analyzer");
+
+      $("#diagnostic-search")?.focus();
+
+    }
+
+ 
+
+    if (event.key === "Escape" && state.modalOpen) {
+
+      closeDiagnosticModal();
+
+    }
+
+  });
+
+}
+
+ 
+
+/* ================================================================
+
+   7. ANALYZER INITIALIZATION
+
+   ---------------------------------------------------------------
+
+   This binds the existing HTML controls:
+
+ 
+
+   #drop-zone
+
+   #file-input
+
+   #demo-log-button
+
+   #analyze-button
+
+   .quick-search-chip
+
+   #diagnostic-search-button
+
+   ================================================================ */
+
+ 
 
 function initializeAnalyzer() {
 
-  const fileInput =
-    $("#file-input");
+  const dropZone = $("#drop-zone");
 
-  const dropZone =
-    $("#drop-zone");
+  const fileInput = $("#file-input");
 
+ 
 
-  /*
-     File upload controls are optional while the
-     interface is being developed. Exit safely if
-     the analyzer markup is not present.
-  */
+  if (dropZone && fileInput) {
 
-  if (!fileInput || !dropZone) {
-    return;
-  }
+    dropZone.addEventListener("click", () => {
 
+      fileInput.click();
 
-  dropZone.addEventListener(
-    "click",
-    () => fileInput.click()
-  );
+    });
 
+ 
 
-  dropZone.addEventListener(
-    "keydown",
-    event => {
+    dropZone.addEventListener("keydown", event => {
 
-      if (
-        event.key === "Enter" ||
-        event.key === " "
-      ) {
+      if (event.key === "Enter" || event.key === " ") {
 
         event.preventDefault();
 
@@ -397,1772 +952,4727 @@ function initializeAnalyzer() {
 
       }
 
-    }
-  );
-
-
-  fileInput.addEventListener(
-    "change",
-    event => {
-
-      const file =
-        event.target.files?.[0];
-
-      if (!file) return;
-
-      readFile(file);
-
-    }
-  );
-
-
-  ["dragenter", "dragover"]
-    .forEach(eventName => {
-
-      dropZone.addEventListener(
-        eventName,
-        event => {
-
-          event.preventDefault();
-
-          dropZone.classList.add(
-            "dragging"
-          );
-
-        }
-      );
-
     });
 
+ 
 
-  ["dragleave", "drop"]
-    .forEach(eventName => {
+    fileInput.addEventListener("change", event => {
 
-      dropZone.addEventListener(
-        eventName,
-        event => {
+      const file = event.target.files?.[0];
 
-          event.preventDefault();
+ 
 
-          dropZone.classList.remove(
-            "dragging"
-          );
+      if (file) {
 
-        }
-      );
-
-    });
-
-
-  dropZone.addEventListener(
-    "drop",
-    event => {
-
-      const file =
-        event.dataTransfer?.files?.[0];
-
-      if (!file) return;
-
-      readFile(file);
-
-    }
-  );
-
-
-  addListener(
-    "#demo-log-button",
-    "click",
-    loadDemoCase
-  );
-
-
-  addListener(
-    "#analyze-button",
-    "click",
-    () => {
-
-      if (!currentLog) {
-
-        showToast(
-          "Load a test log first."
-        );
-
-        return;
+        readFile(file);
 
       }
 
-      runAnalysis();
+    });
+
+ 
+
+    ["dragenter", "dragover"].forEach(eventName => {
+
+      dropZone.addEventListener(eventName, event => {
+
+        event.preventDefault();
+
+        dropZone.classList.add("dragging");
+
+      });
+
+    });
+
+ 
+
+    ["dragleave", "drop"].forEach(eventName => {
+
+      dropZone.addEventListener(eventName, event => {
+
+        event.preventDefault();
+
+        dropZone.classList.remove("dragging");
+
+      });
+
+    });
+
+ 
+
+    dropZone.addEventListener("drop", event => {
+
+      const file = event.dataTransfer?.files?.[0];
+
+ 
+
+      if (file) {
+
+        readFile(file);
+
+      }
+
+    });
+
+  }
+
+ 
+
+  addListener("#demo-log-button", "click", loadDemoCase);
+
+ 
+
+  addListener("#analyze-button", "click", () => {
+
+    if (!state.currentLog) {
+
+      showToast("Load a test log first.");
+
+      return;
 
     }
-  );
+
+ 
+
+    runAnalysis();
+
+  });
+
+ 
+
+  addListeners(".quick-search-chip", "click", event => {
+
+    const errorCode = event.currentTarget.dataset.errorCode || "";
+
+ 
+
+    setInputValue("#diagnostic-search", errorCode);
+
+    loadDemoCase();
+
+ 
+
+    showToast(`Demonstration pattern loaded: ${errorCode}`);
+
+  });
+
+ 
+
+  addListener("#diagnostic-search-button", "click", () => {
+
+    const searchValue = getInputValue("#diagnostic-search");
+
+ 
+
+    if (!searchValue) {
+
+      showToast("Enter an error code or symptom.");
+
+      return;
+
+    }
+
+ 
+
+    switchView("analyzer");
+
+    loadDemoCase();
+
+ 
+
+    showToast(`Diagnostic pattern loaded: ${searchValue}`);
+
+  });
 
 }
 
+ 
 
-/* =========================================================
-   FILE READER
-========================================================= */
+/* ================================================================
+
+   8. LOG FILE HANDLING
+
+   ---------------------------------------------------------------
+
+   The prototype accepts:
+
+ 
+
+   - .txt
+
+   - .log
+
+   - .json
+
+ 
+
+   JSON files are currently previewed as text. Structured JSON
+
+   ingestion can be added later without changing the upload UI.
+
+   ================================================================ */
+
+ 
 
 function readFile(file) {
 
-  const reader =
-    new FileReader();
+  if (!file) {
 
+    return;
 
-  reader.onload =
-    event => {
+  }
 
-      loadLog(
-        String(
-          event.target?.result || ""
-        ),
-        file.name
-      );
+ 
 
-    };
+  const reader = new FileReader();
 
+ 
 
-  reader.onerror =
-    () => {
+  reader.onload = event => {
 
-      showToast(
-        "Unable to read the selected log file."
-      );
+    loadLog(
 
-    };
+      String(event.target?.result || ""),
 
+      file.name || "uploaded-log.txt"
+
+    );
+
+  };
+
+ 
+
+  reader.onerror = () => {
+
+    showToast("Unable to read the selected log file.");
+
+  };
+
+ 
 
   reader.readAsText(file);
 
 }
 
+ 
 
-/* =========================================================
-   DEMO CASE
-========================================================= */
+function loadLog(logText, fileName = "uploaded-log.txt") {
+
+  state.currentLog = String(logText || "");
+
+  state.currentFileName = fileName;
+
+ 
+
+  const preview = $("#log-preview");
+
+ 
+
+  if (preview) {
+
+    preview.textContent = state.currentLog || "No test log loaded.";
+
+  }
+
+ 
+
+  setText("#log-status", `${fileName} loaded`);
+
+ 
+
+  const status = $("#log-status");
+
+ 
+
+  if (status) {
+
+    status.className = "status-pill ready";
+
+  }
+
+ 
+
+  updateDataSourceLabels(
+
+    fileName.toLowerCase().includes("demo") ||
+
+      fileName.toLowerCase().includes("vulcan")
+
+      ? "Prototype / Demonstration Data"
+
+      : "Uploaded local log"
+
+  );
+
+ 
+
+  showToast("Test log loaded successfully.");
+
+}
+
+ 
+
+/* ================================================================
+
+   9. DEMO CASE LOADING
+
+   ---------------------------------------------------------------
+
+   The demo case is deterministic and synthetic.
+
+ 
+
+   It intentionally represents:
+
+ 
+
+   - GPU2 HMC BIST failure
+
+   - Initialization timeout
+
+   - GPU2 heartbeat failure
+
+   - HMC retry activity
+
+   - Passing NVSwitch
+
+   - Passing BMC communication
+
+   - Completed firmware compatibility check
+
+ 
+
+   It does not prove that a physical GPU must be replaced.
+
+   ================================================================ */
+
+ 
 
 function loadDemoCase() {
 
   setInputValue(
+
     "#product-model",
-    "HGX H100 8-GPU"
+
+    "VULCAN (HGX) / SXM 8-GPU Demo"
+
   );
 
+ 
+
+  setInputValue("#tester-name", "SXM-TESTER-04");
+
+  setInputValue("#technician-name", "Tech1");
+
+ 
 
   setInputValue(
-    "#tester-name",
-    "HGX-TESTER-04"
-  );
 
-
-  setInputValue(
-    "#technician-name",
-    "Repair Technician"
-  );
-
-
-  setInputValue(
     "#technician-notes",
-    "Unit failed during GPU thermal/performance testing. Multiple GPU7 symptoms observed."
+
+    "Unit failed during HMC initialization. GPU2 symptoms observed."
+
   );
 
+ 
 
-  loadLog(
-    DEMO_LOG,
-    "HGX_GPU7_demo.log"
-  );
+  /*
 
+    These hidden fields are part of the future unit identity contract.
 
-  switchView(
-    "analyzer"
-  );
+    They make the traveler identifiers available to the frontend
 
+    without requiring CSS changes.
 
-  showToast(
-    "Synthetic HGX demonstration case loaded."
-  );
+  */
+
+  setInputValue("#unit-serial-input", "DEMO-UNIT-0001");
+
+  setInputValue("#system-serial-input", "DEMO-SYSTEM-0001");
+
+  setInputValue("#part-number-input", "DEMO-PN-0001");
+
+  setInputValue("#assembly-part-number-input", "DEMO-ASM-PN-0001");
+
+  setInputValue("#board-revision-input", "DEMO-REV-A");
+
+  setInputValue("#department-input", "SXM Diagnostics");
+
+ 
+
+  loadLog(DEMO_LOG, "VULCAN_GPU2_demo.log");
+
+  switchView("analyzer");
+
+ 
+
+  showToast("Synthetic SXM demonstration case loaded.");
 
 }
 
+ 
 
-/*
-   setInputValue()
-   ---------------
-   Safely writes to an input or textarea.
-*/
+/* ================================================================
 
-function setInputValue(
-  selector,
-  value
-) {
+   10. ANALYSIS EXECUTION
 
-  const element =
-    $(selector);
+   ---------------------------------------------------------------
 
-  if (!element) return;
+   The important compatibility rule is:
 
-  element.value = value;
+ 
 
-}
+   Do not replace #result-panel.innerHTML.
 
+ 
 
-/* =========================================================
-   LOAD LOG
-========================================================= */
+   The HTML already contains the structured result contract.
 
-function loadLog(
-  logText,
-  fileName = "uploaded-log.txt"
-) {
+   This function only changes its state and then renders into the
 
-  currentLog =
-    String(logText || "");
+   existing fields.
 
+   ================================================================ */
 
-  const preview =
-    $("#log-preview");
-
-
-  if (preview) {
-
-    preview.textContent =
-      currentLog;
-
-  }
-
-
-  setText(
-    "#log-status",
-    `${fileName} loaded`
-  );
-
-
-  const status =
-    $("#log-status");
-
-
-  if (status) {
-
-    status.className =
-      "status-pill ready";
-
-  }
-
-
-  showToast(
-    "Test log loaded successfully."
-  );
-
-}
-
-
-/* =========================================================
-   ANALYSIS PIPELINE
-========================================================= */
+ 
 
 function runAnalysis() {
 
-  const resultPanel =
-    $("#result-panel");
+  const logStatus = $("#log-status");
 
+ 
 
-  setText(
-    "#log-status",
-    "Analyzing log..."
-  );
+  if (logStatus) {
 
+    logStatus.textContent = "Analyzing log...";
 
-  const status =
-    $("#log-status");
-
-
-  if (status) {
-
-    status.className =
-      "status-pill analyzing";
+    logStatus.className = "status-pill analyzing";
 
   }
 
+ 
 
-  if (resultPanel) {
+  showAnalysisLoadingState();
 
-    resultPanel.innerHTML = `
+ 
 
-      <div class="empty-result">
+  window.setTimeout(() => {
 
-        <div class="empty-orb">
-          ◌
-        </div>
+    const analysis = analyzeLog(state.currentLog);
 
-        <h3>
-          RepairIQ is analyzing the failure
-        </h3>
+ 
 
-        <p>
-          Parsing errors → grouping symptoms →
-          calculating evidence → applying HGX rules.
-        </p>
+    state.currentAnalysis = analysis;
 
-      </div>
+ 
+
+    renderAnalysis(analysis);
+
+ 
+
+    if (logStatus) {
+
+      logStatus.textContent = "Analysis complete";
+
+      logStatus.className = "status-pill ready";
+
+    }
+
+ 
+
+    showToast("Analysis complete. Technician review required.");
+
+  }, 700);
+
+}
+
+ 
+
+function showAnalysisLoadingState() {
+
+  const emptyResult = $("#empty-diagnostic-result");
+
+  const structuredResult = $("#structured-diagnostic-result");
+
+ 
+
+  if (emptyResult) {
+
+    emptyResult.hidden = false;
+
+ 
+
+    emptyResult.innerHTML = `
+
+      <div class="empty-orb" aria-hidden="true">RI</div>
+
+      <h3>RepairIQ is analyzing the failure</h3>
+
+      <p>
+
+        Parsing errors, grouping symptoms, calculating evidence,
+
+        and applying transparent prototype rules.
+
+      </p>
 
     `;
 
   }
 
+ 
 
-  setTimeout(
-    () => {
+  if (structuredResult) {
 
-      currentAnalysis =
-        analyzeHGXLog(
-          currentLog
-        );
+    structuredResult.hidden = true;
 
+  }
 
-      renderAnalysis(
-        currentAnalysis
-      );
+ 
 
+  const resultPanel = $("#result-panel");
 
-      setText(
-        "#log-status",
-        "Analysis complete"
-      );
+ 
 
+  if (resultPanel) {
 
-      const analysisStatus =
-        $("#log-status");
+    resultPanel.dataset.resultState = "analyzing";
 
-
-      if (analysisStatus) {
-
-        analysisStatus.className =
-          "status-pill ready";
-
-      }
-
-
-      showToast(
-        "Analysis complete. Technician review required."
-      );
-
-    },
-    900
-  );
+  }
 
 }
 
+ 
 
-/* =========================================================
-   HGX ANALYSIS ENGINE
-========================================================= */
+/* ================================================================
 
-function analyzeHGXLog(
-  logText
-) {
+   11. LOG ANALYSIS ENGINE
 
-  const normalized =
-    String(
-      logText || ""
-    ).toLowerCase();
+   ---------------------------------------------------------------
 
+   This is deterministic prototype logic, not production AI.
 
-  /*
-     Detect the first GPU referenced by the log.
+ 
 
-     For the demonstration case this resolves to GPU7.
-  */
+   Critical parser protections:
 
-  const gpuMatch =
-    String(logText || "").match(
-      /GPU(\d+)/i
-    );
+ 
 
+   1. Generic detection lines do not determine the failed GPU.
 
-  const affectedGpu =
-    gpuMatch
-      ? `GPU${gpuMatch[1]}`
-      : "Unknown";
+   2. Failure-associated GPU references receive priority.
 
+   3. Tester identity alone does not mean tester failure.
 
-  /*
-     Parse numerical threshold information when
-     available.
-  */
+   4. Firmware metadata alone does not mean firmware failure.
 
-  const adjustedMatch =
-    String(logText || "").match(
-      /Adjusted_Value:\s*([0-9.]+)/i
-    );
+   5. Positive evidence is separated from contradicting evidence.
 
+   ================================================================ */
 
-  const limitMatch =
-    String(logText || "").match(
-      /Limit_Fail:\s*([0-9.]+)/i
-    );
+ 
 
+function analyzeLog(logText) {
 
-  const adjustedValue =
-    adjustedMatch
-      ? Number(
-          adjustedMatch[1]
-        )
-      : null;
+  const rawLog = String(logText || "");
 
+  const normalized = rawLog.toLowerCase();
 
-  const failureLimit =
-    limitMatch
-      ? Number(
-          limitMatch[1]
-        )
-      : null;
+  const lines = rawLog
 
+    .split(/\r?\n/)
 
-  const difference =
-    adjustedValue !== null &&
-    failureLimit !== null
+    .map(line => line.trim())
 
-      ? Number(
-          (
-            adjustedValue -
-            failureLimit
-          ).toFixed(2)
-        )
+    .filter(Boolean);
 
-      : null;
+ 
 
+  const metadata = parseLogMetadata(lines);
 
-  /* -----------------------------------------------
-     Rule detection
-  ----------------------------------------------- */
+  const affectedComponent = detectAffectedComponent(lines);
 
-  const hasThreshold =
-    normalized.includes(
-      "mle_gpu_avg"
-    ) ||
-    normalized.includes(
-      "exceeds failure specification"
-    ) ||
-    normalized.includes(
-      "exceeds the specified threshold"
-    );
+  const errorCodes = detectErrorCodes(lines);
 
+  const testStages = detectTestStages(lines);
 
-  const hasHeartbeat =
-    normalized.includes(
-      "heartbeat"
-    );
+  const testerAssessment = analyzeTesterEvidence(normalized);
 
+  const firmwareAssessment = analyzeFirmwareEvidence(normalized);
 
-  const hasPower =
-    normalized.includes(
-      "power is below"
-    ) ||
-    normalized.includes(
-      "power failure"
-    );
+ 
 
+  const hasHmcFault =
 
-  const hasPcie =
-    normalized.includes(
-      "pcie"
-    ) &&
+    normalized.includes("hmc_bist_fail") ||
+
     (
+
+      normalized.includes("hmc") &&
+
+      (
+
+        normalized.includes("initialization") ||
+
+        normalized.includes("heartbeat")
+
+      )
+
+    );
+
+ 
+
+  const hasPcieFault =
+
+    normalized.includes("pcie") &&
+
+    (
+
       normalized.includes("link") ||
-      normalized.includes("width")
+
+      normalized.includes("width") ||
+
+      normalized.includes("lane")
+
     );
 
+ 
 
-  const hasFirmware =
-    normalized.includes(
-      "firmware"
-    ) &&
-    (
-      normalized.includes("mismatch") ||
-      normalized.includes("incompat")
-    );
+  const hasTesterFailure = testerAssessment.isFailure;
 
+ 
 
-  const hasTester =
-    normalized.includes(
-      "timeout"
-    ) ||
-    normalized.includes(
-      "tester"
-    );
+  const hasFirmwareFailure = firmwareAssessment.isFailure;
 
+ 
 
-  /* -----------------------------------------------
-     Primary rule selection
+  let title = "SXM diagnostic review required";
 
-     Rules are prioritized so the most specific
-     detected failure becomes the primary diagnosis.
-  ----------------------------------------------- */
+  let category = "General SXM failure";
 
-  let category =
-    "General HGX failure";
-
-
-  let ruleId =
-    "HGX-GENERAL-000";
-
-
-  let title =
-    "HGX diagnostic review required";
-
+  let ruleId = "SXM-GENERAL-000";
 
   let recommendation =
+
     "Review the complete log and escalate for technical review.";
 
+  let actionType = "Controlled diagnostic review";
 
-  let confidence =
-    62;
+  let confidence = 62;
 
+  let severity = "REVIEW";
 
-  if (hasThreshold) {
+ 
 
-    category =
-      "GPU thermal / performance threshold";
+  if (hasHmcFault) {
 
+    title = `${affectedComponent} HMC BIST failure`;
 
-    ruleId =
-      RULESET.gpuThreshold.id;
+    category = "HMC initialization failure";
 
-
-    title =
-      `${affectedGpu} MLE threshold failure`;
-
-
-    if (
-      difference !== null &&
-      difference < 1
-    ) {
-
-      recommendation =
-        "Reseat the affected GPU and retest before replacement.";
-
-
-      confidence =
-        94;
-
-    }
-    else {
-
-      recommendation =
-        "Isolate the affected GPU and prepare for replacement review.";
-
-
-      confidence =
-        91;
-
-    }
-
-  }
-
-  else if (hasPcie) {
-
-    category =
-      "PCIe link-width failure";
-
-
-    ruleId =
-      RULESET.pcie.id;
-
-
-    title =
-      "PCIe connectivity failure";
-
+    ruleId = "SXM-GPU-001";
 
     recommendation =
-      "Verify configuration, reseat the device, and isolate the slot.";
 
+      `Inspect ${affectedComponent} and the associated HMC path.`;
 
-    confidence =
-      87;
+    actionType = "Component isolation / approved swap test";
 
-  }
+    confidence = 94;
 
-  else if (hasFirmware) {
+    severity = "CRITICAL";
 
-    category =
-      "Firmware compatibility issue";
+  } else if (hasPcieFault) {
 
+    title = "PCIe connectivity failure";
 
-    ruleId =
-      RULESET.firmware.id;
+    category = "PCIe link-width failure";
 
-
-    title =
-      "Firmware mismatch detected";
-
+    ruleId = "SXM-PCI-002";
 
     recommendation =
-      "Validate the firmware matrix and obtain authorization before flashing.";
 
+      `Verify configuration and isolate ${affectedComponent}.`;
 
-    confidence =
-      89;
+    actionType = "Configuration verification / isolation";
 
-  }
+    confidence = 87;
 
-  else if (hasTester) {
+    severity = "WARNING";
 
-    category =
-      "Tester or execution failure";
+  } else if (hasTesterFailure) {
 
+    title = "Tester-related failure suspected";
 
-    ruleId =
-      RULESET.tester.id;
+    category = "Tester or execution failure";
 
-
-    title =
-      "Tester-related failure suspected";
-
+    ruleId = "SXM-TST-004";
 
     recommendation =
+
       "Validate tester state, permissions, calibration, and repeatability.";
 
+    actionType = "Tester validation";
 
-    confidence =
-      81;
+    confidence = 81;
 
-  }
+    severity = "WARNING";
 
+  } else if (hasFirmwareFailure) {
 
-  /* -----------------------------------------------
-     Supporting evidence
-  ----------------------------------------------- */
+    title = "Firmware compatibility issue suspected";
 
-  const evidence = [];
+    category = "Firmware mismatch or compatibility issue";
 
+    ruleId = "SXM-FW-003";
 
-  if (hasThreshold) {
+    recommendation =
 
-    evidence.push(
-      `MLE_GPU_AVG exceeds the specified threshold on ${affectedGpu}.`
-    );
+      "Validate firmware versions against the approved compatibility matrix.";
 
-  }
+    actionType = "Firmware validation";
 
+    confidence = 78;
 
-  if (
-    adjustedValue !== null &&
-    failureLimit !== null
-  ) {
-
-    evidence.push(
-      `Adjusted value ${adjustedValue.toFixed(2)} exceeds failure limit ${failureLimit.toFixed(2)}.`
-    );
+    severity = "WARNING";
 
   }
 
+ 
 
-  if (hasHeartbeat) {
+  const supportingEvidence = buildSupportingEvidence({
 
-    evidence.push(
-      `${affectedGpu} did not receive heartbeat.`
-    );
+    lines,
 
-  }
+    normalized,
 
+    affectedComponent,
 
-  if (hasPower) {
+    hasHmcFault,
 
-    evidence.push(
-      `${affectedGpu} power is below the specified limit.`
-    );
+    hasPcieFault,
 
-  }
+    hasTesterFailure,
 
+    hasFirmwareFailure,
 
-  if (hasPcie) {
+    testerAssessment,
 
-    evidence.push(
-      "PCIe link or width-related failure detected."
-    );
+    firmwareAssessment,
 
-  }
+    errorCodes
 
+  });
 
-  if (hasFirmware) {
+ 
 
-    evidence.push(
-      "Firmware compatibility or version mismatch detected."
-    );
+  const contradictingEvidence = buildContradictingEvidence({
 
-  }
+    lines,
 
+    normalized,
 
-  if (hasTester) {
+    hasHmcFault,
 
-    evidence.push(
-      "Tester timeout or execution instability detected."
-    );
+    hasPcieFault,
 
-  }
+    hasTesterFailure,
 
+    hasFirmwareFailure,
 
-  if (!evidence.length) {
+    testerAssessment,
 
-    evidence.push(
-      "Log requires additional technician review."
-    );
+    firmwareAssessment
 
-  }
+  });
 
+ 
 
-  /* -----------------------------------------------
-     Recommended repair path
-  ----------------------------------------------- */
+  const previousActions = inferPreviousActions({
 
-  const actions =
-    buildRecommendedActions({
+    normalized,
 
-      hasThreshold,
+    hasHmcFault
 
-      difference,
+  });
 
-      affectedGpu,
+ 
 
-      hasHeartbeat,
+  const doNotRepeat = buildDoNotRepeatActions(previousActions);
 
-      hasPower,
+ 
 
-      hasPcie,
+  const rootCauseCandidates = buildRootCauseCandidates({
 
-      hasFirmware,
+    affectedComponent,
 
-      hasTester
+    hasHmcFault,
 
-    });
+    hasPcieFault,
 
+    hasTesterFailure,
 
-  return {
+    hasFirmwareFailure
 
-    caseId:
-      createCaseId(),
+  });
 
+ 
 
-    product:
-      getInputValue(
-        "#product-model"
-      ) || "Unknown product",
+  const confidenceExplanation = buildConfidenceExplanation({
 
+    confidence,
 
-    category,
+    supportingEvidence,
 
-    ruleId,
+    contradictingEvidence,
+
+    affectedComponent,
+
+    hasHmcFault,
+
+    hasPcieFault,
+
+    hasTesterFailure,
+
+    hasFirmwareFailure
+
+  });
+
+ 
+
+  const partsRequest = buildPartsRequest({
+
+    affectedComponent,
+
+    hasHmcFault,
+
+    hasPcieFault
+
+  });
+
+ 
+
+  const retest = buildRetestRequirement({
+
+    hasHmcFault,
+
+    hasPcieFault,
+
+    hasTesterFailure,
+
+    hasFirmwareFailure,
+
+    failureStage: testStages.failureStage
+
+  });
+
+ 
+
+  const handoff = buildShiftHandoff({
+
+    affectedComponent,
 
     title,
 
     recommendation,
 
-    affectedComponent:
-      affectedGpu,
+    previousActions,
+
+    doNotRepeat,
+
+    partsRequest,
+
+    retest
+
+  });
+
+ 
+
+  const caseId = createCaseId();
+
+  const travelerId = createTravelerId();
+
+ 
+
+  return {
+
+    caseId,
+
+    travelerId,
+
+    dataSource: isDemoLog(rawLog)
+
+      ? "Prototype / Demonstration Data"
+
+      : "Uploaded local log",
+
+ 
+
+    caseState: "DIAGNOSIS READY",
+
+ 
+
+    product:
+
+      getInputValue("#product-model") ||
+
+      metadata.product ||
+
+      "Unknown product",
+
+ 
+
+    title,
+
+    category,
+
+    ruleId,
+
+    severity,
+
+    recommendation,
+
+    actionType,
+
+    affectedComponent,
 
     confidence,
 
-    adjustedValue,
+    confidenceExplanation,
 
-    failureLimit,
-
-    difference,
-
-    evidence,
-
-    actions,
-
+ 
 
     technician:
-      getInputValue(
-        "#technician-name"
-      ),
 
+      getInputValue("#technician-name") ||
+
+      "Technician not identified",
+
+ 
 
     tester:
-      getInputValue(
-        "#tester-name"
-      ),
 
+      getInputValue("#tester-name") ||
 
-    notes:
-      getInputValue(
-        "#technician-notes"
-      )
+      metadata.tester ||
+
+      "Tester not identified",
+
+ 
+
+    notes: getInputValue("#technician-notes"),
+
+ 
+
+    metadata,
+
+ 
+
+    failure: {
+
+      title,
+
+      category,
+
+      ruleId,
+
+      severity,
+
+      errorCode: errorCodes[0] || "UNSPECIFIED",
+
+      failureStage: testStages.failureStage,
+
+      affectedComponent
+
+    },
+
+ 
+
+    unit: {
+
+      mpPartNumber:
+
+        getInputValue("#part-number-input") ||
+
+        "DEMO-MP-PN-0001",
+
+ 
+
+      mpSerialNumber:
+
+        getInputValue("#unit-serial-input") ||
+
+        "DEMO-MP-SN-0001",
+
+ 
+
+      pcbPartNumber:
+
+        getInputValue("#part-number-input") ||
+
+        "DEMO-PCB-PN-0001",
+
+ 
+
+      pcbSerialNumber:
+
+        getInputValue("#system-serial-input") ||
+
+        "DEMO-PCB-SN-0001",
+
+ 
+
+      systemSerialNumber:
+
+        getInputValue("#system-serial-input") ||
+
+        "DEMO-SYSTEM-0001",
+
+ 
+
+      unitSerialNumber:
+
+        getInputValue("#unit-serial-input") ||
+
+        "DEMO-UNIT-0001",
+
+ 
+
+      partNumber:
+
+        getInputValue("#part-number-input") ||
+
+        "DEMO-PN-0001",
+
+ 
+
+      assemblyPartNumber:
+
+        getInputValue("#assembly-part-number-input") ||
+
+        "DEMO-ASM-PN-0001",
+
+ 
+
+      platform:
+
+        metadata.platform ||
+
+        "H200 / SXM",
+
+ 
+
+      build:
+
+        metadata.product?.includes("VULCAN")
+
+          ? "Vulcan-inspired demo"
+
+          : "Prototype platform",
+
+ 
+
+      boardRevision:
+
+        getInputValue("#board-revision-input") ||
+
+        "Not supplied",
+
+ 
+
+      department:
+
+        getInputValue("#department-input") ||
+
+        "SXM Diagnostics"
+
+    },
+
+ 
+
+    testSession: {
+
+      tester:
+
+        getInputValue("#tester-name") ||
+
+        metadata.tester ||
+
+        "Tester not identified",
+
+ 
+
+      technician:
+
+        getInputValue("#technician-name") ||
+
+        "Technician not identified",
+
+ 
+
+      testName:
+
+        metadata.testName ||
+
+        "HGX Test Execution Report",
+
+ 
+
+      testDate:
+
+        metadata.testDate ||
+
+        "Not supplied",
+
+ 
+
+      failureStage: testStages.failureStage,
+
+ 
+
+      stages: testStages.stages
+
+    },
+
+ 
+
+    evidence: {
+
+      supporting: supportingEvidence,
+
+      contradicting: contradictingEvidence,
+
+      correlated: supportingEvidence,
+
+      negative: contradictingEvidence
+
+    },
+
+ 
+
+    history: {
+
+      previousActions,
+
+      doNotRepeat
+
+    },
+
+ 
+
+    reasoning: {
+
+      candidates: rootCauseCandidates,
+
+      confidence,
+
+      confidenceExplanation
+
+    },
+
+ 
+
+    recommendationDetails: {
+
+      action: recommendation,
+
+      actionType,
+
+      explanation:
+
+        "This is a controlled diagnostic recommendation. Physical repair decisions remain under technician control.",
+
+      approvalStatus: "PENDING REVIEW"
+
+    },
+
+ 
+
+    partsRequest,
+
+ 
+
+    retest,
+
+ 
+
+    handoff
 
   };
 
 }
 
+ 
 
-/* =========================================================
-   INPUT VALUE HELPER
-========================================================= */
+/* ================================================================
 
-function getInputValue(
-  selector
-) {
+   12. LOG METADATA PARSING
 
-  const element =
-    $(selector);
+   --------------------------------------------------------------- */
 
+ 
 
-  if (!element) {
-    return "";
+function parseLogMetadata(lines) {
+
+  const metadata = {
+
+    product: "",
+
+    platform: "",
+
+    tester: "",
+
+    testDate: "",
+
+    testName: ""
+
+  };
+
+ 
+
+  for (const line of lines) {
+
+    if (/^product:/i.test(line)) {
+
+      metadata.product = line.replace(/^product:/i, "").trim();
+
+    }
+
+ 
+
+    if (/^configuration:/i.test(line)) {
+
+      metadata.platform = line
+
+        .replace(/^configuration:/i, "")
+
+        .trim();
+
+    }
+
+ 
+
+    if (/^tester:/i.test(line)) {
+
+      metadata.tester = line
+
+        .replace(/^tester:/i, "")
+
+        .trim();
+
+    }
+
+ 
+
+    if (/^test date:/i.test(line)) {
+
+      metadata.testDate = line
+
+        .replace(/^test date:/i, "")
+
+        .trim();
+
+    }
+
+ 
+
+    if (/test execution report/i.test(line)) {
+
+      metadata.testName = line.trim();
+
+    }
+
   }
 
+ 
 
-  return String(
-    element.value || ""
-  ).trim();
+  return metadata;
 
 }
 
+ 
 
-/* =========================================================
-   RECOMMENDED ACTION ENGINE
-========================================================= */
+/* ================================================================
 
-function buildRecommendedActions(
-  data
-) {
+   13. COMPONENT DETECTION
 
-  /*
-     Threshold failures receive the most detailed
-     component-isolation workflow.
-  */
+   ---------------------------------------------------------------
 
-  if (data.hasThreshold) {
+   This function intentionally avoids using the first GPU reference
 
-    const actions = [
+   in the file.
 
-      `Reseat ${data.affectedGpu}.`,
+ 
 
-      "Run the approved HGX retest procedure."
+   Incorrect approach:
 
-    ];
+ 
 
+   String(logText).match(/GPU\s?(\d+)/i)
 
-    if (
-      data.difference !== null &&
-      data.difference < 1
-    ) {
+ 
 
-      actions.push(
-        `If the failure remains, swap ${data.affectedGpu} with another GPU to determine whether the failure follows the component.`
-      );
+   That would identify GPU0 from:
+
+ 
+
+   [PASS] GPU0 detected.
+
+ 
+
+   Correct approach:
+
+ 
+
+   Search failure-associated lines first.
+
+   ================================================================ */
+
+ 
+
+function detectAffectedComponent(lines) {
+
+  const priorityTerms = [
+
+    "fail",
+
+    "error",
+
+    "critical",
+
+    "threshold",
+
+    "heartbeat",
+
+    "power",
+
+    "timeout",
+
+    "link",
+
+    "fault",
+
+    "bist"
+
+  ];
+
+ 
+
+  const priorityLines = lines.filter(line => {
+
+    const normalized = line.toLowerCase();
+
+ 
+
+    return priorityTerms.some(term => normalized.includes(term));
+
+  });
+
+ 
+
+  const searchLines = [
+
+    ...priorityLines,
+
+    ...lines
+
+  ];
+
+ 
+
+  for (const line of searchLines) {
+
+    const gpuMatch = line.match(/\bGPU\s?(\d+)\b/i);
+
+ 
+
+    if (gpuMatch) {
+
+      return `GPU${gpuMatch[1]}`;
 
     }
-    else {
 
-      actions.push(
-        `Isolate ${data.affectedGpu} and prepare a qualified replacement review.`
-      );
+  }
 
-    }
+ 
 
+  if (lines.some(line => /hmc/i.test(line))) {
 
-    actions.push(
-      "If the failure remains in the original slot, evaluate the baseboard or slot."
+    return "HMC";
+
+  }
+
+ 
+
+  if (lines.some(line => /tester/i.test(line))) {
+
+    return "Tester";
+
+  }
+
+ 
+
+  return "Unresolved component";
+
+}
+
+ 
+
+/* ================================================================
+
+   14. ERROR CODE DETECTION
+
+   ================================================================ */
+
+ 
+
+function detectErrorCodes(lines) {
+
+  const codes = [];
+
+ 
+
+  for (const line of lines) {
+
+    const matches = line.match(
+
+      /\b[A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+\b/g
+
     );
 
+ 
 
-    return actions;
+    if (matches) {
+
+      matches.forEach(code => {
+
+        if (!codes.includes(code)) {
+
+          codes.push(code);
+
+        }
+
+      });
+
+    }
 
   }
 
+ 
 
-  /* -----------------------------------------------
-     PCIe failure
-  ----------------------------------------------- */
+  return codes;
 
-  if (data.hasPcie) {
+}
+
+ 
+
+/* ================================================================
+
+   15. TEST-STAGE DETECTION
+
+   ---------------------------------------------------------------
+
+   If the log does not explicitly contain test-stage markers,
+
+   the parser uses limited contextual inference and labels the
+
+   result as prototype-derived.
+
+ 
+
+   It does not claim that unobserved stages passed.
+
+   ================================================================ */
+
+ 
+
+function detectTestStages(lines) {
+
+  const joined = lines.join(" ").toLowerCase();
+
+ 
+
+  const stages = {
+
+    INIT: "NOT RUN",
+
+    FLT: "NOT RUN",
+
+    FLB: "NOT RUN",
+
+    FCT: "NOT RUN",
+
+    DCC: "NOT RUN",
+
+    RIN: "NOT RUN"
+
+  };
+
+ 
+
+  let failureStage = "Awaiting analysis";
+
+ 
+
+  const explicitStagePattern =
+
+    /\b(INIT|FLT|FLB|FCT|DCC|RIN)\b[\s:=-]*(PASS|FAIL|NOT RUN|SKIP|WARN)/gi;
+
+ 
+
+  let match;
+
+ 
+
+  while ((match = explicitStagePattern.exec(lines.join("\n")))) {
+
+    const stage = match[1].toUpperCase();
+
+    const result = match[2].toUpperCase();
+
+ 
+
+    stages[stage] = result;
+
+ 
+
+    if (result === "FAIL" && failureStage === "Awaiting analysis") {
+
+      failureStage = stage;
+
+    }
+
+  }
+
+ 
+
+  if (
+
+    failureStage === "Awaiting analysis" &&
+
+    (
+
+      joined.includes("initialization") ||
+
+      joined.includes("hmc_bist")
+
+    )
+
+  ) {
+
+    stages.INIT = "FAIL";
+
+    failureStage = "INIT / HMC BIST";
+
+  }
+
+ 
+
+  if (
+
+    failureStage === "Awaiting analysis" &&
+
+    (
+
+      joined.includes("pcie") ||
+
+      joined.includes("link-width")
+
+    )
+
+  ) {
+
+    stages.FLT = "FAIL";
+
+    failureStage = "FLT";
+
+  }
+
+ 
+
+  if (
+
+    failureStage === "Awaiting analysis" &&
+
+    joined.includes("tester")
+
+  ) {
+
+    failureStage = "Test execution";
+
+  }
+
+ 
+
+  return {
+
+    failureStage,
+
+    stages
+
+  };
+
+}
+
+ 
+
+/* ================================================================
+
+   16. TESTER ANALYSIS
+
+   ---------------------------------------------------------------
+
+   A tester ID is metadata.
+
+ 
+
+   It is not a failure.
+
+ 
+
+   Tester failure requires an actual execution, calibration,
+
+   permission, script, instability, or tester timeout signal.
+
+   ================================================================ */
+
+ 
+
+function analyzeTesterEvidence(normalizedLog) {
+
+  const failurePatterns = [
+
+    "tester timeout",
+
+    "tester failure",
+
+    "tester failed",
+
+    "tester instability",
+
+    "calibration failure",
+
+    "calibration expired",
+
+    "script execution failure",
+
+    "script failed",
+
+    "permission denied",
+
+    "execution aborted",
+
+    "test environment failure"
+
+  ];
+
+ 
+
+  const matchedPatterns = failurePatterns.filter(pattern =>
+
+    normalizedLog.includes(pattern)
+
+  );
+
+ 
+
+  return {
+
+    isFailure: matchedPatterns.length > 0,
+
+    matchedPatterns
+
+  };
+
+}
+
+ 
+
+/* ================================================================
+
+   17. FIRMWARE ANALYSIS
+
+   ---------------------------------------------------------------
+
+   Firmware information alone is neutral.
+
+ 
+
+   A firmware issue requires direct evidence of mismatch,
+
+   incompatibility, invalid version, failed update, or conflict.
+
+   ================================================================ */
+
+ 
+
+function analyzeFirmwareEvidence(normalizedLog) {
+
+  const failurePatterns = [
+
+    "firmware mismatch",
+
+    "firmware incompatible",
+
+    "firmware incompatibility",
+
+    "invalid firmware",
+
+    "firmware update failed",
+
+    "firmware version conflict",
+
+    "firmware conflict",
+
+    "unsupported firmware"
+
+  ];
+
+ 
+
+  const matchedPatterns = failurePatterns.filter(pattern =>
+
+    normalizedLog.includes(pattern)
+
+  );
+
+ 
+
+  return {
+
+    isFailure: matchedPatterns.length > 0,
+
+    matchedPatterns
+
+  };
+
+}
+
+ 
+
+/* ================================================================
+
+   18. SUPPORTING EVIDENCE
+
+   ================================================================ */
+
+ 
+
+function buildSupportingEvidence({
+
+  lines,
+
+  normalized,
+
+  affectedComponent,
+
+  hasHmcFault,
+
+  hasPcieFault,
+
+  hasTesterFailure,
+
+  hasFirmwareFailure,
+
+  testerAssessment,
+
+  firmwareAssessment,
+
+  errorCodes
+
+}) {
+
+  const evidence = [];
+
+ 
+
+  if (hasHmcFault) {
+
+    const hmcFailureLine = lines.find(line =>
+
+      /hmc_bist_fail/i.test(line)
+
+    );
+
+ 
+
+    if (hmcFailureLine) {
+
+      evidence.push({
+
+        category: "PRIMARY FAILURE",
+
+        text: normalizeText(hmcFailureLine)
+
+      });
+
+    }
+
+ 
+
+    if (normalized.includes("initialization timeout")) {
+
+      evidence.push({
+
+        category: "CORRELATED SIGNAL",
+
+        text: "Initialization timeout detected."
+
+      });
+
+    }
+
+ 
+
+    if (normalized.includes("did not receive heartbeat")) {
+
+      evidence.push({
+
+        category: "CORRELATED SIGNAL",
+
+        text: `${affectedComponent} heartbeat activity failed.`
+
+      });
+
+    }
+
+ 
+
+    if (normalized.includes("hmc retry")) {
+
+      evidence.push({
+
+        category: "CORRELATED SIGNAL",
+
+        text: "HMC retry activity detected."
+
+      });
+
+    }
+
+  }
+
+ 
+
+  if (hasPcieFault) {
+
+    evidence.push({
+
+      category: "PRIMARY FAILURE",
+
+      text: "PCIe link or width-related failure detected."
+
+    });
+
+  }
+
+ 
+
+  if (hasTesterFailure) {
+
+    evidence.push({
+
+      category: "TESTER SIGNAL",
+
+      text: `Tester-related signals detected: ${testerAssessment.matchedPatterns.join(", ")}.`
+
+    });
+
+  }
+
+ 
+
+  if (hasFirmwareFailure) {
+
+    evidence.push({
+
+      category: "FIRMWARE SIGNAL",
+
+      text: `Firmware-related signals detected: ${firmwareAssessment.matchedPatterns.join(", ")}.`
+
+    });
+
+  }
+
+ 
+
+  if (errorCodes.length > 0) {
+
+    evidence.push({
+
+      category: "ERROR CODE",
+
+      text: `Detected code(s): ${errorCodes.join(", ")}.`
+
+    });
+
+  }
+
+ 
+
+  if (evidence.length === 0) {
+
+    evidence.push({
+
+      category: "REVIEW",
+
+      text: "Additional technician review is required."
+
+    });
+
+  }
+
+ 
+
+  return evidence;
+
+}
+
+ 
+
+/* ================================================================
+
+   19. CONTRADICTING / NEGATIVE EVIDENCE
+
+   ================================================================ */
+
+ 
+
+function buildContradictingEvidence({
+
+  lines,
+
+  normalized,
+
+  hasHmcFault,
+
+  hasPcieFault,
+
+  hasTesterFailure,
+
+  hasFirmwareFailure,
+
+  testerAssessment,
+
+  firmwareAssessment
+
+}) {
+
+  const evidence = [];
+
+ 
+
+  const passedGpus = lines
+
+    .filter(line => /\[PASS\]\s+GPU\d+\s+detected/i.test(line))
+
+    .map(line => {
+
+      const match = line.match(/\bGPU\d+\b/i);
+
+      return match ? match[0].toUpperCase() : null;
+
+    })
+
+    .filter(Boolean);
+
+ 
+
+  if (passedGpus.length > 0) {
+
+    evidence.push({
+
+      category: "NEGATIVE EVIDENCE",
+
+      text: `${passedGpus.join(", ")} detection passed.`
+
+    });
+
+  }
+
+ 
+
+  if (normalized.includes("nvswitch detected")) {
+
+    evidence.push({
+
+      category: "NEGATIVE EVIDENCE",
+
+      text: "NVSwitch detection passed."
+
+    });
+
+  }
+
+ 
+
+  if (normalized.includes("bmc communication established")) {
+
+    evidence.push({
+
+      category: "NEGATIVE EVIDENCE",
+
+      text: "BMC communication established."
+
+    });
+
+  }
+
+ 
+
+  if (
+
+    normalized.includes("firmware compatibility check completed") &&
+
+    !hasFirmwareFailure
+
+  ) {
+
+    evidence.push({
+
+      category: "NEGATIVE EVIDENCE",
+
+      text: "Firmware compatibility check completed without a direct failure signal."
+
+    });
+
+  }
+
+ 
+
+  if (!hasTesterFailure) {
+
+    evidence.push({
+
+      category: "TESTER SIGNAL",
+
+      text: "Tester identity was present, but no direct tester failure signal was identified."
+
+    });
+
+  }
+
+ 
+
+  if (!hasHmcFault && !hasPcieFault && !hasFirmwareFailure) {
+
+    evidence.push({
+
+      category: "REVIEW",
+
+      text: "No dominant failure pattern was established."
+
+    });
+
+  }
+
+ 
+
+  return evidence;
+
+}
+
+ 
+
+/* ================================================================
+
+   20. PREVIOUS ACTIONS
+
+   ---------------------------------------------------------------
+
+   The prototype can only report actions documented in the log or
+
+   technician notes.
+
+ 
+
+   It must not fabricate a repair history.
+
+   ================================================================ */
+
+ 
+
+function inferPreviousActions({ normalized, hasHmcFault }) {
+
+  const actions = [];
+
+ 
+
+  if (normalized.includes("reseat")) {
+
+    actions.push({
+
+      action: "Component reseat documented",
+
+      details: "A reseat action was referenced in the available case information.",
+
+      result: "Documented",
+
+      timestamp: "Source log or technician notes"
+
+    });
+
+  }
+
+ 
+
+  if (normalized.includes("firmware compatibility check completed")) {
+
+    actions.push({
+
+      action: "Firmware compatibility check",
+
+      details: "Firmware compatibility validation was documented.",
+
+      result: "Completed",
+
+      timestamp: "Source log"
+
+    });
+
+  }
+
+ 
+
+  if (normalized.includes("bmc communication established")) {
+
+    actions.push({
+
+      action: "BMC communication check",
+
+      details: "BMC communication was established.",
+
+      result: "Passed",
+
+      timestamp: "Source log"
+
+    });
+
+  }
+
+ 
+
+  if (hasHmcFault) {
+
+    actions.push({
+
+      action: "Initial test execution",
+
+      details: "The unit reached an HMC initialization-related failure.",
+
+      result: "Failed",
+
+      timestamp: "Source log"
+
+    });
+
+  }
+
+ 
+
+  return actions;
+
+}
+
+ 
+
+function buildDoNotRepeatActions(previousActions) {
+
+  const guardrails = [];
+
+ 
+
+  const hasReseat = previousActions.some(action =>
+
+    action.action.toLowerCase().includes("reseat")
+
+  );
+
+ 
+
+  if (hasReseat) {
+
+    guardrails.push({
+
+      action: "Do not repeat component reseat",
+
+      reason: "A reseat was already documented.",
+
+      exception:
+
+        "A technician may repeat the action if new evidence or procedure requirements justify it."
+
+    });
+
+  }
+
+ 
+
+  if (guardrails.length === 0) {
+
+    guardrails.push({
+
+      action: "No automatic repeat-action guardrail",
+
+      reason: "No repeated troubleshooting action has been documented.",
+
+      exception:
+
+        "Technician review remains required before any physical action."
+
+    });
+
+  }
+
+ 
+
+  return guardrails;
+
+}
+
+ 
+
+/* ================================================================
+
+   21. ROOT-CAUSE CANDIDATES
+
+   ---------------------------------------------------------------
+
+   These are prototype evidence scores.
+
+ 
+
+   They are not validated probabilities, production confidence,
+
+   or autonomous repair decisions.
+
+   ================================================================ */
+
+ 
+
+function buildRootCauseCandidates({
+
+  affectedComponent,
+
+  hasHmcFault,
+
+  hasPcieFault,
+
+  hasTesterFailure,
+
+  hasFirmwareFailure
+
+}) {
+
+  if (hasHmcFault) {
 
     return [
 
-      "Verify product configuration and expected PCIe topology.",
+      {
 
-      "Reseat the affected device.",
+        name: affectedComponent,
 
-      "Retest the unit.",
+        score: 94,
 
-      "If the failure remains, isolate the card and slot.",
+        reason: "Direct failure and correlated heartbeat / initialization signals."
 
-      "Escalate before replacement if the failure does not follow the component."
+      },
+
+      {
+
+        name: "HMC path",
+
+        score: 71,
+
+        reason: "HMC retry and initialization behavior correlate with the failure."
+
+      },
+
+      {
+
+        name: "Tester configuration",
+
+        score: 18,
+
+        reason: "No direct tester failure signal was identified."
+
+      },
+
+      {
+
+        name: "Firmware",
+
+        score: 9,
+
+        reason: "No direct firmware mismatch or incompatibility signal was identified."
+
+      }
 
     ];
 
   }
 
+ 
 
-  /* -----------------------------------------------
-     Firmware failure
-  ----------------------------------------------- */
-
-  if (data.hasFirmware) {
+  if (hasPcieFault) {
 
     return [
 
-      "Confirm the exact product model and configuration.",
+      {
 
-      "Compare installed versions with the approved firmware matrix.",
+        name: affectedComponent,
 
-      "Obtain authorization before any firmware action.",
+        score: 87,
 
-      "Retest after the approved action.",
+        reason: "Direct PCIe link or width-related failure evidence."
 
-      "Document the version and result."
+      },
+
+      {
+
+        name: "Slot or physical path",
+
+        score: 69,
+
+        reason: "The failure may involve seating, slot state, or path integrity."
+
+      },
+
+      {
+
+        name: "Tester configuration",
+
+        score: 22,
+
+        reason: "No direct tester execution failure was identified."
+
+      },
+
+      {
+
+        name: "Firmware",
+
+        score: 12,
+
+        reason: "No direct firmware conflict was identified."
+
+      }
 
     ];
 
   }
 
+ 
 
-  /* -----------------------------------------------
-     Tester failure
-  ----------------------------------------------- */
-
-  if (data.hasTester) {
+  if (hasTesterFailure) {
 
     return [
 
-      "Verify tester identity and operating status.",
+      {
 
-      "Check permissions, calibration, and test-script version.",
+        name: "Tester environment",
 
-      "Repeat the test using an approved tester if available.",
+        score: 81,
 
-      "Do not replace hardware until tester-related causes are excluded.",
+        reason: "Direct tester or execution failure evidence was identified."
 
-      "Escalate if the failure is not repeatable."
+      },
+
+      {
+
+        name: "Configuration",
+
+        score: 46,
+
+        reason: "Configuration may contribute to test execution behavior."
+
+      },
+
+      {
+
+        name: affectedComponent,
+
+        score: 24,
+
+        reason: "Hardware failure is not established by the current evidence."
+
+      },
+
+      {
+
+        name: "Firmware",
+
+        score: 10,
+
+        reason: "No direct firmware failure signal was identified."
+
+      }
 
     ];
 
   }
 
+ 
 
-  /* -----------------------------------------------
-     General HGX failure
-  ----------------------------------------------- */
+  if (hasFirmwareFailure) {
+
+    return [
+
+      {
+
+        name: "Firmware compatibility",
+
+        score: 78,
+
+        reason: "Direct firmware mismatch or compatibility evidence was identified."
+
+      },
+
+      {
+
+        name: "Configuration",
+
+        score: 41,
+
+        reason: "Configuration conflicts may contribute to the observed behavior."
+
+      },
+
+      {
+
+        name: affectedComponent,
+
+        score: 25,
+
+        reason: "Component failure is not established by current evidence."
+
+      },
+
+      {
+
+        name: "Tester environment",
+
+        score: 16,
+
+        reason: "No direct tester failure evidence was identified."
+
+      }
+
+    ];
+
+  }
+
+ 
 
   return [
 
-    "Review the complete failure log.",
+    {
 
-    "Confirm product identity and configuration.",
+      name: "Unresolved hardware or configuration issue",
 
-    "Use the approved repair guide.",
+      score: 62,
 
-    "Retest or isolate the suspected component.",
+      reason: "The available evidence does not establish a dominant cause."
 
-    "Escalate if the root cause remains uncertain."
+    },
+
+    {
+
+      name: "Tester environment",
+
+      score: 24,
+
+      reason: "Tester failure was not directly established."
+
+    },
+
+    {
+
+      name: "Firmware",
+
+      score: 14,
+
+      reason: "Firmware failure was not directly established."
+
+    },
+
+    {
+
+      name: "Unknown",
+
+      score: 8,
+
+      reason: "Additional evidence is required."
+
+    }
 
   ];
 
 }
 
+ 
 
-/* =========================================================
-   RESULT RENDERING
-========================================================= */
+/* ================================================================
 
-function renderAnalysis(
-  analysis
-) {
+   22. CONFIDENCE EXPLANATION
 
-  const resultPanel =
-    $("#result-panel");
+   ================================================================ */
 
+ 
 
-  if (!resultPanel) {
-    return;
-  }
+function buildConfidenceExplanation({
 
+  confidence,
 
-  setText(
-    "#case-id-label",
-    analysis.caseId
-  );
+  supportingEvidence,
 
+  contradictingEvidence,
 
-  const calculation =
+  affectedComponent,
 
-    analysis.adjustedValue !== null &&
-    analysis.failureLimit !== null &&
-    analysis.difference !== null
+  hasHmcFault,
 
-      ? `
+  hasPcieFault,
 
-        <div class="calculation-box">
+  hasTesterFailure,
 
-          <div class="label">
-            Decision calculation
-          </div>
+  hasFirmwareFailure
 
-          <code>
-            ${analysis.adjustedValue.toFixed(2)}
-            −
-            ${analysis.failureLimit.toFixed(2)}
-            =
-            ${analysis.difference.toFixed(2)}
-          </code>
+}) {
 
-        </div>
+  const primaryReason = hasHmcFault
 
-      `
+    ? `${affectedComponent} appears strongest because direct HMC failure, initialization, heartbeat, and retry signals correlate.`
 
-      : "";
+    : hasPcieFault
 
+      ? `${affectedComponent} appears strongest because direct PCIe link or width-related evidence was identified.`
 
-  const evidenceHtml =
-    analysis.evidence
-      .map(
-        item => `
+      : hasTesterFailure
 
-          <div class="evidence-item">
+        ? "Tester-related confidence increased because direct execution or calibration evidence was identified."
 
-            <span class="evidence-check">
-              ✓
-            </span>
+        : hasFirmwareFailure
 
-            <span>
-              ${escapeHtml(item)}
-            </span>
+          ? "Firmware-related confidence increased because direct compatibility or version evidence was identified."
 
-          </div>
+          : "Confidence remains limited because no dominant failure pattern was established.";
 
-        `
-      )
-      .join("");
+ 
 
-
-  const actionsHtml =
-    analysis.actions
-      .map(
-        (item, index) => `
-
-          <div class="action-item">
-
-            <span class="action-number">
-              ${index + 1}
-            </span>
-
-            <span>
-              ${escapeHtml(item)}
-            </span>
-
-          </div>
-
-        `
-      )
-      .join("");
-
-
-  resultPanel.innerHTML = `
-
-    <div class="result-content">
-
-      <div class="result-header">
-
-        <div>
-
-          <div class="eyebrow">
-            ${escapeHtml(
-              analysis.ruleId
-            )}
-          </div>
-
-          <h3>
-            ${escapeHtml(
-              analysis.title
-            )}
-          </h3>
-
-        </div>
-
-        <div class="confidence-box">
-
-          <strong>
-            0%
-          </strong>
-
-          <span>
-            Evidence score
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="result-summary">
-
-        <div class="label">
-          Primary suspected issue
-        </div>
-
-        <p>
-
-          ${escapeHtml(
-            analysis.category
-          )}
-
-          involving
-
-          <strong>
-            ${escapeHtml(
-              analysis.affectedComponent
-            )}
-          </strong>.
-
-          Recommended next step:
-
-          <strong>
-            ${escapeHtml(
-              analysis.actions[0] ||
-              analysis.recommendation
-            )}
-          </strong>
-
-        </p>
-
-      </div>
-
-
-      ${calculation}
-
-
-      <div class="subsection-title">
-        Supporting evidence
-      </div>
-
-      <div class="evidence-list">
-
-        ${evidenceHtml}
-
-      </div>
-
-
-      <div class="subsection-title">
-        Recommended repair path
-      </div>
-
-      <div class="action-list">
-
-        ${actionsHtml}
-
-      </div>
-
-
-      <!--
-        HARDWARE MAP
-
-        Provides a visual representation of the
-        8-GPU SXM topology and prioritizes the
-        affected component.
-      -->
-
-      ${renderGpuMap(
-        analysis.affectedComponent
-      )}
-
-
-      <!--
-        WORKFLOW TIMELINE
-
-        Shows the technician-oriented repair
-        decision sequence.
-      -->
-
-      ${renderWorkflow()}
-
-
-      <div class="approval-banner">
-
-        <div>
-          ⚠
-        </div>
-
-        <div>
-
-          <strong>
-            Human approval required
-          </strong>
-
-          <span>
-            RepairIQ provides a recommendation only.
-            A qualified technician or reviewer must
-            approve replacement, firmware action,
-            destructive testing, escalation, and
-            final disposition.
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="result-actions">
-
-        <button
-          class="primary-button"
-          id="accept-recommendation-button"
-        >
-          Review Recommendation
-        </button>
-
-
-        <button
-          class="secondary-button"
-          id="export-summary-button"
-        >
-          Export Report
-        </button>
-
-
-        <button
-          class="secondary-button"
-          id="export-json-button"
-        >
-          Export JSON
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
-
-
-  /*
-     Animate the evidence score after the result
-     has been inserted into the DOM.
-  */
-
-  animateConfidence(
-    analysis.confidence
-  );
-
-
-  addListener(
-    "#accept-recommendation-button",
-    "click",
-    openDecisionModal
-  );
-
-
-  addListener(
-    "#export-summary-button",
-    "click",
-    () => exportSummary(
-      analysis
-    )
-  );
-
-
-  addListener(
-    "#export-json-button",
-    "click",
-    () => exportJSON(
-      analysis
-    )
-  );
+  return `${primaryReason} The prototype score is ${confidence}% based on ${supportingEvidence.length} supporting signal(s) and ${contradictingEvidence.length} contradicting or limiting signal(s). This is not production-validated probability.`;
 
 }
 
+ 
 
-/* =========================================================
-   8-GPU HARDWARE MAP
-========================================================= */
+/* ================================================================
 
-function renderGpuMap(
-  affectedComponent
-) {
+   23. PARTS REQUEST MODEL
 
-  const gpuNumber =
-    String(
-      affectedComponent || ""
-    ).match(
-      /GPU(\d+)/i
-    );
+   ---------------------------------------------------------------
 
+   This does not order or reserve inventory.
 
-  const affected =
-    gpuNumber
-      ? Number(
-          gpuNumber[1]
-        )
-      : -1;
+ 
 
+   It prepares a structured planning record for future technician
 
-  const gpus =
-    Array.from(
-      { length: 8 },
-      (_, index) => {
+   approval and warehouse integration.
 
-        /*
-           For a detected GPU failure:
-           - affected GPU = FAIL
-           - other GPUs = PASS
+   ================================================================ */
 
-           GPU7 is only shown as WARN when there
-           is no specific affected GPU but the
-           demonstration topology still needs a
-           visual warning state.
-        */
+ 
 
-        const state =
-          index === affected
-            ? "fail"
-            : affected === -1 &&
-              index === 7
-              ? "warn"
-              : "pass";
+function buildPartsRequest({
 
+  affectedComponent,
 
-        const label =
-          state === "fail"
-            ? "FAIL"
-            : state === "warn"
-              ? "WARN"
-              : "PASS";
+  hasHmcFault,
 
+  hasPcieFault
 
-        return `
+}) {
 
-          <div
-            class="gpu-node ${state}"
-            title="GPU${index} ${label}"
-            aria-label="GPU${index} ${label}"
-          >
+  if (hasHmcFault) {
 
-            <span>
-              GPU${index}
-            </span>
+    return {
 
-            <small>
-              ${label}
-            </small>
+      required: true,
 
-          </div>
+      actionType: "GPU swap or approved isolation test",
 
-        `;
+      partNumber: "Pending technician selection",
 
-      }
-    )
-    .join("");
+      description: `Replacement candidate associated with ${affectedComponent}`,
 
+      quantity: 1,
 
-  return `
+      requestedBy: "",
 
-    <div class="hardware-map">
+      approvalStatus: "Not approved",
 
-      <div class="hardware-header">
+      warehouseStatus: "Not requested",
 
-        <div>
+      replacementSerialNumber: "Not assigned"
 
-          <div class="eyebrow">
-            SXM TOPOLOGY
-          </div>
-
-          <strong>
-            8-GPU Hardware Map
-          </strong>
-
-        </div>
-
-        <span>
-          ${escapeHtml(
-            affectedComponent
-          )}
-          prioritized
-        </span>
-
-      </div>
-
-
-      <div class="gpu-grid">
-
-        ${gpus}
-
-      </div>
-
-
-      <div class="hardware-legend">
-
-        <span>
-          <i class="pass-dot"></i>
-          PASS
-        </span>
-
-        <span>
-          <i class="warn-dot"></i>
-          WARN
-        </span>
-
-        <span>
-          <i class="fail-dot"></i>
-          PRIORITIZED
-        </span>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   WORKFLOW TIMELINE
-========================================================= */
-
-function renderWorkflow() {
-
-  return `
-
-    <div class="workflow-panel">
-
-      <div class="subsection-title">
-        Repair workflow
-      </div>
-
-
-      <div class="workflow">
-
-        <div class="workflow-step active">
-
-          <span>
-            01
-          </span>
-
-          <strong>
-            Detect
-          </strong>
-
-        </div>
-
-
-        <div class="workflow-line"></div>
-
-
-        <div class="workflow-step active">
-
-          <span>
-            02
-          </span>
-
-          <strong>
-            Prioritize
-          </strong>
-
-        </div>
-
-
-        <div class="workflow-line"></div>
-
-
-        <div class="workflow-step active">
-
-          <span>
-            03
-          </span>
-
-          <strong>
-            Isolate
-          </strong>
-
-        </div>
-
-
-        <div class="workflow-line"></div>
-
-
-        <div class="workflow-step active">
-
-          <span>
-            04
-          </span>
-
-          <strong>
-            Retest
-          </strong>
-
-        </div>
-
-
-        <div class="workflow-line"></div>
-
-
-        <div class="workflow-step pending">
-
-          <span>
-            05
-          </span>
-
-          <strong>
-            Decide
-          </strong>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   CONFIDENCE ANIMATION
-========================================================= */
-
-function animateConfidence(
-  target
-) {
-
-  const element =
-    document.querySelector(
-      ".confidence-box strong"
-    );
-
-
-  if (!element) {
-    return;
-  }
-
-
-  const safeTarget =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        Number(target) || 0
-      )
-    );
-
-
-  let current =
-    0;
-
-
-  const timer =
-    setInterval(
-      () => {
-
-        current += 2;
-
-
-        if (
-          current >= safeTarget
-        ) {
-
-          current =
-            safeTarget;
-
-          clearInterval(
-            timer
-          );
-
-        }
-
-
-        element.textContent =
-          `${current}%`;
-
-      },
-      18
-    );
-
-}
-
-
-/* =========================================================
-   CASE HISTORY
-========================================================= */
-
-function initializeCaseHistory() {
-
-  addListener(
-    "#case-search",
-    "input",
-    renderCases
-  );
-
-
-  addListener(
-    "#case-filter",
-    "change",
-    renderCases
-  );
-
-
-  addListener(
-    "#clear-cases-button",
-    "click",
-    () => {
-
-      const confirmed =
-        window.confirm(
-          "Clear locally stored prototype cases?"
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      localStorage.removeItem(
-        "repairiq-cases"
-      );
-
-
-      renderCases();
-
-      renderActivity();
-
-
-      showToast(
-        "Local case history cleared."
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   GET CASES
-========================================================= */
-
-function getCases() {
-
-  const stored =
-    localStorage.getItem(
-      "repairiq-cases"
-    );
-
-
-  if (!stored) {
-
-    return [
-      ...DEFAULT_CASES
-    ];
+    };
 
   }
 
+ 
 
-  try {
+  if (hasPcieFault) {
 
-    const parsed =
-      JSON.parse(
-        stored
-      );
+    return {
 
+      required: "Conditional",
 
-    /*
-       Validate that localStorage actually
-       contains an array before using it.
-    */
+      actionType: "Slot or component isolation",
 
-    if (
-      !Array.isArray(parsed)
-    ) {
+      partNumber: "Pending diagnostic outcome",
 
-      return [
-        ...DEFAULT_CASES
-      ];
+      description: "Part requirement depends on isolation result.",
 
-    }
+      quantity: 0,
 
+      requestedBy: "",
 
-    return parsed;
+      approvalStatus: "Not approved",
 
-  }
-  catch {
+      warehouseStatus: "Not requested",
 
-    return [
-      ...DEFAULT_CASES
-    ];
+      replacementSerialNumber: "Not assigned"
+
+    };
 
   }
 
-}
+ 
 
+  return {
 
-/* =========================================================
-   SAVE ANALYZED CASE
-========================================================= */
+    required: false,
 
-function saveAnalyzedCase(
-  status,
-  decisionNotes = ""
-) {
+    actionType: "No part recommendation yet",
 
-  if (!currentAnalysis) {
-    return;
-  }
+    partNumber: "Not applicable",
 
+    description: "No replacement part should be requested from current evidence.",
 
-  const cases =
-    getCases();
+    quantity: 0,
 
+    requestedBy: "",
 
-  const newCase = {
+    approvalStatus: "Not applicable",
 
-    id:
-      currentAnalysis.caseId,
+    warehouseStatus: "Not applicable",
 
-
-    product:
-      currentAnalysis.product,
-
-
-    issue:
-      currentAnalysis.title,
-
-
-    component:
-      currentAnalysis.affectedComponent,
-
-
-    recommendation:
-      currentAnalysis.actions[0] ||
-      currentAnalysis.recommendation,
-
-
-    status,
-
-
-    decisionNotes,
-
-
-    timestamp:
-      "Just now"
+    replacementSerialNumber: "Not applicable"
 
   };
 
+}
 
-  cases.unshift(
-    newCase
+ 
+
+/* ================================================================
+
+   24. RETEST REQUIREMENT
+
+   ================================================================ */
+
+ 
+
+function buildRetestRequirement({
+
+  hasHmcFault,
+
+  hasPcieFault,
+
+  hasTesterFailure,
+
+  hasFirmwareFailure,
+
+  failureStage
+
+}) {
+
+  let stage = failureStage;
+
+  let expectedResult = "Required stage passes without recurrence.";
+
+ 
+
+  if (hasHmcFault) {
+
+    stage = "INIT / HMC BIST";
+
+    expectedResult = "HMC initialization and affected GPU heartbeat pass.";
+
+  } else if (hasPcieFault) {
+
+    stage = "FLT";
+
+    expectedResult = "PCIe link and width checks pass.";
+
+  } else if (hasTesterFailure) {
+
+    stage = "Approved test execution";
+
+    expectedResult = "Test completes on a validated tester.";
+
+  } else if (hasFirmwareFailure) {
+
+    stage = "Firmware validation and affected test stage";
+
+    expectedResult = "Approved firmware compatibility is confirmed.";
+
+  }
+
+ 
+
+  return {
+
+    required: true,
+
+    stage,
+
+    expectedResult,
+
+    result: "NOT RUN",
+
+    status: "NOT READY",
+
+    message:
+
+      "A diagnostic recommendation cannot be considered verified until the required retest is documented."
+
+  };
+
+}
+
+ 
+
+/* ================================================================
+
+   25. SHIFT HANDOFF
+
+   ---------------------------------------------------------------
+
+   This replaces ambiguous handwritten handoff notes with a
+
+   structured summary that future shifts can review.
+
+   ================================================================ */
+
+ 
+
+function buildShiftHandoff({
+
+  affectedComponent,
+
+  title,
+
+  recommendation,
+
+  previousActions,
+
+  doNotRepeat,
+
+  partsRequest,
+
+  retest
+
+}) {
+
+  return {
+
+    currentStatus: "Diagnosis ready - technician review required",
+
+ 
+
+    whatHasBeenDone: previousActions.map(action =>
+
+      `${action.action}: ${action.result}`
+
+    ),
+
+ 
+
+    doNotRepeat: doNotRepeat.map(item =>
+
+      item.action
+
+    ),
+
+ 
+
+    nextRequiredAction: recommendation,
+
+ 
+
+    partsStatus: partsRequest.warehouseStatus,
+
+ 
+
+    retestRequirement:
+
+      `${retest.stage}: ${retest.expectedResult}`,
+
+ 
+
+    notes:
+
+      `${title} involving ${affectedComponent}. ` +
+
+      "This handoff is generated from prototype evidence and must be reviewed by the next technician."
+
+  };
+
+}
+
+ 
+
+/* ================================================================
+
+   26. STRUCTURED DIAGNOSTIC RENDERER
+
+   ---------------------------------------------------------------
+
+   This function reveals the existing structured result contract
+
+   and populates its stable fields.
+
+ 
+
+   It does not replace #result-panel.innerHTML.
+
+   ================================================================ */
+
+ 
+
+function renderAnalysis(analysis) {
+
+  if (!analysis) {
+
+    return;
+
+  }
+
+ 
+
+  state.currentAnalysis = analysis;
+
+ 
+
+  const resultPanel = $("#result-panel");
+
+  const emptyResult = $("#empty-diagnostic-result");
+
+  const structuredResult = $("#structured-diagnostic-result");
+
+ 
+
+  if (resultPanel) {
+
+    resultPanel.dataset.resultState = "ready";
+
+    resultPanel.dataset.dataSource = "demo";
+
+  }
+
+ 
+
+  if (emptyResult) {
+
+    emptyResult.hidden = true;
+
+  }
+
+ 
+
+  if (structuredResult) {
+
+    structuredResult.hidden = false;
+
+    structuredResult.dataset.resultState = "ready";
+
+    structuredResult.dataset.dataSource = "demo";
+
+  }
+
+ 
+
+  setText("#case-id-label", analysis.caseId);
+
+ 
+
+  updateActiveCaseContext(analysis);
+
+  renderResultHeader(analysis);
+
+  renderActiveCaseSection(analysis);
+
+  renderUnitIdentity(analysis);
+
+  renderTestStages(analysis);
+
+  renderPrimaryFinding(analysis);
+
+  renderAffectedComponent(analysis);
+
+  renderRootCauseCandidates(analysis);
+
+  renderSupportingEvidence(analysis);
+
+  renderContradictingEvidence(analysis);
+
+  renderPreviousActions(analysis);
+
+  renderDoNotRepeat(analysis);
+
+  renderConfidence(analysis);
+
+  renderNextAction(analysis);
+
+  renderTechnicianApproval(analysis);
+
+  renderRetestRequirement(analysis);
+
+  renderDataDisclosure(analysis);
+
+  renderResultActions(analysis);
+
+ 
+
+  updateSelectedComponent(analysis.affectedComponent);
+
+ 
+
+  updateTopologyFromAnalysis(analysis);
+
+ 
+
+  animateConfidence(analysis.confidence);
+
+}
+
+ 
+
+/* ================================================================
+
+   27. ACTIVE CASE CONTEXT RENDERING
+
+   ================================================================ */
+
+ 
+
+function createInitialCaseContext() {
+
+  return {
+
+    caseId: "CASE-NEW",
+
+    caseState: "NEW",
+
+    travelerId: "TRAVELER-NEW",
+
+    technician: getInputValue("#technician-name") || "Repair Technician",
+
+    tester: getInputValue("#tester-name") || "SXM-TESTER-04",
+
+    product: getInputValue("#product-model") || "H200 / SXM",
+
+    failure: {
+
+      failureStage: "Awaiting analysis"
+
+    },
+
+    unit: {
+
+      unitSerialNumber: "DEMO-UNIT-0001",
+
+      systemSerialNumber: "DEMO-SYSTEM-0001",
+
+      platform: "H200 / SXM"
+
+    },
+
+    dataSource: "Prototype / Demonstration Data"
+
+  };
+
+}
+
+ 
+
+function updateActiveCaseContext(analysis) {
+
+  if (!analysis) {
+
+    return;
+
+  }
+
+ 
+
+  setText("#active-case-id", analysis.caseId || "CASE-NEW");
+
+  setText(
+
+    "#active-case-state",
+
+    analysis.caseState || "NEW"
+
   );
 
+ 
+
+  setText(
+
+    "#active-unit-serial",
+
+    analysis.unit?.unitSerialNumber || "Not supplied"
+
+  );
+
+ 
+
+  setText(
+
+    "#active-system-serial",
+
+    analysis.unit?.systemSerialNumber || "Not supplied"
+
+  );
+
+ 
+
+  setText(
+
+    "#active-platform",
+
+    analysis.unit?.platform || analysis.product || "Not supplied"
+
+  );
+
+ 
+
+  setText(
+
+    "#active-failure-stage",
+
+    analysis.failure?.failureStage || "Awaiting analysis"
+
+  );
+
+ 
+
+  setText(
+
+    "#active-tester",
+
+    analysis.tester || "Not identified"
+
+  );
+
+ 
+
+  setText(
+
+    "#active-technician",
+
+    analysis.technician || "Not identified"
+
+  );
+
+ 
+
+  const context = $("#active-case-context");
+
+ 
+
+  if (context) {
+
+    context.dataset.caseState = analysis.caseState || "NEW";
+
+    context.dataset.dataSource = "demo";
+
+  }
+
+ 
+
+  updateDataSourceLabels(analysis.dataSource);
+
+}
+
+ 
+
+function updateDataSourceLabels(label) {
+
+  const safeLabel = label || "Prototype / Demonstration Data";
+
+ 
+
+  setText("#active-case-data-status strong", safeLabel);
+
+  setText("#diagnostic-result-data-label", safeLabel);
+
+  setText("#diagnostic-data-source", safeLabel);
+
+}
+
+ 
+
+/* ================================================================
+
+   28. RESULT HEADER
+
+   ================================================================ */
+
+ 
+
+function renderResultHeader(analysis) {
+
+  setText("#root-cause-command-heading", analysis.title);
+
+  setText(
+
+    "#diagnostic-result-summary",
+
+    `${analysis.category} involving ${analysis.affectedComponent}.`
+
+  );
+
+ 
+
+  setText("#diagnostic-result-status", "DIAGNOSIS READY");
+
+  setText("#diagnostic-result-data-label", "PROTOTYPE / DEMONSTRATION DATA");
+
+}
+
+ 
+
+/* ================================================================
+
+   29. ACTIVE CASE RESULT SECTION
+
+   ================================================================ */
+
+ 
+
+function renderActiveCaseSection(analysis) {
+
+  setText("#diagnostic-case-id", analysis.caseId);
+
+  setText("#diagnostic-case-state", analysis.caseState);
+
+  setText("#diagnostic-department", analysis.unit.department);
+
+  setText("#diagnostic-technician", analysis.technician);
+
+  setText("#diagnostic-tester", analysis.tester);
+
+}
+
+ 
+
+/* ================================================================
+
+   30. UNIT IDENTITY RENDERING
+
+   ================================================================ */
+
+ 
+
+function renderUnitIdentity(analysis) {
+
+  const unit = analysis.unit;
+
+ 
+
+  setText("#diagnostic-unit-serial", unit.unitSerialNumber);
+
+  setText("#diagnostic-system-serial", unit.systemSerialNumber);
+
+  setText("#diagnostic-part-number", unit.partNumber);
+
+  setText("#diagnostic-platform", unit.platform);
+
+  setText("#diagnostic-build", unit.build);
+
+  setText("#diagnostic-board-revision", unit.boardRevision);
+
+  setText("#unit-identity-data-state", "DEMO RECORD");
+
+}
+
+ 
+
+/* ================================================================
+
+   31. TEST-STAGE RENDERING
+
+   ================================================================ */
+
+ 
+
+function renderTestStages(analysis) {
+
+  const stages = analysis.testSession?.stages || {};
+
+ 
+
+  setText(
+
+    "#diagnostic-failure-stage",
+
+    analysis.failure?.failureStage || "Awaiting analysis"
+
+  );
+
+ 
+
+  Object.entries(stages).forEach(([stage, result]) => {
+
+    const stageId = stage.toLowerCase();
+
+ 
+
+    setText(`#test-stage-${stageId}`, result);
+
+ 
+
+    const stageElement = $(
+
+      `.test-stage-item[data-stage="${stage}"]`
+
+    );
+
+ 
+
+    if (stageElement) {
+
+      stageElement.dataset.result = result.toLowerCase();
+
+ 
+
+      stageElement.classList.remove(
+
+        "pass",
+
+        "fail",
+
+        "warning",
+
+        "not-run",
+
+        "unknown"
+
+      );
+
+ 
+
+      if (result === "PASS") {
+
+        stageElement.classList.add("pass");
+
+      } else if (result === "FAIL") {
+
+        stageElement.classList.add("fail");
+
+      } else if (result === "WARN") {
+
+        stageElement.classList.add("warning");
+
+      } else if (result === "NOT RUN") {
+
+        stageElement.classList.add("not-run");
+
+      } else {
+
+        stageElement.classList.add("unknown");
+
+      }
+
+    }
+
+  });
+
+}
+
+ 
+
+/* ================================================================
+
+   32. PRIMARY FINDING
+
+   ================================================================ */
+
+ 
+
+function renderPrimaryFinding(analysis) {
+
+  setText("#primary-finding-title", analysis.title);
+
+  setText(
+
+    "#primary-finding-explanation",
+
+    `${analysis.category}. ${analysis.confidenceExplanation}`
+
+  );
+
+ 
+
+  setText(
+
+    "#primary-finding-severity",
+
+    analysis.severity || "REVIEW"
+
+  );
+
+ 
+
+  const severityElement = $("#primary-finding-severity");
+
+ 
+
+  if (severityElement) {
+
+    severityElement.className = "status-pill";
+
+    severityElement.classList.add(
+
+      analysis.severity === "CRITICAL"
+
+        ? "critical"
+
+        : analysis.severity === "WARNING"
+
+          ? "warning"
+
+          : "neutral"
+
+    );
+
+  }
+
+}
+
+ 
+
+/* ================================================================
+
+   33. AFFECTED COMPONENT
+
+   ================================================================ */
+
+ 
+
+function renderAffectedComponent(analysis) {
+
+  setText(
+
+    "#affected-component-name",
+
+    analysis.affectedComponent
+
+  );
+
+ 
+
+  setText(
+
+    "#affected-component-part-number",
+
+    `Part number: ${analysis.unit.partNumber}`
+
+  );
+
+ 
+
+  setText(
+
+    "#affected-component-serial",
+
+    `Serial number: ${analysis.unit.unitSerialNumber}`
+
+  );
+
+ 
+
+  setText("#affected-component-status", "HIGHEST-CORRELATED CANDIDATE");
+
+ 
+
+  const historyButton = $("#view-component-history-button");
+
+ 
+
+  if (historyButton) {
+
+    historyButton.disabled = false;
+
+    historyButton.dataset.component = analysis.affectedComponent;
+
+  }
+
+}
+
+ 
+
+/* ================================================================
+
+   34. ROOT-CAUSE CANDIDATES
+
+   ================================================================ */
+
+ 
+
+function renderRootCauseCandidates(analysis) {
+
+  const list = $("#root-cause-candidate-list");
+
+ 
+
+  if (!list) {
+
+    return;
+
+  }
+
+ 
+
+  const candidates = safeArray(
+
+    analysis.reasoning?.candidates
+
+  );
+
+ 
+
+  list.innerHTML = candidates
+
+    .map((candidate, index) => `
+
+      <li
+
+        class="root-cause-candidate"
+
+        data-candidate-rank="${index + 1}"
+
+        data-candidate-id="candidate-${index + 1}"
+
+      >
+
+        <span class="candidate-rank">
+
+          ${index + 1}
+
+        </span>
+
+ 
+
+        <div class="candidate-copy">
+
+          <strong data-field="candidateName">
+
+            ${escapeHtml(candidate.name)}
+
+          </strong>
+
+ 
+
+          <span data-field="candidateReason">
+
+            ${escapeHtml(candidate.reason)}
+
+          </span>
+
+        </div>
+
+ 
+
+        <strong
+
+          class="candidate-score"
+
+          data-field="candidateScore"
+
+        >
+
+          ${escapeHtml(candidate.score)}%
+
+        </strong>
+
+      </li>
+
+    `)
+
+    .join("");
+
+ 
+
+  setText("#root-cause-score-label", "PROTOTYPE SCORES");
+
+}
+
+ 
+
+/* ================================================================
+
+   35. SUPPORTING EVIDENCE
+
+   ================================================================ */
+
+ 
+
+function renderSupportingEvidence(analysis) {
+
+  const list = $("#supporting-evidence-list");
+
+  const count = $("#supporting-evidence-count");
+
+ 
+
+  const evidence = safeArray(
+
+    analysis.evidence?.supporting
+
+  );
+
+ 
+
+  if (count) {
+
+    count.textContent = `${evidence.length} signal${evidence.length === 1 ? "" : "s"}`;
+
+  }
+
+ 
+
+  if (!list) {
+
+    return;
+
+  }
+
+ 
+
+  if (!evidence.length) {
+
+    list.innerHTML = `
+
+      <li class="evidence-item empty-evidence">
+
+        <span class="evidence-icon" aria-hidden="true">—</span>
+
+        <span>No supporting evidence has been extracted.</span>
+
+      </li>
+
+    `;
+
+ 
+
+    return;
+
+  }
+
+ 
+
+  list.innerHTML = evidence
+
+    .map(item => `
+
+      <li class="evidence-item">
+
+        <span class="evidence-icon" aria-hidden="true">✓</span>
+
+        <span>
+
+          <strong>${escapeHtml(item.category)}</strong>
+
+          ${escapeHtml(item.text)}
+
+        </span>
+
+      </li>
+
+    `)
+
+    .join("");
+
+}
+
+ 
+
+/* ================================================================
+
+   36. CONTRADICTING EVIDENCE
+
+   ================================================================ */
+
+ 
+
+function renderContradictingEvidence(analysis) {
+
+  const list = $("#contradicting-evidence-list");
+
+  const count = $("#contradicting-evidence-count");
+
+ 
+
+  const evidence = safeArray(
+
+    analysis.evidence?.contradicting
+
+  );
+
+ 
+
+  if (count) {
+
+    count.textContent = `${evidence.length} signal${evidence.length === 1 ? "" : "s"}`;
+
+  }
+
+ 
+
+  if (!list) {
+
+    return;
+
+  }
+
+ 
+
+  if (!evidence.length) {
+
+    list.innerHTML = `
+
+      <li class="evidence-item empty-evidence">
+
+        <span class="evidence-icon" aria-hidden="true">—</span>
+
+        <span>No contradicting signals have been identified.</span>
+
+      </li>
+
+    `;
+
+ 
+
+    return;
+
+  }
+
+ 
+
+  list.innerHTML = evidence
+
+    .map(item => `
+
+      <li class="evidence-item">
+
+        <span class="evidence-icon" aria-hidden="true">−</span>
+
+        <span>
+
+          <strong>${escapeHtml(item.category)}</strong>
+
+          ${escapeHtml(item.text)}
+
+        </span>
+
+      </li>
+
+    `)
+
+    .join("");
+
+}
+
+ 
+
+/* ================================================================
+
+   37. PREVIOUS ACTIONS
+
+   ================================================================ */
+
+ 
+
+function renderPreviousActions(analysis) {
+
+  const list = $("#previous-actions-list");
+
+  const count = $("#previous-actions-count");
+
+ 
+
+  const actions = safeArray(
+
+    analysis.history?.previousActions
+
+  );
+
+ 
+
+  if (count) {
+
+    count.textContent = `${actions.length} action${actions.length === 1 ? "" : "s"}`;
+
+  }
+
+ 
+
+  if (!list) {
+
+    return;
+
+  }
+
+ 
+
+  if (!actions.length) {
+
+    list.innerHTML = `
+
+      <li class="action-history-item empty-history">
+
+        <span class="action-marker" aria-hidden="true">—</span>
+
+        <div>
+
+          <strong>No documented actions</strong>
+
+          <span>Repair history has not been supplied.</span>
+
+        </div>
+
+      </li>
+
+    `;
+
+ 
+
+    return;
+
+  }
+
+ 
+
+  list.innerHTML = actions
+
+    .map(action => `
+
+      <li class="action-history-item">
+
+        <span class="action-marker" aria-hidden="true">✓</span>
+
+        <div>
+
+          <strong>${escapeHtml(action.action)}</strong>
+
+          <span>${escapeHtml(action.details)}</span>
+
+          <small>
+
+            ${escapeHtml(action.result)} · ${escapeHtml(action.timestamp)}
+
+          </small>
+
+        </div>
+
+      </li>
+
+    `)
+
+    .join("");
+
+}
+
+ 
+
+/* ================================================================
+
+   38. DO-NOT-REPEAT GUARDRAILS
+
+   ================================================================ */
+
+ 
+
+function renderDoNotRepeat(analysis) {
+
+  const list = $("#do-not-repeat-list");
+
+  const count = $("#do-not-repeat-count");
+
+ 
+
+  const guardrails = safeArray(
+
+    analysis.history?.doNotRepeat
+
+  );
+
+ 
+
+  if (count) {
+
+    count.textContent = `${guardrails.length} action${guardrails.length === 1 ? "" : "s"}`;
+
+  }
+
+ 
+
+  if (!list) {
+
+    return;
+
+  }
+
+ 
+
+  list.innerHTML = guardrails
+
+    .map(item => `
+
+      <li class="guardrail-item">
+
+        <span class="guardrail-icon" aria-hidden="true">!</span>
+
+        <span>
+
+          <strong>${escapeHtml(item.action)}</strong>
+
+          ${escapeHtml(item.reason)}
+
+        </span>
+
+      </li>
+
+    `)
+
+    .join("");
+
+}
+
+ 
+
+/* ================================================================
+
+   39. CONFIDENCE RENDERING
+
+   ================================================================ */
+
+ 
+
+function renderConfidence(analysis) {
+
+  const confidence = clamp(
+
+    Number(analysis.confidence) || 0,
+
+    0,
+
+    100
+
+  );
+
+ 
+
+  setText("#diagnostic-confidence-value", `${confidence}%`);
+
+ 
+
+  setText(
+
+    "#diagnostic-confidence-explanation",
+
+    analysis.confidenceExplanation
+
+  );
+
+ 
+
+  const progress = $("#diagnostic-confidence-progress");
+
+ 
+
+  if (progress) {
+
+    progress.style.width = `${confidence}%`;
+
+    progress.setAttribute("aria-valuenow", String(confidence));
+
+    progress.setAttribute(
+
+      "aria-label",
+
+      `Diagnostic confidence ${confidence} percent`
+
+    );
+
+  }
+
+}
+
+ 
+
+function animateConfidence(target) {
+
+  const progress = $("#diagnostic-confidence-progress");
+
+  const value = $("#diagnostic-confidence-value");
+
+ 
+
+  if (!progress || !value) {
+
+    return;
+
+  }
+
+ 
+
+  window.clearInterval(state.confidenceTimer);
+
+ 
+
+  const safeTarget = clamp(Number(target) || 0, 0, 100);
+
+  let current = 0;
+
+ 
+
+  progress.style.width = "0%";
+
+  progress.setAttribute("aria-valuenow", "0");
+
+  value.textContent = "0%";
+
+ 
+
+  state.confidenceTimer = window.setInterval(() => {
+
+    current += 2;
+
+ 
+
+    if (current >= safeTarget) {
+
+      current = safeTarget;
+
+      window.clearInterval(state.confidenceTimer);
+
+    }
+
+ 
+
+    progress.style.width = `${current}%`;
+
+    progress.setAttribute("aria-valuenow", String(current));
+
+    value.textContent = `${current}%`;
+
+  }, 14);
+
+}
+
+ 
+
+/* ================================================================
+
+   40. NEXT ACTION
+
+   ================================================================ */
+
+ 
+
+function renderNextAction(analysis) {
+
+  setText(
+
+    "#next-action-title",
+
+    analysis.recommendation
+
+  );
+
+ 
+
+  setText(
+
+    "#next-action-explanation",
+
+    `${analysis.actionType}. ${analysis.confidenceExplanation}`
+
+  );
+
+ 
+
+  setText(
+
+    "#next-action-status",
+
+    "TECHNICIAN REVIEW REQUIRED"
+
+  );
+
+}
+
+ 
+
+/* ================================================================
+
+   41. TECHNICIAN APPROVAL
+
+   ---------------------------------------------------------------
+
+   The buttons are enabled only after a diagnostic result exists.
+
+ 
+
+   Approval does not execute hardware work.
+
+ 
+
+   It records the technician's decision in local prototype history.
+
+   ================================================================ */
+
+ 
+
+function renderTechnicianApproval(analysis) {
+
+  setText(
+
+    "#technician-approval-status",
+
+    "PENDING REVIEW"
+
+  );
+
+ 
+
+  setText(
+
+    "#technician-approval-message",
+
+    "RepairIQ recommends a controlled diagnostic action. A qualified technician must review and approve the action before physical work or parts movement."
+
+  );
+
+ 
+
+  const approveButton = $("#approve-diagnostic-recommendation-button");
+
+  const rejectButton = $("#reject-diagnostic-recommendation-button");
+
+ 
+
+  if (approveButton) {
+
+    approveButton.disabled = false;
+
+  }
+
+ 
+
+  if (rejectButton) {
+
+    rejectButton.disabled = false;
+
+  }
+
+}
+
+ 
+
+/* ================================================================
+
+   42. RETEST REQUIREMENT
+
+   ================================================================ */
+
+ 
+
+function renderRetestRequirement(analysis) {
+
+  const retest = analysis.retest || {};
+
+ 
+
+  setText("#retest-status", retest.status || "NOT READY");
+
+  setText("#retest-stage", retest.stage || "Not defined");
+
+  setText(
+
+    "#retest-condition",
+
+    retest.expectedResult || "Not defined"
+
+  );
+
+  setText("#retest-result", retest.result || "NOT RUN");
+
+  setText("#retest-requirement-message", retest.message);
+
+}
+
+ 
+
+/* ================================================================
+
+   43. DATA DISCLOSURE
+
+   ================================================================ */
+
+ 
+
+function renderDataDisclosure(analysis) {
+
+  setText(
+
+    "#diagnostic-data-source",
+
+    analysis.dataSource || "Offline demo"
+
+  );
+
+ 
+
+  setText(
+
+    "#diagnostic-intelligence-state",
+
+    "Simulated prototype logic"
+
+  );
+
+ 
+
+  setText(
+
+    "#diagnostic-data-disclosure-message",
+
+    "This diagnostic result is illustrative unless connected to verified logs, test-session records, component history, firmware records, and approved production data sources."
+
+  );
+
+}
+
+ 
+
+/* ================================================================
+
+   44. RESULT ACTIONS
+
+   ---------------------------------------------------------------
+
+   The upgraded HTML does not contain the old dynamic result
+
+   buttons. They are mounted safely into the provided extension
+
+   point #diagnostic-extension-mount.
+
+   ================================================================ */
+
+ 
+
+function renderResultActions(analysis) {
+
+  const mount = $("#diagnostic-extension-mount");
+
+ 
+
+  if (!mount) {
+
+    return;
+
+  }
+
+ 
+
+  mount.innerHTML = `
+
+    <div class="result-actions">
+
+      <button
+
+        class="primary-button"
+
+        id="export-summary-button"
+
+        type="button"
+
+      >
+
+        Export Repair Summary
+
+      </button>
+
+ 
+
+      <button
+
+        class="secondary-button"
+
+        id="export-json-button"
+
+        type="button"
+
+      >
+
+        Export Case JSON
+
+      </button>
+
+ 
+
+      <button
+
+        class="secondary-button"
+
+        id="open-diagnostic-details-button"
+
+        type="button"
+
+      >
+
+        Review Diagnostic Details
+
+      </button>
+
+    </div>
+
+  `;
+
+ 
+
+  addListener("#export-summary-button", "click", () => {
+
+    exportSummary(analysis);
+
+  });
+
+ 
+
+  addListener("#export-json-button", "click", () => {
+
+    exportJson(analysis);
+
+  });
+
+ 
+
+  addListener(
+
+    "#open-diagnostic-details-button",
+
+    "click",
+
+    () => {
+
+      openDiagnosticModal(analysis);
+
+    }
+
+  );
+
+}
+
+ 
+
+/* ================================================================
+
+   45. GPU TOPOLOGY
+
+   ---------------------------------------------------------------
+
+   This implementation matches the current HTML topology:
+
+ 
+
+   #gpu-topology
+
+   .gpu-node
+
+   data-gpu-id
+
+   #topology-selection
+
+ 
+
+   It no longer depends on obsolete:
+
+ 
+
+   .hardware-svg
+
+   .visualizer-tab
+
+   .browser-component
+
+   data-svg-component
+
+   ================================================================ */
+
+ 
+
+function initializeTopology() {
+
+  addListeners("#gpu-topology .gpu-node", "click", event => {
+
+    const component = event.currentTarget.dataset.gpuId;
+
+ 
+
+    if (component) {
+
+      updateSelectedComponent(component);
+
+    }
+
+  });
+
+ 
+
+  addListener(
+
+    "#view-component-history-button",
+
+    "click",
+
+    event => {
+
+      const component =
+
+        event.currentTarget.dataset.component ||
+
+        state.activeComponent;
+
+ 
+
+      openComponentHistoryModal(component);
+
+    }
+
+  );
+
+}
+
+ 
+
+function updateSelectedComponent(component) {
+
+  if (!component) {
+
+    return;
+
+  }
+
+ 
+
+  state.activeComponent = component;
+
+ 
+
+  $$("#gpu-topology .gpu-node").forEach(node => {
+
+    const isSelected = node.dataset.gpuId === component;
+
+ 
+
+    node.classList.toggle("selected", isSelected);
+
+    node.setAttribute("aria-pressed", String(isSelected));
+
+  });
+
+ 
+
+  const analysis = state.currentAnalysis;
+
+ 
+
+  const isAffected =
+
+    analysis &&
+
+    analysis.affectedComponent === component;
+
+ 
+
+  const statusText = isAffected
+
+    ? `${component} selected · Highest-correlated candidate · Technician review required.`
+
+    : `${component} selected · Review current case evidence before action.`;
+
+ 
+
+  setText("#topology-selection", statusText);
+
+ 
+
+  updateTopologyNodeLabels(component);
+
+}
+
+ 
+
+function updateTopologyNodeLabels(selectedComponent) {
+
+  $$("#gpu-topology .gpu-node").forEach(node => {
+
+    const component = node.dataset.gpuId;
+
+ 
+
+    const health = node.querySelector(".gpu-health");
+
+    const load = node.querySelector(".gpu-load");
+
+ 
+
+    if (!health || !load) {
+
+      return;
+
+    }
+
+ 
+
+    const isAffected =
+
+      state.currentAnalysis &&
+
+      state.currentAnalysis.affectedComponent === component;
+
+ 
+
+    const isSelected = selectedComponent === component;
+
+ 
+
+    node.classList.remove("critical", "warning", "healthy");
+
+ 
+
+    if (isAffected) {
+
+      node.classList.add("critical");
+
+      health.textContent = "● CRITICAL";
+
+      load.textContent = "REVIEW REQUIRED";
+
+    } else if (component === "GPU7" && !state.currentAnalysis) {
+
+      node.classList.add("warning");
+
+      health.textContent = "● WARNING";
+
+      load.textContent = "REVIEW REQUIRED";
+
+    } else {
+
+      node.classList.add("healthy");
+
+      health.textContent = "● HEALTHY";
+
+      load.textContent = isSelected
+
+        ? "SELECTED"
+
+        : "AVAILABLE";
+
+    }
+
+  });
+
+}
+
+ 
+
+function updateTopologyFromAnalysis(analysis) {
+
+  if (!analysis) {
+
+    return;
+
+  }
+
+ 
+
+  const affectedComponent = analysis.affectedComponent;
+
+ 
+
+  updateSelectedComponent(affectedComponent);
+
+ 
+
+  const affectedMatch = affectedComponent.match(/GPU(\d+)/i);
+
+ 
+
+  if (affectedMatch) {
+
+    const affectedGpu = `GPU${affectedMatch[1]}`;
+
+ 
+
+    setText(
+
+      "#topology-selection",
+
+      `${affectedGpu} selected · ${analysis.title} · Technician review required.`
+
+    );
+
+  }
+
+ 
+
+  updateTopologyCounts();
+
+}
+
+ 
+
+function updateTopologyCounts() {
+
+  const nodes = $$("#gpu-topology .gpu-node");
+
+ 
+
+  const criticalCount = nodes.filter(node =>
+
+    node.classList.contains("critical")
+
+  ).length;
+
+ 
+
+  const attentionCount = nodes.filter(node =>
+
+    node.classList.contains("critical") ||
+
+    node.classList.contains("warning")
+
+  ).length;
+
+ 
+
+  const healthyCount = nodes.filter(node =>
+
+    node.classList.contains("healthy")
+
+  ).length;
+
+ 
+
+  setText("#topology-healthy-count", String(healthyCount));
+
+  setText(
+
+    "#topology-attention-count",
+
+    String(attentionCount)
+
+  );
+
+ 
+
+  setText("#critical-gpu-count", String(criticalCount));
+
+}
+
+ 
+
+/* ================================================================
+
+   46. CASE HISTORY
+
+   --------------------------------------------------------------- */
+
+ 
+
+function initializeCaseHistory() {
+
+  addListener("#case-search", "input", renderCases);
+
+  addListener("#case-filter", "change", renderCases);
+
+ 
+
+  addListener("#clear-cases-button", () => {
+
+    const confirmed = window.confirm(
+
+      "Clear locally stored prototype cases?"
+
+    );
+
+ 
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+ 
+
+    localStorage.removeItem("repairiq-cases");
+
+ 
+
+    renderCases();
+
+    renderActivity();
+
+ 
+
+    showToast("Local case history cleared.");
+
+  });
+
+}
+
+ 
+
+function getCases() {
+
+  const stored = localStorage.getItem("repairiq-cases");
+
+ 
+
+  if (!stored) {
+
+    return [...DEFAULT_CASES];
+
+  }
+
+ 
+
+  try {
+
+    const parsed = JSON.parse(stored);
+
+ 
+
+    return Array.isArray(parsed)
+
+      ? parsed
+
+      : [...DEFAULT_CASES];
+
+  } catch {
+
+    return [...DEFAULT_CASES];
+
+  }
+
+}
+
+ 
+
+function saveAnalyzedCase(status, decisionNotes = "") {
+
+  if (!state.currentAnalysis) {
+
+    return;
+
+  }
+
+ 
+
+  const analysis = state.currentAnalysis;
+
+  const cases = getCases();
+
+ 
+
+  const record = {
+
+    id: analysis.caseId,
+
+    travelerId: analysis.travelerId,
+
+    product: analysis.product,
+
+    issue: analysis.title,
+
+    component: analysis.affectedComponent,
+
+    recommendation: analysis.recommendation,
+
+    status,
+
+    decisionNotes,
+
+    timestamp: "Just now",
+
+ 
+
+    dataSource: analysis.dataSource,
+
+    failureStage: analysis.failure.failureStage,
+
+    errorCode: analysis.failure.errorCode,
+
+ 
+
+    mpPartNumber: analysis.unit.mpPartNumber,
+
+    mpSerialNumber: analysis.unit.mpSerialNumber,
+
+    pcbPartNumber: analysis.unit.pcbPartNumber,
+
+    pcbSerialNumber: analysis.unit.pcbSerialNumber,
+
+ 
+
+    partsStatus: analysis.partsRequest.warehouseStatus,
+
+    retestResult: analysis.retest.result
+
+  };
+
+ 
+
+  const withoutDuplicate = cases.filter(
+
+    item => item.id !== record.id
+
+  );
+
+ 
+
+  withoutDuplicate.unshift(record);
+
+ 
 
   localStorage.setItem(
+
     "repairiq-cases",
-    JSON.stringify(
-      cases.slice(
-        0,
-        40
-      )
-    )
+
+    JSON.stringify(withoutDuplicate.slice(0, 40))
+
   );
 
+ 
 
   renderCases();
 
@@ -2170,206 +5680,191 @@ function saveAnalyzedCase(
 
 }
 
-
-/* =========================================================
-   RENDER CASE HISTORY
-========================================================= */
+ 
 
 function renderCases() {
 
-  const body =
-    $("#case-table-body");
+  const body = $("#case-table-body");
 
+  const emptyState = $("#case-table-empty-state");
+
+ 
 
   if (!body) {
+
     return;
+
   }
 
+ 
 
-  const search =
-    (
-      getInputValue(
-        "#case-search"
-      )
-    ).toLowerCase();
+  const search = getInputValue("#case-search").toLowerCase();
 
+  const filter = getInputValue("#case-filter") || "all";
 
-  const filter =
-    getInputValue(
-      "#case-filter"
-    ) || "all";
+ 
 
+  const cases = getCases().filter(item => {
 
-  const cases =
-    getCases().filter(
-      item => {
+    const searchableText = Object.values(item)
 
-        const matchesSearch =
-          !search ||
-          Object.values(
-            item
-          )
-            .join(" ")
-            .toLowerCase()
-            .includes(search);
+      .join(" ")
 
+      .toLowerCase();
 
-        const matchesFilter =
-          filter === "all" ||
-          item.status === filter;
+ 
 
+    const matchesSearch =
 
-        return (
-          matchesSearch &&
-          matchesFilter
-        );
+      !search ||
 
-      }
-    );
+      searchableText.includes(search);
 
+ 
+
+    const matchesFilter =
+
+      filter === "all" ||
+
+      item.status === filter;
+
+ 
+
+    return matchesSearch && matchesFilter;
+
+  });
+
+ 
 
   if (!cases.length) {
 
-    body.innerHTML = `
+    body.innerHTML = "";
+
+ 
+
+    if (emptyState) {
+
+      emptyState.hidden = false;
+
+    }
+
+ 
+
+    return;
+
+  }
+
+ 
+
+  if (emptyState) {
+
+    emptyState.hidden = true;
+
+  }
+
+ 
+
+  body.innerHTML = cases
+
+    .map(item => `
 
       <tr>
 
-        <td
-          colspan="6"
-          style="
-            text-align:center;
-            color:#8998b2;
-            padding:32px;
-          "
-        >
-          No matching cases found.
+        <td class="table-case-id">
+
+          ${escapeHtml(item.id)}
+
+        </td>
+
+ 
+
+        <td>
+
+          ${escapeHtml(item.product)}
+
+        </td>
+
+ 
+
+        <td>
+
+          ${escapeHtml(item.issue)}
+
+        </td>
+
+ 
+
+        <td>
+
+          ${escapeHtml(item.component)}
+
+        </td>
+
+ 
+
+        <td>
+
+          ${escapeHtml(item.recommendation)}
+
+        </td>
+
+ 
+
+        <td>
+
+          <span class="table-status ${escapeHtml(
+
+            String(item.status || "").toLowerCase()
+
+          )}">
+
+            ${escapeHtml(item.status)}
+
+          </span>
+
         </td>
 
       </tr>
 
-    `;
+    `)
 
-    return;
-
-  }
-
-
-  body.innerHTML =
-    cases
-      .map(
-        item => {
-
-          const status =
-            String(
-              item.status || "Pending"
-            );
-
-
-          return `
-
-            <tr>
-
-              <td class="table-case-id">
-                ${escapeHtml(
-                  item.id
-                )}
-              </td>
-
-
-              <td>
-                ${escapeHtml(
-                  item.product
-                )}
-              </td>
-
-
-              <td>
-                ${escapeHtml(
-                  item.issue
-                )}
-              </td>
-
-
-              <td>
-                ${escapeHtml(
-                  item.component
-                )}
-              </td>
-
-
-              <td>
-                ${escapeHtml(
-                  item.recommendation
-                )}
-              </td>
-
-
-              <td>
-
-                <span
-                  class="table-status ${escapeHtml(
-                    status.toLowerCase()
-                  )}"
-                >
-                  ${escapeHtml(
-                    status
-                  )}
-                </span>
-
-              </td>
-
-            </tr>
-
-          `;
-
-        }
-      )
-      .join("");
+    .join("");
 
 }
 
-
-/* =========================================================
-   ACTIVITY
-========================================================= */
+ 
 
 function renderActivity() {
 
-  const activityList =
-    $("#activity-list");
+  const list = $("#activity-list");
 
+ 
 
-  if (!activityList) {
+  if (!list) {
+
     return;
+
   }
 
+ 
 
-  const cases =
-    getCases().slice(
-      0,
-      4
-    );
+  const cases = getCases().slice(0, 4);
 
+ 
 
   if (!cases.length) {
 
-    activityList.innerHTML = `
+    list.innerHTML = `
 
       <div class="activity-item">
 
-        <div class="activity-icon">
-          ◈
-        </div>
+        <div class="activity-icon">◇</div>
 
         <div>
 
-          <strong>
-            No recent repair activity
-          </strong>
+          <strong>No recent activity</strong>
 
-          <small>
-            Analyze a case to begin tracking activity.
-          </small>
+          <small>No local prototype cases are available.</small>
 
         </div>
 
@@ -2377,400 +5872,977 @@ function renderActivity() {
 
     `;
 
-    return;
-
-  }
-
-
-  activityList.innerHTML =
-    cases
-      .map(
-        item => `
-
-          <div class="activity-item">
-
-            <div class="activity-icon">
-              ◈
-            </div>
-
-
-            <div>
-
-              <strong>
-                ${escapeHtml(
-                  item.issue
-                )}
-              </strong>
-
-
-              <small>
-                ${escapeHtml(
-                  item.id
-                )}
-                ·
-                ${escapeHtml(
-                  item.component
-                )}
-              </small>
-
-            </div>
-
-
-            <span class="activity-time">
-
-              ${escapeHtml(
-                item.timestamp
-              )}
-
-            </span>
-
-          </div>
-
-        `
-      )
-      .join("");
-
-}
-
-
-/* =========================================================
-   DECISION MODAL
-========================================================= */
-
-function initializeDecisionModal() {
-
-  addListener(
-    "#close-modal",
-    "click",
-    closeDecisionModal
-  );
-
-
-  addListener(
-    "#cancel-decision",
-    "click",
-    closeDecisionModal
-  );
-
-
-  addListener(
-    "#confirm-decision",
-    "click",
-    confirmDecision
-  );
-
-
-  addListener(
-    "#decision-modal",
-    "click",
-    event => {
-
-      if (
-        event.target?.id ===
-        "decision-modal"
-      ) {
-
-        closeDecisionModal();
-
-      }
-
-    }
-  );
-
-
-  /*
-     Allow Escape to close the decision modal.
-  */
-
-  document.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key === "Escape"
-      ) {
-
-        const modal =
-          $("#decision-modal");
-
-
-        if (
-          modal &&
-          !modal.hidden
-        ) {
-
-          closeDecisionModal();
-
-        }
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   OPEN DECISION MODAL
-========================================================= */
-
-function openDecisionModal() {
-
-  const modal =
-    $("#decision-modal");
-
-
-  if (!modal) {
-    return;
-  }
-
-
-  modal.hidden =
-    false;
-
-
-  /*
-     Move keyboard focus to the decision selector
-     when available.
-  */
-
-  const decisionType =
-    $("#decision-type");
-
-
-  if (decisionType) {
-
-    setTimeout(
-      () => decisionType.focus(),
-      0
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   CLOSE DECISION MODAL
-========================================================= */
-
-function closeDecisionModal() {
-
-  const modal =
-    $("#decision-modal");
-
-
-  if (!modal) {
-    return;
-  }
-
-
-  modal.hidden =
-    true;
-
-}
-
-
-/* =========================================================
-   CONFIRM TECHNICIAN DECISION
-========================================================= */
-
-function confirmDecision() {
-
-  const decision =
-    getInputValue(
-      "#decision-type"
-    );
-
-
-  const notes =
-    getInputValue(
-      "#decision-notes"
-    );
-
-
-  if (
-    decision !== "Accept" &&
-    !notes
-  ) {
-
-    showToast(
-      "Add notes for a modified, rejected, or escalated decision."
-    );
+ 
 
     return;
 
   }
 
+ 
+
+  list.innerHTML = cases
+
+    .map(item => `
+
+      <div class="activity-item">
+
+        <div class="activity-icon">◇</div>
+
+ 
+
+        <div>
+
+          <strong>
+
+            ${escapeHtml(item.issue)}
+
+          </strong>
+
+ 
+
+          <small>
+
+            ${escapeHtml(item.id)} ·
+
+            ${escapeHtml(item.component)}
+
+          </small>
+
+        </div>
+
+ 
+
+        <span class="activity-time">
+
+          ${escapeHtml(item.timestamp)}
+
+        </span>
+
+      </div>
+
+    `)
+
+    .join("");
+
+}
+
+ 
+
+/* ================================================================
+
+   47. BUTTONS
+
+   ---------------------------------------------------------------
+
+   These selectors match the current updated HTML.
+
+ 
+
+   Obsolete selectors from the previous JavaScript version were
+
+   intentionally removed:
+
+ 
+
+   - #new-diagnosis-button
+
+   - #scan-hardware-button
+
+   - #view-procedures-button
+
+   - #settings-button
+
+   - #header-alert-button
+
+   - #technician-profile-button
+
+   - .tool-card
+
+   ================================================================ */
+
+ 
+
+function initializeButtons() {
+
+  addListener("#load-demo-button", "click", () => {
+
+    loadDemoCase();
+
+    runAnalysis();
+
+  });
+
+ 
+
+  addListener("#view-demo-button", "click", () => {
+
+    loadDemoCase();
+
+    runAnalysis();
+
+  });
+
+ 
+
+  addListener("#start-analysis-button", "click", () => {
+
+    switchView("analyzer");
+
+ 
+
+    window.setTimeout(() => {
+
+      $("#diagnostic-search")?.focus();
+
+    }, 0);
+
+  });
+
+ 
+
+  addListener("#approve-diagnostic-recommendation-button", "click", () => {
+
+    approveRecommendation();
+
+  });
+
+ 
+
+  addListener("#reject-diagnostic-recommendation-button", "click", () => {
+
+    rejectRecommendation();
+
+  });
+
+}
+
+ 
+
+/* ================================================================
+
+   48. TECHNICIAN APPROVAL WORKFLOW
+
+   ---------------------------------------------------------------
+
+   This workflow records a human decision.
+
+ 
+
+   It does not:
+
+ 
+
+   - Replace hardware
+
+   - Request parts automatically
+
+   - Modify hardware
+
+   - Start a retest automatically
+
+   - Claim that the unit is repaired
+
+   ================================================================ */
+
+ 
+
+function approveRecommendation() {
+
+  const analysis = state.currentAnalysis;
+
+ 
+
+  if (!analysis) {
+
+    showToast("Analyze a case before approving a recommendation.");
+
+    return;
+
+  }
+
+ 
+
+  const confirmed = window.confirm(
+
+    "Approve this diagnostic action for technician-controlled execution?"
+
+  );
+
+ 
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+ 
+
+  analysis.caseState = "REPAIR IN PROGRESS";
+
+  analysis.recommendationDetails.approvalStatus =
+
+    "APPROVED BY TECHNICIAN";
+
+ 
+
+  analysis.partsRequest.approvalStatus =
+
+    analysis.partsRequest.required
+
+      ? "Pending warehouse request"
+
+      : "Not applicable";
+
+ 
+
+  setText(
+
+    "#technician-approval-status",
+
+    "APPROVED BY TECHNICIAN"
+
+  );
+
+ 
+
+  setText(
+
+    "#technician-approval-message",
+
+    "The technician approved the recommended diagnostic action. Physical execution remains outside RepairIQ and must be documented by the responsible repair team."
+
+  );
+
+ 
+
+  setText("#active-case-state", "REPAIR IN PROGRESS");
+
+ 
 
   saveAnalyzedCase(
 
-    decision === "Accept"
-      ? "Completed"
-      : "Escalated",
+    "Pending",
 
-    notes
+    "Technician approved the recommended diagnostic action."
 
   );
 
+ 
 
-  closeDecisionModal();
-
-
-  showToast(
-    `Technician decision recorded: ${decision || "Review"}.`
-  );
+  showToast("Technician approval recorded.");
 
 }
 
+ 
 
-/* =========================================================
-   EXPORT TEXT REPORT
-========================================================= */
+function rejectRecommendation() {
 
-function exportSummary(
-  analysis
-) {
+  const analysis = state.currentAnalysis;
 
-  const summary = `
+ 
 
-REPAIRIQ
-SXM REPAIR COMMAND CENTER
-AI REPAIR INTELLIGENCE PROTOTYPE
+  if (!analysis) {
 
-HGX REPAIR ANALYSIS REPORT
-========================================
+    showToast("Analyze a case before rejecting a recommendation.");
 
-CASE
-${analysis.caseId}
+    return;
 
-PRODUCT
-${analysis.product}
+  }
 
-TECHNICIAN
-${analysis.technician || "Not specified"}
+ 
 
-TESTER
-${analysis.tester || "Not specified"}
+  const notes = window.prompt(
 
-PRIMARY SUSPECTED ISSUE
-${analysis.title}
+    "Enter the reason for rejecting or escalating this recommendation:"
 
-CATEGORY
-${analysis.category}
-
-RULE
-${analysis.ruleId}
-
-AFFECTED COMPONENT
-${analysis.affectedComponent}
-
-EVIDENCE SCORE
-${analysis.confidence}%
-
-DECISION CALCULATION
-${analysis.adjustedValue ?? "N/A"}
--
-${analysis.failureLimit ?? "N/A"}
-=
-${analysis.difference ?? "N/A"}
-
-SUPPORTING EVIDENCE
-${analysis.evidence
-  .map(
-    (item, index) =>
-      `${index + 1}. ${item}`
-  )
-  .join("\n")}
-
-RECOMMENDED REPAIR PATH
-${analysis.actions
-  .map(
-    (item, index) =>
-      `${index + 1}. ${item}`
-  )
-  .join("\n")}
-
-TECHNICIAN NOTES
-${analysis.notes || "None provided."}
-
-CONTROL NOTICE
-RepairIQ provides decision support only.
-Technician approval is required before
-consequential repair actions including
-replacement, firmware action, destructive
-testing, escalation, or final disposition.
-
-This prototype uses deterministic rules and
-synthetic demonstration data.
-
-========================================
-
-`.trim();
-
-
-  downloadFile(
-    summary,
-    `${analysis.caseId}-repair-report.txt`,
-    "text/plain;charset=utf-8"
   );
 
+ 
 
-  showToast(
-    "Repair report exported."
+  if (!notes || !notes.trim()) {
+
+    showToast("A reason is required for rejection or escalation.");
+
+    return;
+
+  }
+
+ 
+
+  analysis.caseState = "ESCALATED";
+
+  analysis.recommendationDetails.approvalStatus =
+
+    "REJECTED / ESCALATED";
+
+ 
+
+  setText(
+
+    "#technician-approval-status",
+
+    "REJECTED / ESCALATED"
+
   );
+
+ 
+
+  setText(
+
+    "#technician-approval-message",
+
+    `Technician decision recorded: ${notes.trim()}`
+
+  );
+
+ 
+
+  setText("#active-case-state", "ESCALATED");
+
+ 
+
+  saveAnalyzedCase(
+
+    "Escalated",
+
+    notes.trim()
+
+  );
+
+ 
+
+  showToast("Recommendation escalated for further review.");
 
 }
 
+ 
 
-/* =========================================================
-   EXPORT JSON
-========================================================= */
+/* ================================================================
 
-function exportJSON(
-  analysis
-) {
+   49. DIAGNOSTIC MODAL
 
-  const payload = {
+   ---------------------------------------------------------------
 
-    platform:
-      "RepairIQ",
+   The updated HTML contains one modal:
 
+ 
 
-    platformMode:
-      "SXM Repair Command Center",
+   #diagnostic-modal
 
+   #modal-close-button
 
-    prototypeVersion:
-      "0.3",
+   #modal-content
 
+ 
 
-    generatedAt:
-      new Date().toISOString(),
+   The obsolete evidence and decision modal selectors have been
 
+   removed.
 
-    case:
-      analysis,
+   ================================================================ */
 
+ 
 
-    control:
-      "Technician approval required",
+function initializeModal() {
 
+  addListener(
 
-    disclaimer:
-      "Prototype uses deterministic rules and synthetic demonstration data."
+    "#modal-close-button",
+
+    "click",
+
+    closeDiagnosticModal
+
+  );
+
+ 
+
+  const overlay = $("#diagnostic-modal");
+
+ 
+
+  if (overlay) {
+
+    overlay.addEventListener("click", event => {
+
+      if (event.target === overlay) {
+
+        closeDiagnosticModal();
+
+      }
+
+    });
+
+  }
+
+}
+
+ 
+
+function openDiagnosticModal(analysis) {
+
+  const modal = $("#diagnostic-modal");
+
+  const content = $("#modal-content");
+
+ 
+
+  if (!modal || !content || !analysis) {
+
+    return;
+
+  }
+
+ 
+
+  state.lastFocusedElement = document.activeElement;
+
+  state.modalOpen = true;
+
+ 
+
+  content.innerHTML = `
+
+    <div class="modal-detail-grid">
+
+ 
+
+      <div>
+
+        <span>Case</span>
+
+        <strong>${escapeHtml(analysis.caseId)}</strong>
+
+      </div>
+
+ 
+
+      <div>
+
+        <span>Traveler</span>
+
+        <strong>${escapeHtml(analysis.travelerId)}</strong>
+
+      </div>
+
+ 
+
+      <div>
+
+        <span>Primary finding</span>
+
+        <strong>${escapeHtml(analysis.title)}</strong>
+
+      </div>
+
+ 
+
+      <div>
+
+        <span>Affected component</span>
+
+        <strong>${escapeHtml(analysis.affectedComponent)}</strong>
+
+      </div>
+
+ 
+
+      <div>
+
+        <span>Failure stage</span>
+
+        <strong>${escapeHtml(analysis.failure.failureStage)}</strong>
+
+      </div>
+
+ 
+
+      <div>
+
+        <span>Error code</span>
+
+        <strong>${escapeHtml(analysis.failure.errorCode)}</strong>
+
+      </div>
+
+ 
+
+    </div>
+
+ 
+
+    <div class="modal-section">
+
+      <div class="eyebrow">REASONING</div>
+
+      <p>
+
+        ${escapeHtml(analysis.confidenceExplanation)}
+
+      </p>
+
+    </div>
+
+ 
+
+    <div class="modal-section">
+
+      <div class="eyebrow">RECOMMENDED ACTION</div>
+
+      <p>
+
+        ${escapeHtml(analysis.recommendation)}
+
+      </p>
+
+    </div>
+
+ 
+
+    <div class="modal-section">
+
+      <div class="eyebrow">CONTROL NOTICE</div>
+
+      <p>
+
+        RepairIQ provides technician decision support only.
+
+        Physical actions require qualified human review.
+
+      </p>
+
+    </div>
+
+  `;
+
+ 
+
+  modal.hidden = false;
+
+  modal.setAttribute("aria-hidden", "false");
+
+ 
+
+  window.setTimeout(() => {
+
+    $(".modal", modal)?.focus();
+
+  }, 0);
+
+}
+
+ 
+
+function openComponentHistoryModal(component) {
+
+  const analysis = state.currentAnalysis;
+
+ 
+
+  if (!analysis) {
+
+    showToast("Analyze a case before viewing component history.");
+
+    return;
+
+  }
+
+ 
+
+  const componentAnalysis = {
+
+    ...analysis,
+
+    title: `${component} component detail`,
+
+    affectedComponent: component,
+
+    confidenceExplanation:
+
+      `This prototype component detail is linked to the active case. Verified installation, genealogy, repair history, and firmware records are not connected.`
 
   };
 
+ 
+
+  openDiagnosticModal(componentAnalysis);
+
+}
+
+ 
+
+function closeDiagnosticModal() {
+
+  const modal = $("#diagnostic-modal");
+
+ 
+
+  if (!modal) {
+
+    return;
+
+  }
+
+ 
+
+  modal.hidden = true;
+
+  modal.setAttribute("aria-hidden", "true");
+
+  state.modalOpen = false;
+
+ 
+
+  if (
+
+    state.lastFocusedElement &&
+
+    typeof state.lastFocusedElement.focus === "function"
+
+  ) {
+
+    state.lastFocusedElement.focus();
+
+  }
+
+}
+
+ 
+
+/* ================================================================
+
+   50. EXPORTS
+
+   ---------------------------------------------------------------
+
+   Exported content includes traveler, evidence, recommendation,
+
+   approval, parts, retest, and handoff data.
+
+   ================================================================ */
+
+ 
+
+function exportSummary(analysis) {
+
+  if (!analysis) {
+
+    showToast("Analyze a case before exporting.");
+
+    return;
+
+  }
+
+ 
+
+  const supportingEvidence = safeArray(
+
+    analysis.evidence?.supporting
+
+  )
+
+    .map((item, index) =>
+
+      `${index + 1}. [${item.category}] ${item.text}`
+
+    )
+
+    .join("\n");
+
+ 
+
+  const contradictingEvidence = safeArray(
+
+    analysis.evidence?.contradicting
+
+  )
+
+    .map((item, index) =>
+
+      `${index + 1}. [${item.category}] ${item.text}`
+
+    )
+
+    .join("\n");
+
+ 
+
+  const previousActions = safeArray(
+
+    analysis.history?.previousActions
+
+  )
+
+    .map((item, index) =>
+
+      `${index + 1}. ${item.action} - ${item.result}`
+
+    )
+
+    .join("\n");
+
+ 
+
+  const doNotRepeat = safeArray(
+
+    analysis.history?.doNotRepeat
+
+  )
+
+    .map((item, index) =>
+
+      `${index + 1}. ${item.action} - ${item.reason}`
+
+    )
+
+    .join("\n");
+
+ 
+
+  const content = `
+
+REPAIRIQ
+
+SXM REPAIR INTELLIGENCE COMMAND CENTER
+
+PROTOTYPE / DEMONSTRATION DATA
+
+ 
+
+CASE
+
+${analysis.caseId}
+
+ 
+
+TRAVELER
+
+${analysis.travelerId}
+
+ 
+
+PRODUCT
+
+${analysis.product}
+
+ 
+
+MP PART NUMBER
+
+${analysis.unit.mpPartNumber}
+
+ 
+
+MP SERIAL NUMBER
+
+${analysis.unit.mpSerialNumber}
+
+ 
+
+PCB PART NUMBER
+
+${analysis.unit.pcbPartNumber}
+
+ 
+
+PCB SERIAL NUMBER
+
+${analysis.unit.pcbSerialNumber}
+
+ 
+
+PRIMARY FINDING
+
+${analysis.title}
+
+ 
+
+CATEGORY
+
+${analysis.category}
+
+ 
+
+AFFECTED COMPONENT
+
+${analysis.affectedComponent}
+
+ 
+
+FAILURE STAGE
+
+${analysis.failure.failureStage}
+
+ 
+
+ERROR CODE
+
+${analysis.failure.errorCode}
+
+ 
+
+PROTOTYPE EVIDENCE SCORE
+
+${analysis.confidence}%
+
+ 
+
+WHY THIS SCORE EXISTS
+
+${analysis.confidenceExplanation}
+
+ 
+
+SUPPORTING EVIDENCE
+
+${supportingEvidence}
+
+ 
+
+CONTRADICTING SIGNALS
+
+${contradictingEvidence}
+
+ 
+
+WHAT HAS ALREADY BEEN DONE
+
+${previousActions || "No documented actions"}
+
+ 
+
+DO NOT REPEAT
+
+${doNotRepeat || "No guardrails generated"}
+
+ 
+
+RECOMMENDED ACTION
+
+${analysis.recommendation}
+
+ 
+
+ACTION TYPE
+
+${analysis.actionType}
+
+ 
+
+TECHNICIAN APPROVAL
+
+${analysis.recommendationDetails.approvalStatus}
+
+ 
+
+PARTS STATUS
+
+${analysis.partsRequest.warehouseStatus}
+
+ 
+
+RETEST STAGE
+
+${analysis.retest.stage}
+
+ 
+
+RETEST REQUIREMENT
+
+${analysis.retest.expectedResult}
+
+ 
+
+RETEST RESULT
+
+${analysis.retest.result}
+
+ 
+
+SHIFT HANDOFF STATUS
+
+${analysis.handoff.currentStatus}
+
+ 
+
+SHIFT HANDOFF NEXT ACTION
+
+${analysis.handoff.nextRequiredAction}
+
+ 
+
+CONTROL NOTICE
+
+RepairIQ provides technician decision support only.
+
+Consequential repair actions require qualified human review.
+
+This prototype does not control hardware or warehouse systems.
+
+`.trim();
+
+ 
 
   downloadFile(
 
-    JSON.stringify(
-      payload,
-      null,
-      2
-    ),
+    content,
+
+    `${analysis.caseId}-repair-report.txt`,
+
+    "text/plain;charset=utf-8"
+
+  );
+
+ 
+
+  showToast("Repair report exported.");
+
+}
+
+ 
+
+function exportJson(analysis) {
+
+  if (!analysis) {
+
+    showToast("Analyze a case before exporting.");
+
+    return;
+
+  }
+
+ 
+
+  const payload = {
+
+    platform: "RepairIQ",
+
+    platformMode: "SXM Repair Intelligence Command Center",
+
+    generatedAt: new Date().toISOString(),
+
+    dataSource: analysis.dataSource,
+
+    intelligenceMode: "Deterministic prototype logic",
+
+    case: analysis,
+
+    control: "Technician approval required",
+
+    hardwareControl: "Not connected",
+
+    disclaimer:
+
+      "This prototype uses deterministic rules and synthetic demonstration data."
+
+  };
+
+ 
+
+  downloadFile(
+
+    JSON.stringify(payload, null, 2),
 
     `${analysis.caseId}.json`,
 
@@ -2778,319 +6850,170 @@ function exportJSON(
 
   );
 
+ 
 
-  showToast(
-    "Case JSON exported."
-  );
+  showToast("Case JSON exported.");
 
 }
 
+ 
 
-/* =========================================================
-   DOWNLOAD FILE
-========================================================= */
+function downloadFile(content, filename, type) {
 
-function downloadFile(
-  content,
-  filename,
-  type
-) {
+  const blob = new Blob([content], { type });
 
-  const blob =
-    new Blob(
-      [content],
-      {
-        type
-      }
-    );
+  const url = URL.createObjectURL(blob);
 
+  const link = document.createElement("a");
 
-  const url =
-    URL.createObjectURL(
-      blob
-    );
+ 
 
+  link.href = url;
 
-  const link =
-    document.createElement(
-      "a"
-    );
+  link.download = filename;
 
+ 
 
-  link.href =
-    url;
-
-
-  link.download =
-    filename;
-
-
-  document.body.appendChild(
-    link
-  );
-
+  document.body.appendChild(link);
 
   link.click();
 
-
   link.remove();
 
+ 
 
-  /*
-     Give the browser a moment to process the
-     download before releasing the object URL.
-  */
+  window.setTimeout(() => {
 
-  setTimeout(
-    () => {
+    URL.revokeObjectURL(url);
 
-      URL.revokeObjectURL(
-        url
-      );
-
-    },
-    100
-  );
+  }, 100);
 
 }
 
+ 
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+/* ================================================================
 
-function initializeButtons() {
+   51. CASE AND TRAVELER IDENTIFIERS
 
-  addListener(
-    "#start-analysis-button",
-    "click",
-    () => {
+   ================================================================ */
 
-      switchView(
-        "analyzer"
-      );
-
-    }
-  );
-
-
-  addListener(
-    "#view-demo-button",
-    "click",
-    () => {
-
-      loadDemoCase();
-
-
-      /*
-         Allow the DOM to finish updating the analyzer
-         before beginning the simulated analysis.
-      */
-
-      setTimeout(
-        runAnalysis,
-        250
-      );
-
-    }
-  );
-
-
-  addListener(
-    "#load-demo-button",
-    "click",
-    () => {
-
-      loadDemoCase();
-
-
-      setTimeout(
-        runAnalysis,
-        250
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   THEME
-========================================================= */
-
-function initializeTheme() {
-
-  addListener(
-    "#theme-button",
-    "click",
-    () => {
-
-      document.body.classList.toggle(
-        "light-mode"
-      );
-
-
-      const isLight =
-        document.body.classList.contains(
-          "light-mode"
-        );
-
-
-      showToast(
-        isLight
-          ? "Light interface enabled."
-          : "Dark interface enabled."
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   UTILITIES
-========================================================= */
+ 
 
 function createCaseId() {
 
-  const date =
-    new Date();
+  const date = new Date();
 
+ 
 
   const stamp = [
 
     date.getFullYear(),
 
-    String(
-      date.getMonth() + 1
-    ).padStart(
-      2,
-      "0"
-    ),
+    String(date.getMonth() + 1).padStart(2, "0"),
 
-    String(
-      date.getDate()
-    ).padStart(
-      2,
-      "0"
-    )
+    String(date.getDate()).padStart(2, "0")
 
   ].join("");
 
+ 
 
-  const random =
-    Math.floor(
-      100 +
-      Math.random() *
-      900
-    );
+  const randomNumber = Math.floor(100 + Math.random() * 900);
 
+ 
 
-  return `CASE-${stamp}-${random}`;
+  return `CASE-${stamp}-${randomNumber}`;
 
 }
 
+ 
 
-/* =========================================================
-   HTML ESCAPING
-========================================================= */
+function createTravelerId() {
 
-/*
-   All log-derived or user-entered values that are
-   inserted into innerHTML pass through this function.
+  const date = new Date();
 
-   This is especially important because RepairIQ
-   accepts uploaded log content and technician notes.
-*/
+ 
 
-function escapeHtml(
-  value
-) {
+  const stamp = [
 
-  return String(
-    value ?? ""
-  )
+    date.getFullYear(),
 
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
+    String(date.getMonth() + 1).padStart(2, "0"),
 
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
+    String(date.getDate()).padStart(2, "0")
 
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
+  ].join("");
 
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
+ 
 
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+  const randomNumber = Math.floor(100 + Math.random() * 900);
+
+ 
+
+  return `TRAVELER-${stamp}-${randomNumber}`;
 
 }
 
+ 
 
-/* =========================================================
-   TOAST SYSTEM
-========================================================= */
+function isDemoLog(logText) {
 
-function showToast(
-  message
-) {
+  const normalized = String(logText || "").toLowerCase();
 
-  const toast =
-    $("#toast");
+ 
 
+  return (
 
-  const toastMessage =
-    $("#toast-message");
+    normalized.includes("vulcan") ||
 
+    normalized.includes("hmc_bist_fail") ||
 
-  if (
-    !toast ||
-    !toastMessage
-  ) {
+    normalized.includes("sxm-tester-04")
+
+  );
+
+}
+
+ 
+
+/* ================================================================
+
+   52. TOAST NOTIFICATIONS
+
+   ================================================================ */
+
+ 
+
+function showToast(message) {
+
+  const toast = $("#toast");
+
+  const toastMessage = $("#toast-message");
+
+ 
+
+  if (!toast || !toastMessage) {
 
     return;
 
   }
 
+ 
 
-  toastMessage.textContent =
-    message;
+  toastMessage.textContent = message;
 
+  toast.classList.add("show");
 
-  toast.classList.add(
-    "show"
-  );
+ 
 
+  window.clearTimeout(state.toastTimer);
 
-  clearTimeout(
-    toastTimer
-  );
+ 
 
+  state.toastTimer = window.setTimeout(() => {
 
-  toastTimer =
-    setTimeout(
-      () => {
+    toast.classList.remove("show");
 
-        toast.classList.remove(
-          "show"
-        );
-
-      },
-      3000
-    );
+  }, 3000);
 
 }

@@ -2,2954 +2,9340 @@
 
 <html lang="en">
 
+ 
+
 <head>
 
-  <!-- =========================================================
-       REPAIRIQ
-       SXM REPAIR INTELLIGENCE COMMAND CENTER
-
-       Version: 0.4
-       Author: D'Marques Coleman
-
-       PURPOSE
-       ---------------------------------------------------------
-       Technician-controlled repair intelligence prototype for
-       structured SXM / HGX-style GPU server diagnostics.
-
-       IMPORTANT
-       ---------------------------------------------------------
-       This is a portfolio / demonstration prototype.
-
-       Hardware visualization is H200 / Vulcan-inspired and
-       intentionally does not claim to be an exact NVIDIA CAD,
-       mechanical, electrical, thermal, or production representation.
-
-       Diagnostic data remains illustrative unless explicitly
-       connected to a real data source.
-       ========================================================= -->
-
-  <meta charset="UTF-8" />
-
-<meta
- name="viewport"
- content="width=device-width, initial-scale=1.0"
-/>
+ 
 
   <!-- =========================================================
-       PRIMARY SEO METADATA
-       ========================================================= -->
 
-<meta
- name="description"
- content="RepairIQ is a technician-controlled repair intelligence platform prototype for structured SXM and HGX-style GPU server diagnostic workflows."
-/>
+  REPAIRIQ
 
-<meta
- name="author"
- content="D'Marques Coleman"
-/>
+  SXM REPAIR INTELLIGENCE COMMAND CENTER
 
-<meta
- name="copyright"
- content="D'Marques Coleman"
-/>
+ 
 
-<meta
- name="keywords"
- content="RepairIQ, repair intelligence, server repair, NVIDIA H200, NVIDIA SXM, HGX, Vulcan, GPU diagnostics, GPU server, hardware diagnostics, log analyzer, technician decision support, AI repair intelligence, server troubleshooting"
-/>
+  Version: 0.5
 
-<meta
- name="robots"
- content="index, follow"
-/>
+  Author: D'Marques Coleman
+
+  Organization: DCENTRIC
+
+ 
+
+  PURPOSE
+
+  ---------------------------------------------------------
+
+  Technician-controlled repair intelligence prototype for
+
+  structured SXM / HGX-style GPU server diagnostics.
+
+ 
+
+  IMPORTANT
+
+  ---------------------------------------------------------
+
+  This is a portfolio / demonstration prototype.
+
+ 
+
+  Hardware visualization is H200 / Vulcan-inspired and
+
+  intentionally does not claim to be an exact NVIDIA CAD,
+
+  mechanical, electrical, thermal, or production representation.
+
+ 
+
+  Diagnostic data remains illustrative unless explicitly
+
+  connected to a real data source.
+
+ 
+
+  UPGRADE IN THIS VERSION
+
+  ---------------------------------------------------------
+
+  Establishes the Active Case and Diagnostic Result Contract.
+
+ 
+
+  The result contract creates stable semantic regions for:
+
+ 
+
+  - Active case
+
+  - Unit identity
+
+  - Failure stage
+
+  - Primary finding
+
+  - Affected component
+
+  - Root-cause candidates
+
+  - Supporting evidence
+
+  - Contradicting evidence
+
+  - Previous actions
+
+  - Actions not to repeat
+
+  - Recommended next action
+
+  - Technician approval
+
+  - Retest requirement
+
+  - Prototype and demonstration data status
+
+ 
+
+  The AI recommends.
+
+  The technician decides.
+
+  ========================================================= -->
+
+ 
+
+  <meta charset="UTF-8">
+
+ 
+
+  <meta
+
+    name="viewport"
+
+    content="width=device-width, initial-scale=1.0"
+
+  >
+
+ 
 
   <!-- =========================================================
-       APPLICATION / BRAND METADATA
-       ========================================================= -->
 
-<meta
- name="theme-color"
- content="#071018"
-/>
+  PRIMARY SEO METADATA
 
-<meta
- name="application-name"
- content="RepairIQ"
-/>
+  ========================================================= -->
+
+ 
+
+  <meta
+
+    name="description"
+
+    content="RepairIQ is a technician-controlled repair intelligence platform prototype for structured SXM and HGX-style GPU server diagnostic workflows."
+
+  >
+
+ 
+
+  <meta
+
+    name="author"
+
+    content="D'Marques Coleman"
+
+  >
+
+ 
+
+  <meta
+
+    name="copyright"
+
+    content="D'Marques Coleman"
+
+  >
+
+ 
+
+  <meta
+
+    name="keywords"
+
+    content="RepairIQ, repair intelligence, server repair, NVIDIA H200, NVIDIA SXM, HGX, Vulcan, GPU diagnostics, GPU server, hardware diagnostics, log analyzer, technician decision support, AI repair intelligence, server troubleshooting"
+
+  >
+
+ 
+
+  <meta
+
+    name="robots"
+
+    content="index, follow"
+
+  >
+
+ 
 
   <!-- =========================================================
-       OPEN GRAPH
-       ========================================================= -->
 
-<meta
- property="og:type"
- content="website"
-/>
+  APPLICATION / BRAND METADATA
 
-<meta
- property="og:title"
- content="RepairIQ | SXM Repair Intelligence"
-/>
+  ========================================================= -->
 
-<meta
- property="og:description"
- content="A technician-controlled repair intelligence prototype for structured SXM server diagnostics, failure analysis, hardware isolation, and repair decision support."
-/>
+ 
 
-<meta
- property="og:site_name"
- content="RepairIQ"
-/>
+  <meta
 
-<meta
- property="og:locale"
- content="en_US"
-/>
+    name="theme-color"
+
+    content="#071018"
+
+  >
+
+ 
+
+  <meta
+
+    name="application-name"
+
+    content="RepairIQ"
+
+  >
+
+ 
+
+  <!-- =========================================================
+
+  OPEN GRAPH
+
+  ========================================================= -->
+
+ 
+
+  <meta
+
+    property="og:type"
+
+    content="website"
+
+  >
+
+ 
+
+  <meta
+
+    property="og:title"
+
+    content="RepairIQ | SXM Repair Intelligence"
+
+  >
+
+ 
+
+  <meta
+
+    property="og:description"
+
+    content="A technician-controlled repair intelligence prototype for structured SXM server diagnostics, failure analysis, hardware isolation, and repair decision support."
+
+  >
+
+ 
+
+  <meta
+
+    property="og:site_name"
+
+    content="RepairIQ"
+
+  >
+
+ 
+
+  <meta
+
+    property="og:locale"
+
+    content="en_US"
+
+  >
+
+ 
 
   <!-- Future:
-       Add final RepairIQ social preview artwork once the
-       visual identity has been finalized. -->
+
+  Add final RepairIQ social preview artwork once the
+
+  visual identity has been finalized. -->
+
+ 
 
   <!-- =========================================================
-       TWITTER / X CARD
-       ========================================================= -->
 
-<meta
- name="twitter:card"
- content="summary_large_image"
-/>
+  TWITTER / X CARD
 
-<meta
- name="twitter:title"
- content="RepairIQ | SXM Repair Intelligence"
-/>
+  ========================================================= -->
 
-<meta
- name="twitter:description"
- content="Technician-controlled repair intelligence for structured SXM server diagnostics and repair decision support."
-/>
+ 
+
+  <meta
+
+    name="twitter:card"
+
+    content="summary_large_image"
+
+  >
+
+ 
+
+  <meta
+
+    name="twitter:title"
+
+    content="RepairIQ | SXM Repair Intelligence"
+
+  >
+
+ 
+
+  <meta
+
+    name="twitter:description"
+
+    content="Technician-controlled repair intelligence for structured SXM server diagnostics and repair decision support."
+
+  >
+
+ 
 
   <!-- =========================================================
-       PAGE TITLE
-       ========================================================= -->
+
+  PAGE TITLE
+
+  ========================================================= -->
+
+ 
 
   <title>RepairIQ | SXM Repair Intelligence</title>
 
+ 
+
   <!-- =========================================================
-       STYLESHEET
-       ========================================================= -->
+
+  STYLESHEET
+
+  ========================================================= -->
+
+ 
 
   <link
+
     rel="stylesheet"
+
     href="styles.css"
-  />
+
+  >
+
+ 
 
 </head>
 
+ 
+
 <body>
 
+ 
+
   <!-- =========================================================
-       APPLICATION SHELL
-       ========================================================= -->
+
+  APPLICATION SHELL
+
+  ========================================================= -->
+
+ 
 
   <div class="app-shell">
 
-```
-<!-- =======================================================
-     SIDEBAR
-     ======================================================= -->
+ 
 
-<aside
-  class="sidebar"
-  aria-label="Primary navigation"
->
+    <!-- =======================================================
 
-  <div class="brand">
+    SIDEBAR
 
-    <div
-      class="brand-mark"
-      aria-hidden="true"
-    >
-      <span>R</span>
-    </div>
+    ======================================================= -->
 
-    <div class="brand-copy">
+ 
 
-      <div class="brand-name">
-        RepairIQ
-      </div>
+    <aside
 
-      <div class="brand-subtitle">
-        Repair Intelligence
-      </div>
+      class="sidebar"
 
-    </div>
+      aria-label="Primary navigation"
 
-  </div>
-
-
-  <div class="sidebar-platform">
-
-    <span
-      class="platform-indicator"
-      aria-hidden="true"
-    ></span>
-
-    <div>
-
-      <strong>
-        SXM DIAGNOSTICS
-      </strong>
-
-      <span>
-        Technician Decision Support
-      </span>
-
-    </div>
-
-  </div>
-
-
-  <nav
-    class="main-nav"
-    aria-label="RepairIQ sections"
-  >
-
-    <button
-      class="nav-item active"
-      type="button"
-      data-view="dashboard"
-      aria-current="page"
     >
 
-      <span
-        class="nav-icon"
-        aria-hidden="true"
-      >
-        ⌂
-      </span>
+ 
 
-      <span>
-        Command Center
-      </span>
+      <div class="brand">
 
-    </button>
+ 
 
+        <div
 
-    <button
-      class="nav-item"
-      type="button"
-      data-view="analyzer"
-    >
+          class="brand-mark"
 
-      <span
-        class="nav-icon"
-        aria-hidden="true"
-      >
-        ⌁
-      </span>
+          aria-hidden="true"
 
-      <span>
-        Log Analyzer
-      </span>
+        >
 
-    </button>
+          <span>R</span>
 
+        </div>
 
-    <button
-      class="nav-item"
-      type="button"
-      data-view="cases"
-    >
+ 
 
-      <span
-        class="nav-icon"
-        aria-hidden="true"
-      >
-        ▣
-      </span>
+        <div class="brand-copy">
 
-      <span>
-        Case History
-      </span>
+ 
 
-    </button>
+          <div class="brand-name">
 
+            RepairIQ
 
-    <button
-      class="nav-item"
-      type="button"
-      data-view="knowledge"
-    >
+          </div>
 
-      <span
-        class="nav-icon"
-        aria-hidden="true"
-      >
-        ◇
-      </span>
+ 
 
-      <span>
-        Knowledge Base
-      </span>
+          <div class="brand-subtitle">
 
-    </button>
+            Repair Intelligence
 
+          </div>
 
-    <button
-      class="nav-item"
-      type="button"
-      data-view="metrics"
-    >
+ 
 
-      <span
-        class="nav-icon"
-        aria-hidden="true"
-      >
-        ▥
-      </span>
+        </div>
 
-      <span>
-        Pilot Metrics
-      </span>
-
-    </button>
-
-  </nav>
-
-
-  <div
-    class="sidebar-divider"
-    aria-hidden="true"
-  ></div>
-
-
-  <div class="sidebar-bottom">
-
-    <div class="system-status">
-
-      <span
-        class="status-dot"
-        aria-hidden="true"
-      ></span>
-
-      <div>
-
-        <strong>
-          Prototype Online
-        </strong>
-
-        <span>
-          Offline demo mode
-        </span>
+ 
 
       </div>
 
-    </div>
+ 
 
+      <div class="sidebar-platform">
 
-    <div class="version-label">
-      RepairIQ v0.4
-    </div>
-
-
-    <div class="sidebar-note">
-      Decision support only.
-      Verify hardware state before action.
-    </div>
-
-  </div>
-
-</aside>
-
-
-<!-- =======================================================
-     MAIN CONTENT
-     ======================================================= -->
-
-<main class="main-content">
-
-  <!-- =====================================================
-       TOPBAR
-       ===================================================== -->
-
-  <header class="topbar">
-
-    <div class="topbar-title">
-
-      <div class="eyebrow">
-        SXM SERVER REPAIR OPERATIONS
-      </div>
-
-      <h1 id="page-title">
-        Repair Operations Dashboard
-      </h1>
-
-      <p class="topbar-context">
-        Diagnose. Isolate. Repair. Verify.
-      </p>
-
-    </div>
-
-
-    <div class="topbar-actions">
-
-      <div class="environment-badge">
+ 
 
         <span
-          class="environment-dot"
+
+          class="platform-indicator"
+
           aria-hidden="true"
+
         ></span>
 
-        DEMO ENVIRONMENT
-
-      </div>
-
-
-      <button
-        class="icon-button"
-        id="load-demo-button"
-        type="button"
-        title="Load demonstration case"
-        aria-label="Load demonstration case"
-      >
-        ▶
-      </button>
-
-
-      <div class="user-chip">
-
-        <div
-          class="avatar"
-          aria-hidden="true"
-        >
-          DC
-        </div>
+ 
 
         <div>
 
+ 
+
           <strong>
-            Repair Technician
+
+            SXM DIAGNOSTICS
+
           </strong>
 
+ 
+
           <span>
-            Technician Control Active
+
+            Technician Decision Support
+
           </span>
 
+ 
+
         </div>
+
+ 
 
       </div>
 
-    </div>
+ 
 
-  </header>
+      <nav
 
+        class="main-nav"
 
-  <!-- =====================================================
-       DASHBOARD VIEW
-       ===================================================== -->
+        aria-label="RepairIQ sections"
 
-  <section
-    class="view active"
-    id="dashboard-view"
-    aria-labelledby="dashboard-heading"
-  >
-
-    <!-- ===================================================
-         HERO COMMAND CENTER
-         =================================================== -->
-
-    <div class="hero-card">
-
-      <div class="hero-content">
-
-        <div class="hero-badge">
-
-          <span
-            class="pulse"
-            aria-hidden="true"
-          ></span>
-
-          REPAIRIQ COMMAND CENTER
-
-        </div>
-
-
-        <h2 id="dashboard-heading">
-
-          Turn complex failure logs into
-
-          <span>
-            structured repair decisions.
-          </span>
-
-        </h2>
-
-
-        <p>
-          RepairIQ organizes failure evidence, identifies affected
-          hardware, explains diagnostic confidence, and guides the
-          technician through a controlled repair workflow.
-        </p>
-
-
-        <div class="hero-actions">
-
-          <button
-            class="primary-button"
-            id="start-analysis-button"
-            type="button"
-          >
-
-            Analyze a Failure Log
-
-            <span aria-hidden="true">
-              →
-            </span>
-
-          </button>
-
-
-          <button
-            class="secondary-button"
-            id="view-demo-button"
-            type="button"
-          >
-            View Demonstration
-          </button>
-
-        </div>
-
-
-        <div class="hero-trust-row">
-
-          <span>
-            <i
-              class="trust-dot"
-              aria-hidden="true"
-            ></i>
-            Technician controlled
-          </span>
-
-          <span>
-            <i
-              class="trust-dot"
-              aria-hidden="true"
-            ></i>
-            Evidence driven
-          </span>
-
-          <span>
-            <i
-              class="trust-dot"
-              aria-hidden="true"
-            ></i>
-            Offline capable
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- =================================================
-           HERO HARDWARE / INTELLIGENCE VISUAL
-           ================================================= -->
-
-      <div
-        class="hero-visual"
-        aria-label="RepairIQ H200-inspired eight GPU diagnostic visualization"
       >
 
-        <div
-          class="hero-grid"
-          aria-hidden="true"
-        ></div>
-
-
-        <div
-          class="hardware-frame"
-          aria-hidden="true"
-        >
-
-          <div class="hardware-frame-top"></div>
-          <div class="hardware-frame-side"></div>
-          <div class="hardware-frame-bottom"></div>
-
-        </div>
-
-
-        <div
-          class="hardware-platform"
-          aria-hidden="true"
-        >
-
-          <div class="board-surface">
-
-            <div class="board-edge board-edge-top"></div>
-            <div class="board-edge board-edge-bottom"></div>
-            <div class="board-edge board-edge-left"></div>
-            <div class="board-edge board-edge-right"></div>
-
-
-            <div class="pcb-traces">
-
-              <span class="trace trace-1"></span>
-              <span class="trace trace-2"></span>
-              <span class="trace trace-3"></span>
-              <span class="trace trace-4"></span>
-              <span class="trace trace-5"></span>
-              <span class="trace trace-6"></span>
-
-            </div>
-
-
-            <div class="compute-zone">
-
-              <div class="compute-zone-label">
-                SXM COMPUTE FABRIC
-              </div>
-
-              <div class="compute-core">
-                RI
-              </div>
-
-              <div class="compute-zone-status">
-                DIAGNOSTIC ENGINE ONLINE
-              </div>
-
-            </div>
-
-
-            <div class="hero-gpu-module hero-gpu-1">
-              <span>GPU0</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-2">
-              <span>GPU1</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-3 critical">
-              <span>GPU2</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-4">
-              <span>GPU3</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-5">
-              <span>GPU4</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-6">
-              <span>GPU5</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-7">
-              <span>GPU6</span>
-            </div>
-
-            <div class="hero-gpu-module hero-gpu-8">
-              <span>GPU7</span>
-            </div>
-
-
-            <div class="fabric-lines">
-
-              <span class="fabric-line fabric-line-a"></span>
-              <span class="fabric-line fabric-line-b"></span>
-              <span class="fabric-line fabric-line-c"></span>
-              <span class="fabric-line fabric-line-d"></span>
-
-            </div>
-
-          </div>
-
-
-          <div class="hardware-shroud">
-
-            <div class="shroud-highlight"></div>
-
-            <div class="shroud-label">
-              HGX / SXM PLATFORM
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="core-node">
-
-          <div
-            class="core-symbol"
-            aria-hidden="true"
-          >
-            RI
-          </div>
-
-          <span>
-            RepairIQ
-          </span>
-
-          <small>
-            Decision Engine
-          </small>
-
-        </div>
-
-
-        <div class="floating-node node-top">
-
-          <strong>
-            LOG
-          </strong>
-
-          <small>
-            PARSED
-          </small>
-
-        </div>
-
-
-        <div class="floating-node node-right">
-
-          <strong>
-            GPU2
-          </strong>
-
-          <small>
-            PRIORITIZED
-          </small>
-
-        </div>
-
-
-        <div class="floating-node node-bottom">
-
-          <strong>
-            RETEST
-          </strong>
-
-          <small>
-            GUIDED
-          </small>
-
-        </div>
-
-
-        <div class="floating-node node-left">
-
-          <strong>
-            8 GPU
-          </strong>
-
-          <small>
-            TOPOLOGY
-          </small>
-
-        </div>
-
-
-        <div class="hero-telemetry">
-
-          <span>
-            PLATFORM
-            <strong>SXM</strong>
-          </span>
-
-          <span>
-            GPU FABRIC
-            <strong>8 NODE</strong>
-          </span>
-
-          <span>
-            CONTROL
-            <strong>HUMAN</strong>
-          </span>
-
-          <span>
-            MODE
-            <strong>OFFLINE</strong>
-          </span>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         COMMAND CENTER KPI
-         ===================================================== -->
-
-    <div class="section-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          COMMAND CENTER
-        </div>
-
-        <h2>
-          Operational snapshot
-        </h2>
-
-      </div>
-
-      <span class="demo-label">
-        ILLUSTRATIVE PROTOTYPE DATA
-      </span>
-
-    </div>
-
-
-    <div class="metric-grid">
-
-      <div class="metric-card">
-
-        <div class="metric-top">
-
-          <span>
-            Active Alerts
-          </span>
-
-          <span
-            class="metric-icon red"
-            aria-hidden="true"
-          >
-            !
-          </span>
-
-        </div>
-
-        <div class="metric-value">
-          <span id="active-alert-count">2</span>
-        </div>
-
-        <div class="metric-change neutral-change">
-          1 critical · 1 warning
-        </div>
-
-        <div class="metric-mini-status">
-
-          <span
-            class="mini-status critical"
-            aria-hidden="true"
-          ></span>
-
-          Attention required
-
-        </div>
-
-      </div>
-
-
-      <div class="metric-card">
-
-        <div class="metric-top">
-
-          <span>
-            Critical GPUs
-          </span>
-
-          <span
-            class="metric-icon orange"
-            aria-hidden="true"
-          >
-            ◈
-          </span>
-
-        </div>
-
-        <div class="metric-value">
-
-          <span id="critical-gpu-count">
-            1
-          </span>
-
-          <small>/ 8</small>
-
-        </div>
-
-        <div class="metric-change negative-change">
-          GPU2 requires isolation
-        </div>
-
-        <div class="metric-mini-status">
-
-          <span
-            class="mini-status critical"
-            aria-hidden="true"
-          ></span>
-
-          Critical hardware state
-
-        </div>
-
-      </div>
-
-
-      <div class="metric-card">
-
-        <div class="metric-top">
-
-          <span>
-            Diagnostics Run
-          </span>
-
-          <span
-            class="metric-icon blue"
-            aria-hidden="true"
-          >
-            ⌁
-          </span>
-
-        </div>
-
-        <div class="metric-value">
-          <span id="diagnostics-run-count">24</span>
-        </div>
-
-        <div class="metric-change positive">
-          Prototype activity
-        </div>
-
-        <div class="progress-track">
-
-          <div
-            class="progress-fill blue-fill"
-            style="width: 72%"
-            role="progressbar"
-            aria-valuenow="72"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-label="Diagnostics activity 72 percent"
-          ></div>
-
-        </div>
-
-      </div>
-
-
-      <div class="metric-card">
-
-        <div class="metric-top">
-
-          <span>
-            Resolutions Logged
-          </span>
-
-          <span
-            class="metric-icon green"
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-
-        </div>
-
-        <div class="metric-value">
-          <span id="resolution-count">18</span>
-        </div>
-
-        <div class="metric-change positive">
-          Technician confirmed
-        </div>
-
-        <div class="progress-track">
-
-          <div
-            class="progress-fill green-fill"
-            style="width: 75%"
-            role="progressbar"
-            aria-valuenow="75"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-label="Resolutions logged 75 percent"
-          ></div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         HARDWARE TOPOLOGY
-         ===================================================== -->
-
-    <div class="section-heading topology-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          HARDWARE TOPOLOGY
-        </div>
-
-        <h2>
-          8-GPU system health
-        </h2>
-
-      </div>
-
-
-      <div
-        class="topology-legend"
-        aria-label="GPU health legend"
-      >
-
-        <span>
-
-          <i
-            class="legend-health critical"
-            aria-hidden="true"
-          ></i>
-
-          Critical
-
-        </span>
-
-
-        <span>
-
-          <i
-            class="legend-health warning"
-            aria-hidden="true"
-          ></i>
-
-          Warning
-
-        </span>
-
-
-        <span>
-
-          <i
-            class="legend-health healthy"
-            aria-hidden="true"
-          ></i>
-
-          Healthy
-
-        </span>
-
-      </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         GPU TOPOLOGY PANEL
-         ===================================================== -->
-
-    <section
-      class="topology-panel panel"
-      id="gpu-topology-panel"
-      aria-labelledby="gpu-topology-heading"
-    >
-
-      <div class="topology-header">
-
-        <div>
-
-          <span class="topology-platform">
-            NVIDIA H200 / SXM-INSPIRED PLATFORM
-          </span>
-
-          <h3 id="gpu-topology-heading">
-            GPU topology overview
-          </h3>
-
-        </div>
-
-
-        <div class="topology-meta">
-
-          <span>
-
-            <strong id="topology-healthy-count">
-              6
-            </strong>
-
-            Healthy
-
-          </span>
-
-
-          <span>
-
-            <strong id="topology-attention-count">
-              2
-            </strong>
-
-            Attention
-
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- =================================================
-           TOPOLOGY HARDWARE FRAME
-           =================================================
-
-           This frame is deliberately separated from the
-           JavaScript GPU container.
-
-           The physical environment belongs to HTML/CSS.
-
-           The GPU nodes belong to JavaScript.
-
-           This separation will allow us to replace the
-           current 2D topology with the future interactive
-           3D Vulcan-inspired model without rewriting the
-           dashboard structure.
-           ================================================= -->
-
-      <div
-        class="topology-hardware-frame"
-        id="topology-hardware-frame"
-      >
-
-
-        <!-- =================================================
-             HARDWARE BACKPLATE
-             ================================================= -->
-
-        <div
-          class="topology-backplate"
-          aria-hidden="true"
-        >
-
-          <div class="topology-backplate-grid"></div>
-
-          <div class="topology-board-edge topology-board-edge-top"></div>
-          <div class="topology-board-edge topology-board-edge-bottom"></div>
-          <div class="topology-board-edge topology-board-edge-left"></div>
-          <div class="topology-board-edge topology-board-edge-right"></div>
-
-        </div>
-
-
-        <!-- =================================================
-             PLATFORM IDENTIFICATION
-             ================================================= -->
-
-        <div
-          class="platform-identification"
-          aria-hidden="true"
-        >
-
-          <span>
-            HGX / SXM
-          </span>
-
-          <small>
-            8-GPU COMPUTE PLATFORM
-          </small>
-
-        </div>
-
-
-        <!-- =================================================
-             CENTRAL FABRIC
-             ================================================= -->
-
-        <div
-          class="topology-fabric"
-          aria-hidden="true"
-        >
-
-          <span class="fabric-rail rail-top"></span>
-
-          <span class="fabric-rail rail-middle"></span>
-
-          <span class="fabric-rail rail-bottom"></span>
-
-          <span class="fabric-node fabric-node-center">
-            FABRIC
-          </span>
-
-        </div>
-
-
-        <!-- =================================================
-             GPU TOPOLOGY STAGE
-             =================================================
-
-             IMPORTANT
-
-             #gpu-topology is intentionally a real DOM
-             element with a stable ID.
-
-             app.js should populate this container.
-
-             The fallback nodes below ensure the section
-             remains visually understandable even before
-             JavaScript finishes rendering.
-
-             JavaScript can clear and rebuild this container
-             without changing the surrounding hardware frame.
-             ================================================= -->
-
-        <div
-          class="gpu-topology"
-          id="gpu-topology"
-          role="list"
-          aria-label="Eight GPU topology"
-        >
-
-          <!-- GPU 0 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU0"
-            aria-label="GPU0 healthy"
-          >
-
-            <strong>GPU0</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 72%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 1 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU1"
-            aria-label="GPU1 healthy"
-          >
-
-            <strong>GPU1</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 68%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 2 -->
-
-          <button
-            class="gpu-node critical selected"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU2"
-            aria-label="GPU2 critical"
-            aria-pressed="true"
-          >
-
-            <strong>GPU2</strong>
-
-            <span class="gpu-health">
-              ● CRITICAL
-            </span>
-
-            <span class="gpu-load">
-              ISOLATION REQUIRED
-            </span>
-
-          </button>
-
-
-          <!-- GPU 3 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU3"
-            aria-label="GPU3 healthy"
-          >
-
-            <strong>GPU3</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 74%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 4 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU4"
-            aria-label="GPU4 healthy"
-          >
-
-            <strong>GPU4</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 65%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 5 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU5"
-            aria-label="GPU5 healthy"
-          >
-
-            <strong>GPU5</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 61%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 6 -->
-
-          <button
-            class="gpu-node healthy"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU6"
-            aria-label="GPU6 healthy"
-          >
-
-            <strong>GPU6</strong>
-
-            <span class="gpu-health">
-              ● HEALTHY
-            </span>
-
-            <span class="gpu-load">
-              LOAD 70%
-            </span>
-
-          </button>
-
-
-          <!-- GPU 7 -->
-
-          <button
-            class="gpu-node warning"
-            type="button"
-            role="listitem"
-            data-gpu-id="GPU7"
-            aria-label="GPU7 warning"
-          >
-
-            <strong>GPU7</strong>
-
-            <span class="gpu-health">
-              ● WARNING
-            </span>
-
-            <span class="gpu-load">
-              REVIEW REQUIRED
-            </span>
-
-          </button>
-
-        </div>
-
-
-        <!-- =================================================
-             PLATFORM HARDWARE DETAILS
-             ================================================= -->
-
-        <div
-          class="topology-hardware-details"
-          aria-hidden="true"
-        >
-
-          <span>
-            BASEBOARD
-          </span>
-
-          <span>
-            HMC / BMC
-          </span>
-
-          <span>
-            LS10 × 4
-          </span>
-
-          <span>
-            HSK × 2
-          </span>
-
-        </div>
-
-
-        <!-- =================================================
-             FUTURE 3D VIEWPORT
-             =================================================
-
-             Reserved for the next Vulcan visualization phase.
-
-             Three.js or another rendering layer can mount
-             here later without replacing the topology panel.
-
-             Hidden until the 3D engine is intentionally enabled.
-             ================================================= -->
-
-        <div
-          id="vulcan-3d-viewport"
-          class="vulcan-3d-viewport"
-          aria-label="Interactive Vulcan-inspired hardware visualization"
-          hidden
-        ></div>
-
-      </div>
-
-
-      <!-- =================================================
-           TOPOLOGY FOOTER
-           ================================================= -->
-
-      <div class="topology-footer">
-
-        <div
-          class="topology-selection"
-          id="topology-selection"
-          aria-live="polite"
-        >
-          GPU2 selected · Critical hardware state · Technician review required.
-        </div>
+ 
 
         <button
-          class="text-button"
+
+          class="nav-item active"
+
           type="button"
-          data-view-target="analyzer"
+
+          data-view="dashboard"
+
+          aria-current="page"
+
         >
-          Open diagnostics →
-        </button>
 
-      </div>
+ 
 
-    </section>
+          <span
 
+            class="nav-icon"
 
-    <!-- =====================================================
-         DASHBOARD LOWER GRID
-         ===================================================== -->
+            aria-hidden="true"
 
-    <div class="dashboard-columns">
-
-      <div class="panel">
-
-        <div class="panel-header">
-
-          <div>
-
-            <div class="eyebrow">
-              RECENT ACTIVITY
-            </div>
-
-            <h3>
-              Repair intelligence feed
-            </h3>
-
-          </div>
-
-          <button
-            class="text-button"
-            type="button"
-            data-view-target="cases"
           >
-            View all →
-          </button>
 
-        </div>
+            ⌂
 
-
-        <div
-          class="activity-list"
-          id="activity-list"
-          aria-live="polite"
-        >
-          <!-- Populated by JavaScript -->
-        </div>
-
-      </div>
-
-
-      <div class="panel readiness-panel">
-
-        <div class="panel-header">
-
-          <div>
-
-            <div class="eyebrow">
-              KNOWLEDGE COVERAGE
-            </div>
-
-            <h3>
-              Diagnostic coverage
-            </h3>
-
-          </div>
-
-          <span class="coverage-score">
-            82%
           </span>
 
-        </div>
+ 
 
+          <span>
 
-        <div
-          class="coverage-ring"
-          role="img"
-          aria-label="Diagnostic knowledge coverage: 82 percent"
+            Command Center
+
+          </span>
+
+ 
+
+        </button>
+
+ 
+
+        <button
+
+          class="nav-item"
+
+          type="button"
+
+          data-view="analyzer"
+
         >
 
-          <div class="ring-inner">
+ 
+
+          <span
+
+            class="nav-icon"
+
+            aria-hidden="true"
+
+          >
+
+            ⌁
+
+          </span>
+
+ 
+
+          <span>
+
+            Log Analyzer
+
+          </span>
+
+ 
+
+        </button>
+
+ 
+
+        <button
+
+          class="nav-item"
+
+          type="button"
+
+          data-view="cases"
+
+        >
+
+ 
+
+          <span
+
+            class="nav-icon"
+
+            aria-hidden="true"
+
+          >
+
+            ▣
+
+          </span>
+
+ 
+
+          <span>
+
+            Case History
+
+          </span>
+
+ 
+
+        </button>
+
+ 
+
+        <button
+
+          class="nav-item"
+
+          type="button"
+
+          data-view="knowledge"
+
+        >
+
+ 
+
+          <span
+
+            class="nav-icon"
+
+            aria-hidden="true"
+
+          >
+
+            ◇
+
+          </span>
+
+ 
+
+          <span>
+
+            Knowledge Base
+
+          </span>
+
+ 
+
+        </button>
+
+ 
+
+        <button
+
+          class="nav-item"
+
+          type="button"
+
+          data-view="metrics"
+
+        >
+
+ 
+
+          <span
+
+            class="nav-icon"
+
+            aria-hidden="true"
+
+          >
+
+            ▥
+
+          </span>
+
+ 
+
+          <span>
+
+            Pilot Metrics
+
+          </span>
+
+ 
+
+        </button>
+
+ 
+
+      </nav>
+
+ 
+
+      <div
+
+        class="sidebar-divider"
+
+        aria-hidden="true"
+
+      ></div>
+
+ 
+
+      <div class="sidebar-bottom">
+
+ 
+
+        <div class="system-status">
+
+ 
+
+          <span
+
+            class="status-dot"
+
+            aria-hidden="true"
+
+          ></span>
+
+ 
+
+          <div>
+
+ 
 
             <strong>
-              82%
+
+              Prototype Online
+
             </strong>
 
+ 
+
             <span>
-              Coverage
+
+              Offline demo mode
+
             </span>
 
+ 
+
           </div>
+
+ 
 
         </div>
 
+ 
 
-        <div class="coverage-list">
+        <div class="version-label">
 
-          <div>
-
-            <span>
-              <i
-                class="dot green-dot"
-                aria-hidden="true"
-              ></i>
-              GPU failures
-            </span>
-
-            <strong>94%</strong>
-
-          </div>
-
-
-          <div>
-
-            <span>
-              <i
-                class="dot blue-dot"
-                aria-hidden="true"
-              ></i>
-              PCIe / NVLink
-            </span>
-
-            <strong>86%</strong>
-
-          </div>
-
-
-          <div>
-
-            <span>
-              <i
-                class="dot purple-dot"
-                aria-hidden="true"
-              ></i>
-              Firmware
-            </span>
-
-            <strong>72%</strong>
-
-          </div>
-
-
-          <div>
-
-            <span>
-              <i
-                class="dot orange-dot"
-                aria-hidden="true"
-              ></i>
-              Tester issues
-            </span>
-
-            <strong>61%</strong>
-
-          </div>
+          RepairIQ v0.5
 
         </div>
 
-      </div>
+ 
 
-    </div>
+        <div class="sidebar-note">
 
-  </section>
+          Decision support only.
 
+          Verify hardware state before action.
 
-  <!-- =====================================================
-       LOG ANALYZER VIEW
-       ===================================================== -->
-
-  <section
-    class="view"
-    id="analyzer-view"
-    aria-labelledby="analyzer-heading"
-  >
-
-    <div class="view-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          CONTROLLED DECISION SUPPORT
         </div>
 
-        <h2 id="analyzer-heading">
-          SXM Log Analyzer
-        </h2>
-
-        <p>
-          Search or load a test log, identify failure evidence,
-          and generate a structured repair path for technician review.
-        </p>
+ 
 
       </div>
 
+ 
 
-      <div
-        class="human-control-badge"
-        role="status"
-      >
+    </aside>
 
-        <span aria-hidden="true">
-          ●
-        </span>
+ 
 
-        Technician approval required
+    <!-- =======================================================
 
-      </div>
+    MAIN CONTENT
 
-    </div>
+    ======================================================= -->
 
+ 
 
-    <div class="diagnostic-search panel">
+    <main class="main-content">
 
-      <div class="search-header">
+ 
 
-        <div>
+      <!-- =====================================================
+
+      TOPBAR
+
+      ===================================================== -->
+
+ 
+
+      <header class="topbar">
+
+ 
+
+        <div class="topbar-title">
+
+ 
 
           <div class="eyebrow">
-            DIAGNOSTIC SEARCH
+
+            SXM SERVER REPAIR OPERATIONS
+
           </div>
 
-          <h3>
-            Find a failure pattern
-          </h3>
+ 
+
+          <h1 id="page-title">
+
+            Repair Operations Dashboard
+
+          </h1>
+
+ 
+
+          <p class="topbar-context">
+
+            Diagnose. Isolate. Repair. Verify.
+
+          </p>
+
+ 
 
         </div>
 
-        <span class="offline-badge">
-          Offline demo
-        </span>
+ 
 
-      </div>
+        <div class="topbar-actions">
 
+ 
 
-      <div class="search-row">
+          <div class="environment-badge">
 
-        <div class="search-field">
+ 
 
-          <span
-            class="search-icon"
-            aria-hidden="true"
+            <span
+
+              class="environment-dot"
+
+              aria-hidden="true"
+
+            ></span>
+
+ 
+
+            DEMO ENVIRONMENT
+
+ 
+
+          </div>
+
+ 
+
+          <button
+
+            class="icon-button"
+
+            id="load-demo-button"
+
+            type="button"
+
+            title="Load demonstration case"
+
+            aria-label="Load demonstration case"
+
           >
-            ⌕
-          </span>
 
-          <input
-            id="diagnostic-search"
-            type="search"
-            autocomplete="off"
-            placeholder="Search error code, symptom, component, or subsystem..."
-            aria-label="Search diagnostic information"
-          />
+            ▶
+
+          </button>
+
+ 
+
+          <div class="user-chip">
+
+ 
+
+            <div
+
+              class="avatar"
+
+              aria-hidden="true"
+
+            >
+
+              DC
+
+            </div>
+
+ 
+
+            <div>
+
+ 
+
+              <strong>
+
+                Repair Technician
+
+              </strong>
+
+ 
+
+              <span>
+
+                Technician Control Active
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
 
         </div>
 
+ 
 
-        <button
-          class="primary-button"
-          id="diagnostic-search-button"
-          type="button"
-        >
+      </header>
 
-          Search
+ 
 
-          <span aria-hidden="true">
-            →
+      <!-- =====================================================
+
+      DASHBOARD VIEW
+
+      ===================================================== -->
+
+ 
+
+      <section
+
+        class="view active"
+
+        id="dashboard-view"
+
+        aria-labelledby="dashboard-heading"
+
+      >
+
+ 
+
+        <!-- ===================================================
+
+        HERO COMMAND CENTER
+
+        =================================================== -->
+
+ 
+
+        <div class="hero-card">
+
+ 
+
+          <div class="hero-content">
+
+ 
+
+            <div class="hero-badge">
+
+ 
+
+              <span
+
+                class="pulse"
+
+                aria-hidden="true"
+
+              ></span>
+
+ 
+
+              REPAIRIQ COMMAND CENTER
+
+ 
+
+            </div>
+
+ 
+
+            <h2 id="dashboard-heading">
+
+ 
+
+              Turn complex failure logs into
+
+ 
+
+              <span>
+
+                structured repair decisions.
+
+              </span>
+
+ 
+
+            </h2>
+
+ 
+
+            <p>
+
+              RepairIQ organizes failure evidence, identifies affected
+
+              hardware, explains diagnostic confidence, and guides the
+
+              technician through a controlled repair workflow.
+
+            </p>
+
+ 
+
+            <div class="hero-actions">
+
+ 
+
+              <button
+
+                class="primary-button"
+
+                id="start-analysis-button"
+
+                type="button"
+
+              >
+
+ 
+
+                Analyze a Failure Log
+
+ 
+
+                <span aria-hidden="true">
+
+                  →
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="secondary-button"
+
+                id="view-demo-button"
+
+                type="button"
+
+              >
+
+                View Demonstration
+
+              </button>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="hero-trust-row">
+
+ 
+
+              <span>
+
+                <i
+
+                  class="trust-dot"
+
+                  aria-hidden="true"
+
+                ></i>
+
+                Technician controlled
+
+              </span>
+
+ 
+
+              <span>
+
+                <i
+
+                  class="trust-dot"
+
+                  aria-hidden="true"
+
+                ></i>
+
+                Evidence driven
+
+              </span>
+
+ 
+
+              <span>
+
+                <i
+
+                  class="trust-dot"
+
+                  aria-hidden="true"
+
+                ></i>
+
+                Offline capable
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <!-- =================================================
+
+          HERO HARDWARE / INTELLIGENCE VISUAL
+
+          ================================================= -->
+
+ 
+
+          <div
+
+            class="hero-visual"
+
+            aria-label="RepairIQ H200-inspired eight GPU diagnostic visualization"
+
+          >
+
+ 
+
+            <div
+
+              class="hero-grid"
+
+              aria-hidden="true"
+
+            ></div>
+
+ 
+
+            <div
+
+              class="hardware-frame"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <div class="hardware-frame-top"></div>
+
+              <div class="hardware-frame-side"></div>
+
+              <div class="hardware-frame-bottom"></div>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="hardware-platform"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <div class="board-surface">
+
+ 
+
+                <div class="board-edge board-edge-top"></div>
+
+                <div class="board-edge board-edge-bottom"></div>
+
+                <div class="board-edge board-edge-left"></div>
+
+                <div class="board-edge board-edge-right"></div>
+
+ 
+
+                <div class="pcb-traces">
+
+ 
+
+                  <span class="trace trace-1"></span>
+
+                  <span class="trace trace-2"></span>
+
+                  <span class="trace trace-3"></span>
+
+                  <span class="trace trace-4"></span>
+
+                  <span class="trace trace-5"></span>
+
+                  <span class="trace trace-6"></span>
+
+ 
+
+                </div>
+
+ 
+
+                <div class="compute-zone">
+
+ 
+
+                  <div class="compute-zone-label">
+
+                    SXM COMPUTE FABRIC
+
+                  </div>
+
+ 
+
+                  <div class="compute-core">
+
+                    RI
+
+                  </div>
+
+ 
+
+                  <div class="compute-zone-status">
+
+                    DIAGNOSTIC ENGINE ONLINE
+
+                  </div>
+
+ 
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-1">
+
+                  <span>GPU0</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-2">
+
+                  <span>GPU1</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-3 critical">
+
+                  <span>GPU2</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-4">
+
+                  <span>GPU3</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-5">
+
+                  <span>GPU4</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-6">
+
+                  <span>GPU5</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-7">
+
+                  <span>GPU6</span>
+
+                </div>
+
+ 
+
+                <div class="hero-gpu-module hero-gpu-8">
+
+                  <span>GPU7</span>
+
+                </div>
+
+ 
+
+                <div class="fabric-lines">
+
+ 
+
+                  <span class="fabric-line fabric-line-a"></span>
+
+                  <span class="fabric-line fabric-line-b"></span>
+
+                  <span class="fabric-line fabric-line-c"></span>
+
+                  <span class="fabric-line fabric-line-d"></span>
+
+ 
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <div class="hardware-shroud">
+
+ 
+
+                <div class="shroud-highlight"></div>
+
+ 
+
+                <div class="shroud-label">
+
+                  HGX / SXM PLATFORM
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="core-node">
+
+ 
+
+              <div
+
+                class="core-symbol"
+
+                aria-hidden="true"
+
+              >
+
+                RI
+
+              </div>
+
+ 
+
+              <span>
+
+                RepairIQ
+
+              </span>
+
+ 
+
+              <small>
+
+                Decision Engine
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="floating-node node-top">
+
+ 
+
+              <strong>
+
+                LOG
+
+              </strong>
+
+ 
+
+              <small>
+
+                PARSED
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="floating-node node-right">
+
+ 
+
+              <strong>
+
+                GPU2
+
+              </strong>
+
+ 
+
+              <small>
+
+                PRIORITIZED
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="floating-node node-bottom">
+
+ 
+
+              <strong>
+
+                RETEST
+
+              </strong>
+
+ 
+
+              <small>
+
+                GUIDED
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="floating-node node-left">
+
+ 
+
+              <strong>
+
+                8 GPU
+
+              </strong>
+
+ 
+
+              <small>
+
+                TOPOLOGY
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="hero-telemetry">
+
+ 
+
+              <span>
+
+                PLATFORM
+
+                <strong>SXM</strong>
+
+              </span>
+
+ 
+
+              <span>
+
+                GPU FABRIC
+
+                <strong>8 NODE</strong>
+
+              </span>
+
+ 
+
+              <span>
+
+                CONTROL
+
+                <strong>HUMAN</strong>
+
+              </span>
+
+ 
+
+              <span>
+
+                MODE
+
+                <strong>OFFLINE</strong>
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <!-- =====================================================
+
+        COMMAND CENTER KPI
+
+        ===================================================== -->
+
+ 
+
+        <div class="section-heading">
+
+ 
+
+          <div>
+
+ 
+
+            <div class="eyebrow">
+
+              COMMAND CENTER
+
+            </div>
+
+ 
+
+            <h2>
+
+              Operational snapshot
+
+            </h2>
+
+ 
+
+          </div>
+
+ 
+
+          <span class="demo-label">
+
+            ILLUSTRATIVE PROTOTYPE DATA
+
           </span>
 
-        </button>
+ 
 
-      </div>
+        </div>
 
+ 
 
-      <div class="quick-searches">
+        <div class="metric-grid">
 
-        <span>
-          Quick search:
-        </span>
+ 
 
+          <div class="metric-card">
 
-        <button
-          type="button"
-          class="quick-search-chip"
-          data-error-code="HMC_BIST_FAIL"
+ 
+
+            <div class="metric-top">
+
+ 
+
+              <span>
+
+                Active Alerts
+
+              </span>
+
+ 
+
+              <span
+
+                class="metric-icon red"
+
+                aria-hidden="true"
+
+              >
+
+                !
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="metric-value">
+
+              <span id="active-alert-count">2</span>
+
+            </div>
+
+ 
+
+            <div class="metric-change neutral-change">
+
+              1 critical · 1 warning
+
+            </div>
+
+ 
+
+            <div class="metric-mini-status">
+
+ 
+
+              <span
+
+                class="mini-status critical"
+
+                aria-hidden="true"
+
+              ></span>
+
+ 
+
+              Attention required
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="metric-card">
+
+ 
+
+            <div class="metric-top">
+
+ 
+
+              <span>
+
+                Critical GPUs
+
+              </span>
+
+ 
+
+              <span
+
+                class="metric-icon orange"
+
+                aria-hidden="true"
+
+              >
+
+                ◈
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="metric-value">
+
+ 
+
+              <span id="critical-gpu-count">
+
+                1
+
+              </span>
+
+ 
+
+              <small>/ 8</small>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="metric-change negative-change">
+
+              GPU2 requires isolation
+
+            </div>
+
+ 
+
+            <div class="metric-mini-status">
+
+ 
+
+              <span
+
+                class="mini-status critical"
+
+                aria-hidden="true"
+
+              ></span>
+
+ 
+
+              Critical hardware state
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="metric-card">
+
+ 
+
+            <div class="metric-top">
+
+ 
+
+              <span>
+
+                Diagnostics Run
+
+              </span>
+
+ 
+
+              <span
+
+                class="metric-icon blue"
+
+                aria-hidden="true"
+
+              >
+
+                ⌁
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="metric-value">
+
+              <span id="diagnostics-run-count">24</span>
+
+            </div>
+
+ 
+
+            <div class="metric-change positive">
+
+              Prototype activity
+
+            </div>
+
+ 
+
+            <div class="progress-track">
+
+ 
+
+              <div
+
+                class="progress-fill blue-fill"
+
+                style="width: 72%"
+
+                role="progressbar"
+
+                aria-valuenow="72"
+
+                aria-valuemin="0"
+
+                aria-valuemax="100"
+
+                aria-label="Diagnostics activity 72 percent"
+
+              ></div>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="metric-card">
+
+ 
+
+            <div class="metric-top">
+
+ 
+
+              <span>
+
+                Resolutions Logged
+
+              </span>
+
+ 
+
+              <span
+
+                class="metric-icon green"
+
+                aria-hidden="true"
+
+              >
+
+                ✓
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="metric-value">
+
+              <span id="resolution-count">18</span>
+
+            </div>
+
+ 
+
+            <div class="metric-change positive">
+
+              Technician confirmed
+
+            </div>
+
+ 
+
+            <div class="progress-track">
+
+ 
+
+              <div
+
+                class="progress-fill green-fill"
+
+                style="width: 75%"
+
+                role="progressbar"
+
+                aria-valuenow="75"
+
+                aria-valuemin="0"
+
+                aria-valuemax="100"
+
+                aria-label="Resolutions logged 75 percent"
+
+              ></div>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <!-- =====================================================
+
+        HARDWARE TOPOLOGY
+
+        ===================================================== -->
+
+ 
+
+        <div class="section-heading topology-heading">
+
+ 
+
+          <div>
+
+ 
+
+            <div class="eyebrow">
+
+              HARDWARE TOPOLOGY
+
+            </div>
+
+ 
+
+            <h2>
+
+              8-GPU system health
+
+            </h2>
+
+ 
+
+          </div>
+
+ 
+
+          <div
+
+            class="topology-legend"
+
+            aria-label="GPU health legend"
+
+          >
+
+ 
+
+            <span>
+
+ 
+
+              <i
+
+                class="legend-health critical"
+
+                aria-hidden="true"
+
+              ></i>
+
+ 
+
+              Critical
+
+ 
+
+            </span>
+
+ 
+
+            <span>
+
+ 
+
+              <i
+
+                class="legend-health warning"
+
+                aria-hidden="true"
+
+              ></i>
+
+ 
+
+              Warning
+
+ 
+
+            </span>
+
+ 
+
+            <span>
+
+ 
+
+              <i
+
+                class="legend-health healthy"
+
+                aria-hidden="true"
+
+              ></i>
+
+ 
+
+              Healthy
+
+ 
+
+            </span>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <!-- =====================================================
+
+        GPU TOPOLOGY PANEL
+
+        ===================================================== -->
+
+ 
+
+        <section
+
+          class="topology-panel panel"
+
+          id="gpu-topology-panel"
+
+          aria-labelledby="gpu-topology-heading"
+
         >
-          HMC_BIST_FAIL
-        </button>
 
+ 
 
-        <button
-          type="button"
-          class="quick-search-chip"
-          data-error-code="GPU_XID_31"
+          <div class="topology-header">
+
+ 
+
+            <div>
+
+ 
+
+              <span class="topology-platform">
+
+                NVIDIA H200 / SXM-INSPIRED PLATFORM
+
+              </span>
+
+ 
+
+              <h3 id="gpu-topology-heading">
+
+                GPU topology overview
+
+              </h3>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="topology-meta">
+
+ 
+
+              <span>
+
+ 
+
+                <strong id="topology-healthy-count">
+
+                  6
+
+                </strong>
+
+ 
+
+                Healthy
+
+ 
+
+              </span>
+
+ 
+
+              <span>
+
+ 
+
+                <strong id="topology-attention-count">
+
+                  2
+
+                </strong>
+
+ 
+
+                Attention
+
+ 
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <!-- =================================================
+
+          TOPOLOGY HARDWARE FRAME
+
+          ================================================= -->
+
+ 
+
+          <div
+
+            class="topology-hardware-frame"
+
+            id="topology-hardware-frame"
+
+          >
+
+ 
+
+            <div
+
+              class="topology-backplate"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <div class="topology-backplate-grid"></div>
+
+ 
+
+              <div class="topology-board-edge topology-board-edge-top"></div>
+
+              <div class="topology-board-edge topology-board-edge-bottom"></div>
+
+              <div class="topology-board-edge topology-board-edge-left"></div>
+
+              <div class="topology-board-edge topology-board-edge-right"></div>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="platform-identification"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <span>
+
+                HGX / SXM
+
+              </span>
+
+ 
+
+              <small>
+
+                8-GPU COMPUTE PLATFORM
+
+              </small>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="topology-fabric"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <span class="fabric-rail rail-top"></span>
+
+              <span class="fabric-rail rail-middle"></span>
+
+              <span class="fabric-rail rail-bottom"></span>
+
+ 
+
+              <span class="fabric-node fabric-node-center">
+
+                FABRIC
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <!-- =================================================
+
+            GPU TOPOLOGY STAGE
+
+ 
+
+            The container retains its original stable ID and
+
+            fallback GPU nodes.
+
+ 
+
+            JavaScript may clear and rebuild this container from
+
+            structured case data in a later implementation.
+
+            ================================================= -->
+
+ 
+
+            <div
+
+              class="gpu-topology"
+
+              id="gpu-topology"
+
+              role="list"
+
+              aria-label="Eight GPU topology"
+
+            >
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU0"
+
+                aria-label="GPU0 healthy"
+
+              >
+
+ 
+
+                <strong>GPU0</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 72%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU1"
+
+                aria-label="GPU1 healthy"
+
+              >
+
+ 
+
+                <strong>GPU1</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 68%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node critical selected"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU2"
+
+                aria-label="GPU2 critical"
+
+                aria-pressed="true"
+
+              >
+
+ 
+
+                <strong>GPU2</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● CRITICAL
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  ISOLATION REQUIRED
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU3"
+
+                aria-label="GPU3 healthy"
+
+              >
+
+ 
+
+                <strong>GPU3</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 74%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU4"
+
+                aria-label="GPU4 healthy"
+
+              >
+
+ 
+
+                <strong>GPU4</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 65%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU5"
+
+                aria-label="GPU5 healthy"
+
+              >
+
+ 
+
+                <strong>GPU5</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 61%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node healthy"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU6"
+
+                aria-label="GPU6 healthy"
+
+              >
+
+ 
+
+                <strong>GPU6</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● HEALTHY
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  LOAD 70%
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+              <button
+
+                class="gpu-node warning"
+
+                type="button"
+
+                role="listitem"
+
+                data-gpu-id="GPU7"
+
+                aria-label="GPU7 warning"
+
+              >
+
+ 
+
+                <strong>GPU7</strong>
+
+ 
+
+                <span class="gpu-health">
+
+                  ● WARNING
+
+                </span>
+
+ 
+
+                <span class="gpu-load">
+
+                  REVIEW REQUIRED
+
+                </span>
+
+ 
+
+              </button>
+
+ 
+
+            </div>
+
+ 
+
+            <!-- =================================================
+
+            PLATFORM HARDWARE DETAILS
+
+            ================================================= -->
+
+ 
+
+            <div
+
+              class="topology-hardware-details"
+
+              aria-hidden="true"
+
+            >
+
+ 
+
+              <span>
+
+                BASEBOARD
+
+              </span>
+
+ 
+
+              <span>
+
+                HMC / BMC
+
+              </span>
+
+ 
+
+              <span>
+
+                LS10 × 4
+
+              </span>
+
+ 
+
+              <span>
+
+                HSK × 2
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <!-- =================================================
+
+            FUTURE 3D VIEWPORT
+
+            ================================================= -->
+
+ 
+
+            <div
+
+              id="vulcan-3d-viewport"
+
+              class="vulcan-3d-viewport"
+
+              aria-label="Interactive Vulcan-inspired hardware visualization"
+
+              hidden
+
+            ></div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="topology-footer">
+
+ 
+
+            <div
+
+              class="topology-selection"
+
+              id="topology-selection"
+
+              aria-live="polite"
+
+            >
+
+              GPU2 selected · Critical hardware state · Technician review required.
+
+            </div>
+
+ 
+
+            <button
+
+              class="text-button"
+
+              type="button"
+
+              data-view-target="analyzer"
+
+            >
+
+              Open diagnostics →
+
+            </button>
+
+ 
+
+          </div>
+
+ 
+
+        </section>
+
+ 
+
+        <!-- =====================================================
+
+        DASHBOARD LOWER GRID
+
+        ===================================================== -->
+
+ 
+
+        <div class="dashboard-columns">
+
+ 
+
+          <div class="panel">
+
+ 
+
+            <div class="panel-header">
+
+ 
+
+              <div>
+
+ 
+
+                <div class="eyebrow">
+
+                  RECENT ACTIVITY
+
+                </div>
+
+ 
+
+                <h3>
+
+                  Repair intelligence feed
+
+                </h3>
+
+ 
+
+              </div>
+
+ 
+
+              <button
+
+                class="text-button"
+
+                type="button"
+
+                data-view-target="cases"
+
+              >
+
+                View all →
+
+              </button>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="activity-list"
+
+              id="activity-list"
+
+              aria-live="polite"
+
+            >
+
+              <!-- Populated by JavaScript -->
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="panel readiness-panel">
+
+ 
+
+            <div class="panel-header">
+
+ 
+
+              <div>
+
+ 
+
+                <div class="eyebrow">
+
+                  KNOWLEDGE COVERAGE
+
+                </div>
+
+ 
+
+                <h3>
+
+                  Diagnostic coverage
+
+                </h3>
+
+ 
+
+              </div>
+
+ 
+
+              <span class="coverage-score">
+
+                82%
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="coverage-ring"
+
+              role="img"
+
+              aria-label="Diagnostic knowledge coverage: 82 percent"
+
+            >
+
+ 
+
+              <div class="ring-inner">
+
+ 
+
+                <strong>
+
+                  82%
+
+                </strong>
+
+ 
+
+                <span>
+
+                  Coverage
+
+                </span>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="coverage-list">
+
+ 
+
+              <div>
+
+ 
+
+                <span>
+
+                  <i
+
+                    class="dot green-dot"
+
+                    aria-hidden="true"
+
+                  ></i>
+
+                  GPU failures
+
+                </span>
+
+ 
+
+                <strong>94%</strong>
+
+ 
+
+              </div>
+
+ 
+
+              <div>
+
+ 
+
+                <span>
+
+                  <i
+
+                    class="dot blue-dot"
+
+                    aria-hidden="true"
+
+                  ></i>
+
+                  PCIe / NVLink
+
+                </span>
+
+ 
+
+                <strong>86%</strong>
+
+ 
+
+              </div>
+
+ 
+
+              <div>
+
+ 
+
+                <span>
+
+                  <i
+
+                    class="dot purple-dot"
+
+                    aria-hidden="true"
+
+                  ></i>
+
+                  Firmware
+
+                </span>
+
+ 
+
+                <strong>72%</strong>
+
+ 
+
+              </div>
+
+ 
+
+              <div>
+
+ 
+
+                <span>
+
+                  <i
+
+                    class="dot orange-dot"
+
+                    aria-hidden="true"
+
+                  ></i>
+
+                  Tester issues
+
+                </span>
+
+ 
+
+                <strong>61%</strong>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+      </section>
+
+ 
+
+      <!-- =====================================================
+
+      LOG ANALYZER VIEW
+
+      ===================================================== -->
+
+ 
+
+      <section
+
+        class="view"
+
+        id="analyzer-view"
+
+        aria-labelledby="analyzer-heading"
+
+      >
+
+ 
+
+        <div class="view-heading">
+
+ 
+
+          <div>
+
+ 
+
+            <div class="eyebrow">
+
+              CONTROLLED DECISION SUPPORT
+
+            </div>
+
+ 
+
+            <h2 id="analyzer-heading">
+
+              SXM Log Analyzer
+
+            </h2>
+
+ 
+
+            <p>
+
+              Search or load a test log, identify failure evidence,
+
+              and generate a structured repair path for technician review.
+
+            </p>
+
+ 
+
+          </div>
+
+ 
+
+          <div
+
+            class="human-control-badge"
+
+            role="status"
+
+          >
+
+ 
+
+            <span aria-hidden="true">
+
+              ●
+
+            </span>
+
+ 
+
+            Technician approval required
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <!-- =====================================================
+
+        DIAGNOSTIC SEARCH
+
+        ===================================================== -->
+
+ 
+
+        <div class="diagnostic-search panel">
+
+ 
+
+          <div class="search-header">
+
+ 
+
+            <div>
+
+ 
+
+              <div class="eyebrow">
+
+                DIAGNOSTIC SEARCH
+
+              </div>
+
+ 
+
+              <h3>
+
+                Find a failure pattern
+
+              </h3>
+
+ 
+
+            </div>
+
+ 
+
+            <span class="offline-badge">
+
+              Offline demo
+
+            </span>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="search-row">
+
+ 
+
+            <div class="search-field">
+
+ 
+
+              <span
+
+                class="search-icon"
+
+                aria-hidden="true"
+
+              >
+
+                ⌕
+
+              </span>
+
+ 
+
+              <input
+
+                id="diagnostic-search"
+
+                type="search"
+
+                autocomplete="off"
+
+                placeholder="Search error code, symptom, component, or subsystem..."
+
+                aria-label="Search diagnostic information"
+
+              >
+
+ 
+
+            </div>
+
+ 
+
+            <button
+
+              class="primary-button"
+
+              id="diagnostic-search-button"
+
+              type="button"
+
+            >
+
+ 
+
+              Search
+
+ 
+
+              <span aria-hidden="true">
+
+                →
+
+              </span>
+
+ 
+
+            </button>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="quick-searches">
+
+ 
+
+            <span>
+
+              Quick search:
+
+            </span>
+
+ 
+
+            <button
+
+              type="button"
+
+              class="quick-search-chip"
+
+              data-error-code="HMC_BIST_FAIL"
+
+            >
+
+              HMC_BIST_FAIL
+
+            </button>
+
+ 
+
+            <button
+
+              type="button"
+
+              class="quick-search-chip"
+
+              data-error-code="GPU_XID_31"
+
+            >
+
+              GPU_XID_31
+
+            </button>
+
+ 
+
+            <button
+
+              type="button"
+
+              class="quick-search-chip"
+
+              data-error-code="BMC_SENSOR_WARN"
+
+            >
+
+              BMC_SENSOR_WARN
+
+            </button>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <!-- =====================================================
+
+        ACTIVE CASE CONTEXT CONTRACT
+
+ 
+
+        PURPOSE
+
+        ---------------------------------------------------------
+
+        This section creates a stable case context that can
+
+        eventually be populated from a backend Unit and Case
+
+        record.
+
+ 
+
+        It intentionally uses data attributes so future JavaScript
+
+        or API integration can update fields without changing the
+
+        surrounding layout.
+
+ 
+
+        Current values are demonstration values only.
+
+        ===================================================== -->
+
+ 
+
+        <section
+
+          class="active-case-context panel"
+
+          id="active-case-context"
+
+          aria-labelledby="active-case-context-heading"
+
+          data-contract="active-case"
+
+          data-data-source="demo"
+
+          data-case-state="new"
+
         >
-          GPU_XID_31
-        </button>
 
+ 
 
-        <button
-          type="button"
-          class="quick-search-chip"
-          data-error-code="BMC_SENSOR_WARN"
-        >
-          BMC_SENSOR_WARN
-        </button>
+          <div class="panel-header">
 
-      </div>
+ 
 
-    </div>
+            <div>
 
+ 
 
-    <div class="analyzer-layout">
+              <div class="eyebrow">
 
-      <div class="analyzer-input-column">
+                ACTIVE CASE CONTRACT
+
+              </div>
+
+ 
+
+              <h3 id="active-case-context-heading">
+
+                Current repair investigation
+
+              </h3>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="case-context-badges">
+
+ 
+
+              <span
+
+                class="case-id"
+
+                id="active-case-id"
+
+              >
+
+                CASE-NEW
+
+              </span>
+
+ 
+
+              <span
+
+                class="status-pill neutral"
+
+                id="active-case-state"
+
+                role="status"
+
+                aria-live="polite"
+
+              >
+
+                NEW
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="active-case-grid">
+
+ 
+
+            <!-- Unit identity -->
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="unit-serial"
+
+            >
+
+ 
+
+              <span>
+
+                Unit Serial
+
+              </span>
+
+ 
+
+              <strong id="active-unit-serial">
+
+                DEMO-UNIT-0001
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="system-serial"
+
+            >
+
+ 
+
+              <span>
+
+                System Serial
+
+              </span>
+
+ 
+
+              <strong id="active-system-serial">
+
+                DEMO-SYSTEM-0001
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="platform"
+
+            >
+
+ 
+
+              <span>
+
+                Platform
+
+              </span>
+
+ 
+
+              <strong id="active-platform">
+
+                H200 / SXM
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="failure-stage"
+
+            >
+
+ 
+
+              <span>
+
+                Failure Stage
+
+              </span>
+
+ 
+
+              <strong id="active-failure-stage">
+
+                Awaiting analysis
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="tester"
+
+            >
+
+ 
+
+              <span>
+
+                Tester
+
+              </span>
+
+ 
+
+              <strong id="active-tester">
+
+                SXM-TESTER-04
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="case-context-field"
+
+              data-field="technician"
+
+            >
+
+ 
+
+              <span>
+
+                Technician
+
+              </span>
+
+ 
+
+              <strong id="active-technician">
+
+                Repair Technician
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div
+
+            class="prototype-data-banner"
+
+            id="active-case-data-status"
+
+            role="note"
+
+          >
+
+ 
+
+            <span
+
+              aria-hidden="true"
+
+            >
+
+              ◈
+
+            </span>
+
+ 
+
+            <strong>
+
+              Prototype / Demonstration Data
+
+            </strong>
+
+ 
+
+            <span>
+
+              This case context is not connected to production hardware,
+
+              live telemetry, or a verified repair database.
+
+            </span>
+
+ 
+
+          </div>
+
+ 
+
+        </section>
+
+ 
+
+        <div class="analyzer-layout">
+
+ 
+
+          <!-- ===================================================
+
+          ANALYZER INPUT COLUMN
+
+          =================================================== -->
+
+ 
+
+          <div class="analyzer-input-column">
+
+ 
+
+            <div class="panel">
+
+ 
+
+              <div class="panel-header">
+
+ 
+
+                <div>
+
+ 
+
+                  <div class="eyebrow">
+
+                    CASE INPUT
+
+                  </div>
+
+ 
+
+                  <h3>
+
+                    Failure information
+
+                  </h3>
+
+ 
+
+                </div>
+
+ 
+
+                <span
+
+                  class="case-id"
+
+                  id="case-id-label"
+
+                >
+
+                  CASE-NEW
+
+                </span>
+
+ 
+
+              </div>
+
+ 
+
+              <div class="form-grid">
+
+ 
+
+                <label>
+
+ 
+
+                  <span>
+
+                    Platform family
+
+                  </span>
+
+ 
+
+                  <select id="product-family">
+
+ 
+
+                    <option>
+
+                      SXM GPU Server
+
+                    </option>
+
+ 
+
+                    <option>
+
+                      HGX GPU Server
+
+                    </option>
+
+ 
+
+                    <option>
+
+                      AI Motherboard
+
+                    </option>
+
+ 
+
+                    <option>
+
+                      Accelerator Card
+
+                    </option>
+
+ 
+
+                    <option>
+
+                      Networking Equipment
+
+                    </option>
+
+ 
+
+                  </select>
+
+ 
+
+                </label>
+
+ 
+
+                <label>
+
+ 
+
+                  <span>
+
+                    Platform model
+
+                  </span>
+
+ 
+
+                  <input
+
+                    id="product-model"
+
+                    value="NVIDIA H200 / SXM 8-GPU Demo"
+
+                  >
+
+ 
+
+                </label>
+
+ 
+
+                <label>
+
+ 
+
+                  <span>
+
+                    Tester
+
+                  </span>
+
+ 
+
+                  <input
+
+                    id="tester-name"
+
+                    value="SXM-TESTER-04"
+
+                  >
+
+ 
+
+                </label>
+
+ 
+
+                <label>
+
+ 
+
+                  <span>
+
+                    Technician
+
+                  </span>
+
+ 
+
+                  <input
+
+                    id="technician-name"
+
+                    value="Repair Technician"
+
+                  >
+
+ 
+
+                </label>
+
+ 
+
+              </div>
+
+ 
+
+              <label class="full-label">
+
+ 
+
+                <span>
+
+                  Technician notes
+
+                </span>
+
+ 
+
+                <textarea
+
+                  id="technician-notes"
+
+                  rows="3"
+
+                  placeholder="Describe symptoms, observations, tester behavior, or recent repair activity..."
+
+                ></textarea>
+
+ 
+
+              </label>
+
+ 
+
+              <!-- =================================================
+
+              FUTURE UNIT IDENTITY INPUTS
+
+ 
+
+              These fields are intentionally hidden from the main
+
+              prototype workflow for now.
+
+ 
+
+              They provide an architectural location for future
+
+              Digital Unit Passport integration without forcing a
+
+              visual redesign in this phase.
+
+              ================================================= -->
+
+ 
+
+              <div
+
+                class="future-data-contract"
+
+                id="unit-identity-contract"
+
+                data-contract="unit-identity"
+
+                hidden
+
+              >
+
+ 
+
+                <input
+
+                  id="unit-serial-input"
+
+                  name="unitSerial"
+
+                  type="text"
+
+                >
+
+ 
+
+                <input
+
+                  id="system-serial-input"
+
+                  name="systemSerial"
+
+                  type="text"
+
+                >
+
+ 
+
+                <input
+
+                  id="part-number-input"
+
+                  name="partNumber"
+
+                  type="text"
+
+                >
+
+ 
+
+                <input
+
+                  id="assembly-part-number-input"
+
+                  name="assemblyPartNumber"
+
+                  type="text"
+
+                >
+
+ 
+
+                <input
+
+                  id="board-revision-input"
+
+                  name="boardRevision"
+
+                  type="text"
+
+                >
+
+ 
+
+                <input
+
+                  id="department-input"
+
+                  name="department"
+
+                  type="text"
+
+                >
+
+ 
+
+              </div>
+
+ 
+
+              <div
+
+                class="drop-zone"
+
+                id="drop-zone"
+
+                tabindex="0"
+
+                role="button"
+
+                aria-label="Upload a test log"
+
+                aria-describedby="drop-zone-help"
+
+              >
+
+ 
+
+                <div
+
+                  class="upload-icon"
+
+                  aria-hidden="true"
+
+                >
+
+                  ⇧
+
+                </div>
+
+ 
+
+                <strong>
+
+                  Drop a test log here
+
+                </strong>
+
+ 
+
+                <span id="drop-zone-help">
+
+                  or click to browse .txt, .log, or .json files
+
+                </span>
+
+ 
+
+                <input
+
+                  type="file"
+
+                  id="file-input"
+
+                  accept=".txt,.log,.json,text/plain,application/json"
+
+                  hidden
+
+                >
+
+ 
+
+              </div>
+
+ 
+
+              <div class="input-actions">
+
+ 
+
+                <button
+
+                  class="secondary-button"
+
+                  id="demo-log-button"
+
+                  type="button"
+
+                >
+
+                  Load Demo Log
+
+                </button>
+
+ 
+
+                <button
+
+                  class="primary-button"
+
+                  id="analyze-button"
+
+                  type="button"
+
+                >
+
+ 
+
+                  Run RepairIQ Analysis
+
+ 
+
+                  <span aria-hidden="true">
+
+                    →
+
+                  </span>
+
+ 
+
+                </button>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+            <!-- =====================================================
+
+            RAW LOG EVIDENCE
+
+            ===================================================== -->
+
+ 
+
+            <div class="panel log-panel">
+
+ 
+
+              <div class="panel-header">
+
+ 
+
+                <div>
+
+ 
+
+                  <div class="eyebrow">
+
+                    RAW EVIDENCE
+
+                  </div>
+
+ 
+
+                  <h3>
+
+                    Test log preview
+
+                  </h3>
+
+ 
+
+                </div>
+
+ 
+
+                <span
+
+                  id="log-status"
+
+                  class="status-pill neutral"
+
+                  role="status"
+
+                  aria-live="polite"
+
+                >
+
+                  Awaiting input
+
+                </span>
+
+ 
+
+              </div>
+
+ 
+
+              <pre
+
+                id="log-preview"
+
+                tabindex="0"
+
+                aria-label="Raw test log preview"
+
+              >No test log loaded.</pre>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <!-- ===================================================
+
+          STRUCTURED DIAGNOSTIC RESULT COLUMN
+
+          =================================================== -->
+
+ 
+
+          <div class="analysis-output-column">
+
+ 
+
+            <!-- =================================================
+
+            DIAGNOSTIC RESULT PANEL
+
+ 
+
+            This ID is preserved for compatibility with the
+
+            existing JavaScript controller.
+
+ 
+
+            The empty state remains available.
+
+ 
+
+            The structured result contract is hidden until an
+
+            analysis has been produced. JavaScript can reveal
+
+            #structured-diagnostic-result and populate its stable
+
+            field IDs.
+
+ 
+
+            Future data flow:
+
+ 
+
+            Unit
+
+            → Test
+
+            → Failure
+
+            → Evidence
+
+            → History
+
+            → Recommendation
+
+            → Technician Approval
+
+            → Retest
+
+            ================================================= -->
+
+ 
+
+            <section
+
+              class="panel result-panel"
+
+              id="result-panel"
+
+              aria-live="polite"
+
+              aria-labelledby="diagnostic-result-heading"
+
+              data-contract="diagnostic-result"
+
+              data-result-state="empty"
+
+            >
+
+ 
+
+              <!-- =================================================
+
+              EMPTY RESULT STATE
+
+ 
+
+              Preserve the existing initial experience.
+
+              This state should remain visible until a log,
+
+              search result, or demonstration analysis exists.
+
+              ================================================= -->
+
+ 
+
+              <div
+
+                class="empty-result"
+
+                id="empty-diagnostic-result"
+
+              >
+
+ 
+
+                <div
+
+                  class="empty-orb"
+
+                  aria-hidden="true"
+
+                >
+
+                  RI
+
+                </div>
+
+ 
+
+                <h3 id="diagnostic-result-heading">
+
+                  Diagnostic results will appear here
+
+                </h3>
+
+ 
+
+                <p>
+
+                  Search for a failure pattern, upload a log,
+
+                  or load the demonstration case to generate
+
+                  a prioritized repair path.
+
+                </p>
+
+ 
+
+                <div class="empty-result-flow">
+
+ 
+
+                  <span>
+
+                    Evidence
+
+                  </span>
+
+ 
+
+                  <i aria-hidden="true">
+
+                    →
+
+                  </i>
+
+ 
+
+                  <span>
+
+                    Diagnosis
+
+                  </span>
+
+ 
+
+                  <i aria-hidden="true">
+
+                    →
+
+                  </i>
+
+ 
+
+                  <span>
+
+                    Action
+
+                  </span>
+
+ 
+
+                  <i aria-hidden="true">
+
+                    →
+
+                  </i>
+
+ 
+
+                  <span>
+
+                    Verification
+
+                  </span>
+
+ 
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <!-- =================================================
+
+              STRUCTURED DIAGNOSTIC RESULT CONTRACT
+
+ 
+
+              This is the primary upgrade.
+
+ 
+
+              Every section has:
+
+ 
+
+              - A stable ID
+
+              - A semantic data-field
+
+              - A clear label
+
+              - A future JavaScript insertion point
+
+              - A prototype-safe empty value
+
+ 
+
+              These regions intentionally avoid fabricated
+
+              production conclusions. Demo content is labeled
+
+              wherever it appears.
+
+              ================================================= -->
+
+ 
+
+              <div
+
+                class="structured-diagnostic-result"
+
+                id="structured-diagnostic-result"
+
+                data-result-state="ready"
+
+                data-data-source="demo"
+
+                hidden
+
+              >
+
+ 
+
+                <!-- =================================================
+
+                RESULT HEADER
+
+                ================================================= -->
+
+ 
+
+                <header
+
+                  class="diagnostic-result-header"
+
+                  data-section="result-header"
+
+                >
+
+ 
+
+                  <div>
+
+ 
+
+                    <div class="eyebrow">
+
+                      REPAIRIQ ROOT CAUSE COMMAND
+
+                    </div>
+
+ 
+
+                    <h2
+
+                      id="root-cause-command-heading"
+
+                      data-field="result-title"
+
+                    >
+
+                      Diagnostic result
+
+                    </h2>
+
+ 
+
+                    <p
+
+                      id="diagnostic-result-summary"
+
+                      data-field="result-summary"
+
+                    >
+
+                      Structured diagnostic findings will appear here
+
+                      after analysis.
+
+                    </p>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="diagnostic-result-state">
+
+ 
+
+                    <span
+
+                      class="status-pill neutral"
+
+                      id="diagnostic-result-status"
+
+                      role="status"
+
+                      aria-live="polite"
+
+                      data-field="result-status"
+
+                    >
+
+                      ANALYSIS PENDING
+
+                    </span>
+
+ 
+
+                    <span
+
+                      class="demo-label"
+
+                      id="diagnostic-result-data-label"
+
+                      data-field="data-source-label"
+
+                    >
+
+                      PROTOTYPE / DEMONSTRATION DATA
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                </header>
+
+ 
+
+                <!-- =================================================
+
+                1. ACTIVE CASE
+
+ 
+
+                Establishes the case record connected to the
+
+                diagnostic output.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section active-case-section"
+
+                  id="diagnostic-active-case"
+
+                  aria-labelledby="diagnostic-active-case-heading"
+
+                  data-section="active-case"
+
+                  data-field-group="activeCase"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        ACTIVE CASE
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-active-case-heading">
+
+                        Case context
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="case-id"
+
+                      id="diagnostic-case-id"
+
+                      data-field="caseId"
+
+                    >
+
+                      CASE-NEW
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="diagnostic-field-grid">
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="caseState"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Case State
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-case-state">
+
+                        NEW
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="department"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Department
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-department">
+
+                        SXM Diagnostics
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="technician"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Technician
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-technician">
+
+                        Repair Technician
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="tester"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Tester
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-tester">
+
+                        SXM-TESTER-04
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                2. UNIT IDENTITY
+
+ 
+
+                Creates the initial Digital Unit Passport
+
+                contract for the diagnostic result.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section unit-identity-section"
+
+                  id="diagnostic-unit-identity"
+
+                  aria-labelledby="diagnostic-unit-identity-heading"
+
+                  data-section="unit-identity"
+
+                  data-field-group="unitIdentity"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        UNIT IDENTITY
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-unit-identity-heading">
+
+                        Digital Unit Passport
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="data-state-label"
+
+                      id="unit-identity-data-state"
+
+                      data-field="dataState"
+
+                    >
+
+                      DEMO RECORD
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="diagnostic-field-grid">
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="unitSerial"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Unit Serial
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-unit-serial">
+
+                        DEMO-UNIT-0001
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="systemSerial"
+
+                    >
+
+ 
+
+                      <span>
+
+                        System Serial
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-system-serial">
+
+                        DEMO-SYSTEM-0001
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="partNumber"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Part Number
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-part-number">
+
+                        DEMO-PN-0001
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="platform"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Platform
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-platform">
+
+                        H200 / SXM
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="build"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Build
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-build">
+
+                        Vulcan-inspired demo
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="boardRevision"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Board Revision
+
+                      </span>
+
+ 
+
+                      <strong id="diagnostic-board-revision">
+
+                        Not supplied
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                3. FAILURE STAGE
+
+ 
+
+                Represents structured test-stage context.
+
+                A stage is not assumed to have run unless data
+
+                supports that state.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section test-stage-section"
+
+                  id="diagnostic-test-stage"
+
+                  aria-labelledby="diagnostic-test-stage-heading"
+
+                  data-section="test-stage"
+
+                  data-field-group="testStage"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        FAILURE STAGE
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-test-stage-heading">
+
+                        Test execution context
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <strong
+
+                      class="failure-stage-value"
+
+                      id="diagnostic-failure-stage"
+
+                      data-field="failureStage"
+
+                    >
+
+                      Awaiting analysis
+
+                    </strong>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div
+
+                    class="test-stage-list"
+
+                    id="diagnostic-test-stage-list"
+
+                    role="list"
+
+                    aria-label="Diagnostic test stages"
+
+                  >
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="INIT"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        INIT
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-init">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="FLT"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        FLT
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-flt">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="FLB"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        FLB
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-flb">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="FCT"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        FCT
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-fct">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="DCC"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        DCC
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-dcc">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="test-stage-item"
+
+                      role="listitem"
+
+                      data-stage="RIN"
+
+                      data-result="unknown"
+
+                    >
+
+ 
+
+                      <span>
+
+                        RIN
+
+                      </span>
+
+ 
+
+                      <strong id="test-stage-rin">
+
+                        UNKNOWN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                  <p
+
+                    class="diagnostic-disclaimer"
+
+                    id="test-stage-disclaimer"
+
+                  >
+
+                    Test-stage conclusions should be generated only
+
+                    from structured log evidence or verified test-session
+
+                    records.
+
+                  </p>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                4. PRIMARY FINDING
+
+ 
+
+                The central answer to:
+
+                "Why did this unit fail?"
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section primary-finding-section"
+
+                  id="diagnostic-primary-finding"
+
+                  aria-labelledby="diagnostic-primary-finding-heading"
+
+                  data-section="primary-finding"
+
+                  data-field-group="primaryFinding"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        PRIMARY FINDING
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-primary-finding-heading">
+
+                        Current diagnostic conclusion
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="status-pill neutral"
+
+                      id="primary-finding-severity"
+
+                      data-field="severity"
+
+                    >
+
+                      PENDING
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="primary-finding-content">
+
+ 
+
+                    <strong
+
+                      class="primary-finding-title"
+
+                      id="primary-finding-title"
+
+                      data-field="primaryFinding"
+
+                    >
+
+                      No finding has been generated.
+
+                    </strong>
+
+ 
+
+                    <p
+
+                      id="primary-finding-explanation"
+
+                      data-field="primaryFindingExplanation"
+
+                    >
+
+                      Load a test log or run a diagnostic search to
+
+                      generate an evidence-linked finding.
+
+                    </p>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                5. AFFECTED COMPONENT
+
+ 
+
+                Identifies the component associated with the
+
+                strongest supported failure evidence.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section affected-component-section"
+
+                  id="diagnostic-affected-component"
+
+                  aria-labelledby="diagnostic-affected-component-heading"
+
+                  data-section="affected-component"
+
+                  data-field-group="affectedComponent"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        AFFECTED COMPONENT
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-affected-component-heading">
+
+                        Hardware candidate
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="component-status neutral"
+
+                      id="affected-component-status"
+
+                      data-field="componentStatus"
+
+                    >
+
+                      NOT IDENTIFIED
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="component-identity-card">
+
+ 
+
+                    <div class="component-symbol">
+
+                      GPU
+
+                    </div>
+
+ 
+
+                    <div class="component-identity-copy">
+
+ 
+
+                      <strong
+
+                        id="affected-component-name"
+
+                        data-field="componentId"
+
+                      >
+
+                        No component identified
+
+                      </strong>
+
+ 
+
+                      <span
+
+                        id="affected-component-part-number"
+
+                        data-field="partNumber"
+
+                      >
+
+                        Part number unavailable
+
+                      </span>
+
+ 
+
+                      <span
+
+                        id="affected-component-serial"
+
+                        data-field="componentSerial"
+
+                      >
+
+                        Serial number unavailable
+
+                      </span>
+
+ 
+
+                    </div>
+
+ 
+
+                    <button
+
+                      class="text-button"
+
+                      id="view-component-history-button"
+
+                      type="button"
+
+                      data-action="view-component-history"
+
+                      disabled
+
+                    >
+
+                      View component history →
+
+                    </button>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                6. ROOT-CAUSE CANDIDATES
+
+ 
+
+                Scores are explicitly described as prototype
+
+                evidence scores, not validated production
+
+                probabilities.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section root-cause-section"
+
+                  id="diagnostic-root-cause-candidates"
+
+                  aria-labelledby="diagnostic-root-cause-heading"
+
+                  data-section="root-cause-candidates"
+
+                  data-field-group="rootCauseCandidates"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        ROOT-CAUSE CANDIDATES
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-root-cause-heading">
+
+                        Evidence-weighted candidates
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="data-state-label"
+
+                      id="root-cause-score-label"
+
+                    >
+
+                      PROTOTYPE SCORES
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <p
+
+                    class="diagnostic-disclaimer"
+
+                    id="root-cause-score-disclaimer"
+
+                  >
+
+                    These values represent simulated prototype evidence
+
+                    scores. They are not production-validated probabilities
+
+                    or autonomous repair decisions.
+
+                  </p>
+
+ 
+
+                  <ol
+
+                    class="root-cause-candidate-list"
+
+                    id="root-cause-candidate-list"
+
+                    aria-label="Root-cause candidates"
+
+                  >
+
+ 
+
+                    <li
+
+                      class="root-cause-candidate"
+
+                      data-candidate-rank="1"
+
+                      data-candidate-id="candidate-1"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="candidate-rank"
+
+                        data-field="rank"
+
+                      >
+
+                        1
+
+                      </span>
+
+ 
+
+                      <div class="candidate-copy">
+
+ 
+
+                        <strong
+
+                          data-field="candidateName"
+
+                        >
+
+                          Candidate unavailable
+
+                        </strong>
+
+ 
+
+                        <span
+
+                          data-field="candidateReason"
+
+                        >
+
+                          Awaiting evidence extraction.
+
+                        </span>
+
+ 
+
+                      </div>
+
+ 
+
+                      <strong
+
+                        class="candidate-score"
+
+                        data-field="candidateScore"
+
+                      >
+
+                        —
+
+                      </strong>
+
+ 
+
+                    </li>
+
+ 
+
+                    <li
+
+                      class="root-cause-candidate"
+
+                      data-candidate-rank="2"
+
+                      data-candidate-id="candidate-2"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="candidate-rank"
+
+                        data-field="rank"
+
+                      >
+
+                        2
+
+                      </span>
+
+ 
+
+                      <div class="candidate-copy">
+
+ 
+
+                        <strong
+
+                          data-field="candidateName"
+
+                        >
+
+                          Candidate unavailable
+
+                        </strong>
+
+ 
+
+                        <span
+
+                          data-field="candidateReason"
+
+                        >
+
+                          Awaiting evidence extraction.
+
+                        </span>
+
+ 
+
+                      </div>
+
+ 
+
+                      <strong
+
+                        class="candidate-score"
+
+                        data-field="candidateScore"
+
+                      >
+
+                        —
+
+                      </strong>
+
+ 
+
+                    </li>
+
+ 
+
+                    <li
+
+                      class="root-cause-candidate"
+
+                      data-candidate-rank="3"
+
+                      data-candidate-id="candidate-3"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="candidate-rank"
+
+                        data-field="rank"
+
+                      >
+
+                        3
+
+                      </span>
+
+ 
+
+                      <div class="candidate-copy">
+
+ 
+
+                        <strong
+
+                          data-field="candidateName"
+
+                        >
+
+                          Candidate unavailable
+
+                        </strong>
+
+ 
+
+                        <span
+
+                          data-field="candidateReason"
+
+                        >
+
+                          Awaiting evidence extraction.
+
+                        </span>
+
+ 
+
+                      </div>
+
+ 
+
+                      <strong
+
+                        class="candidate-score"
+
+                        data-field="candidateScore"
+
+                      >
+
+                        —
+
+                      </strong>
+
+ 
+
+                    </li>
+
+ 
+
+                    <li
+
+                      class="root-cause-candidate"
+
+                      data-candidate-rank="4"
+
+                      data-candidate-id="candidate-4"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="candidate-rank"
+
+                        data-field="rank"
+
+                      >
+
+                        4
+
+                      </span>
+
+ 
+
+                      <div class="candidate-copy">
+
+ 
+
+                        <strong
+
+                          data-field="candidateName"
+
+                        >
+
+                          Candidate unavailable
+
+                        </strong>
+
+ 
+
+                        <span
+
+                          data-field="candidateReason"
+
+                        >
+
+                          Awaiting evidence extraction.
+
+                        </span>
+
+ 
+
+                      </div>
+
+ 
+
+                      <strong
+
+                        class="candidate-score"
+
+                        data-field="candidateScore"
+
+                      >
+
+                        —
+
+                      </strong>
+
+ 
+
+                    </li>
+
+ 
+
+                  </ol>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                7. SUPPORTING EVIDENCE
+
+ 
+
+                Evidence should eventually be generated from
+
+                normalized events, measurements, history, tester
+
+                state, firmware state, and configuration data.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section evidence-section supporting-evidence-section"
+
+                  id="diagnostic-supporting-evidence"
+
+                  aria-labelledby="diagnostic-supporting-evidence-heading"
+
+                  data-section="supporting-evidence"
+
+                  data-field-group="supportingEvidence"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        SUPPORTING EVIDENCE
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-supporting-evidence-heading">
+
+                        Why RepairIQ believes this
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="evidence-count"
+
+                      id="supporting-evidence-count"
+
+                    >
+
+                      0 signals
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <ul
+
+                    class="evidence-list"
+
+                    id="supporting-evidence-list"
+
+                    aria-label="Supporting diagnostic evidence"
+
+                  >
+
+ 
+
+                    <li
+
+                      class="evidence-item empty-evidence"
+
+                      data-evidence-state="empty"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="evidence-icon"
+
+                        aria-hidden="true"
+
+                      >
+
+                        —
+
+                      </span>
+
+ 
+
+                      <span
+
+                        data-field="evidenceText"
+
+                      >
+
+                        No supporting evidence has been extracted.
+
+                      </span>
+
+ 
+
+                    </li>
+
+ 
+
+                  </ul>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                8. CONTRADICTING SIGNALS
+
+ 
+
+                Negative evidence is important because it prevents
+
+                the system from presenting one-sided reasoning.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section evidence-section contradicting-evidence-section"
+
+                  id="diagnostic-contradicting-evidence"
+
+                  aria-labelledby="diagnostic-contradicting-evidence-heading"
+
+                  data-section="contradicting-evidence"
+
+                  data-field-group="contradictingEvidence"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        CONTRADICTING SIGNALS
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-contradicting-evidence-heading">
+
+                        Evidence that reduces confidence
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="evidence-count"
+
+                      id="contradicting-evidence-count"
+
+                    >
+
+                      0 signals
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <ul
+
+                    class="evidence-list"
+
+                    id="contradicting-evidence-list"
+
+                    aria-label="Contradicting diagnostic evidence"
+
+                  >
+
+ 
+
+                    <li
+
+                      class="evidence-item empty-evidence"
+
+                      data-evidence-state="empty"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="evidence-icon"
+
+                        aria-hidden="true"
+
+                      >
+
+                        —
+
+                      </span>
+
+ 
+
+                      <span
+
+                        data-field="evidenceText"
+
+                      >
+
+                        No contradicting signals have been identified.
+
+                      </span>
+
+ 
+
+                    </li>
+
+ 
+
+                  </ul>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                9. PREVIOUS ACTIONS
+
+ 
+
+                Records what has already happened so the
+
+                recommendation is traceable and repeat actions
+
+                can be avoided.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section previous-actions-section"
+
+                  id="diagnostic-previous-actions"
+
+                  aria-labelledby="diagnostic-previous-actions-heading"
+
+                  data-section="previous-actions"
+
+                  data-field-group="previousActions"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        WHAT HAS ALREADY BEEN DONE
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-previous-actions-heading">
+
+                        Documented diagnostic history
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="evidence-count"
+
+                      id="previous-actions-count"
+
+                    >
+
+                      0 actions
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <ol
+
+                    class="action-history-list"
+
+                    id="previous-actions-list"
+
+                    aria-label="Previous repair and diagnostic actions"
+
+                  >
+
+ 
+
+                    <li
+
+                      class="action-history-item empty-history"
+
+                      data-action-state="empty"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="action-marker"
+
+                        aria-hidden="true"
+
+                      >
+
+                        —
+
+                      </span>
+
+ 
+
+                      <div>
+
+ 
+
+                        <strong data-field="actionName">
+
+                          No documented actions
+
+                        </strong>
+
+ 
+
+                        <span data-field="actionDetails">
+
+                          Repair history has not been supplied for
+
+                          this case.
+
+                        </span>
+
+ 
+
+                      </div>
+
+ 
+
+                    </li>
+
+ 
+
+                  </ol>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                10. DO NOT REPEAT
+
+ 
+
+                This region is deliberately separate from previous
+
+                actions. A documented action is not automatically
+
+                considered safe to repeat or unnecessary to repeat.
+
+                The diagnostic engine must make that distinction.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section do-not-repeat-section"
+
+                  id="diagnostic-do-not-repeat"
+
+                  aria-labelledby="diagnostic-do-not-repeat-heading"
+
+                  data-section="do-not-repeat"
+
+                  data-field-group="doNotRepeat"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        CONTROLLED WORKFLOW GUARDRAIL
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-do-not-repeat-heading">
+
+                        Do not repeat without new evidence
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="guardrail-label"
+
+                      id="do-not-repeat-count"
+
+                    >
+
+                      0 actions
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <ul
+
+                    class="guardrail-list"
+
+                    id="do-not-repeat-list"
+
+                    aria-label="Actions not to repeat"
+
+                  >
+
+ 
+
+                    <li
+
+                      class="guardrail-item empty-guardrail"
+
+                      data-guardrail-state="empty"
+
+                    >
+
+ 
+
+                      <span
+
+                        class="guardrail-icon"
+
+                        aria-hidden="true"
+
+                      >
+
+                        ✓
+
+                      </span>
+
+ 
+
+                      <span data-field="guardrailText">
+
+                        No repeated-action guardrails have been generated.
+
+                      </span>
+
+ 
+
+                    </li>
+
+ 
+
+                  </ul>
+
+ 
+
+                  <p
+
+                    class="diagnostic-disclaimer"
+
+                    id="do-not-repeat-disclaimer"
+
+                  >
+
+                    A technician may override this guidance when new
+
+                    evidence, procedure requirements, or safety controls
+
+                    justify repeating an action.
+
+                  </p>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                11. CONFIDENCE EXPLANATION
+
+ 
+
+                Separates the confidence value from the explanation
+
+                for that value. This helps prevent unsupported
+
+                black-box conclusions.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section confidence-section"
+
+                  id="diagnostic-confidence"
+
+                  aria-labelledby="diagnostic-confidence-heading"
+
+                  data-section="confidence"
+
+                  data-field-group="confidence"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        CONFIDENCE MODEL
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-confidence-heading">
+
+                        Why the confidence exists
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <strong
+
+                      class="confidence-value"
+
+                      id="diagnostic-confidence-value"
+
+                      data-field="confidence"
+
+                    >
+
+                      —
+
+                    </strong>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div
+
+                    class="confidence-progress-track"
+
+                    aria-label="Prototype diagnostic confidence"
+
+                  >
+
+ 
+
+                    <div
+
+                      class="confidence-progress-fill"
+
+                      id="diagnostic-confidence-progress"
+
+                      role="progressbar"
+
+                      aria-valuenow="0"
+
+                      aria-valuemin="0"
+
+                      aria-valuemax="100"
+
+                      aria-label="Diagnostic confidence 0 percent"
+
+                    ></div>
+
+ 
+
+                  </div>
+
+ 
+
+                  <p
+
+                    id="diagnostic-confidence-explanation"
+
+                    data-field="confidenceExplanation"
+
+                  >
+
+                    Confidence will be explained using available
+
+                    evidence, correlations, history, and negative
+
+                    evidence. No validated production confidence exists
+
+                    in this offline prototype.
+
+                  </p>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                12. NEXT BEST DIAGNOSTIC ACTION
+
+ 
+
+                Recommendations remain controlled actions for
+
+                technician review. They do not authorize automated
+
+                hardware changes.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section next-action-section"
+
+                  id="diagnostic-next-action"
+
+                  aria-labelledby="diagnostic-next-action-heading"
+
+                  data-section="next-action"
+
+                  data-field-group="nextAction"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        NEXT BEST DIAGNOSTIC ACTION
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-next-action-heading">
+
+                        Controlled recommendation
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="action-status"
+
+                      id="next-action-status"
+
+                      data-field="actionStatus"
+
+                    >
+
+                      AWAITING ANALYSIS
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="next-action-card">
+
+ 
+
+                    <div
+
+                      class="next-action-icon"
+
+                      aria-hidden="true"
+
+                    >
+
+                      →
+
+                    </div>
+
+ 
+
+                    <div class="next-action-copy">
+
+ 
+
+                      <strong
+
+                        id="next-action-title"
+
+                        data-field="nextAction"
+
+                      >
+
+                        No action recommended
+
+                      </strong>
+
+ 
+
+                      <p
+
+                        id="next-action-explanation"
+
+                        data-field="nextActionExplanation"
+
+                      >
+
+                        A controlled diagnostic action will appear
+
+                        after evidence has been analyzed.
+
+                      </p>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                13. TECHNICIAN APPROVAL
+
+ 
+
+                This section explicitly establishes the human
+
+                decision boundary.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section approval-section"
+
+                  id="diagnostic-technician-approval"
+
+                  aria-labelledby="diagnostic-technician-approval-heading"
+
+                  data-section="technician-approval"
+
+                  data-field-group="technicianApproval"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        TECHNICIAN DECISION
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-technician-approval-heading">
+
+                        Technician approval required
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="approval-status pending"
+
+                      id="technician-approval-status"
+
+                      role="status"
+
+                      aria-live="polite"
+
+                      data-field="approvalStatus"
+
+                    >
+
+                      PENDING REVIEW
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="approval-content">
+
+ 
+
+                    <p
+
+                      id="technician-approval-message"
+
+                      data-field="approvalMessage"
+
+                    >
+
+                      RepairIQ provides decision support only. The
+
+                      technician must review the evidence and decide
+
+                      whether the recommended action is appropriate.
+
+                    </p>
+
+ 
+
+                    <div class="approval-actions">
+
+ 
+
+                      <button
+
+                        class="secondary-button"
+
+                        id="reject-diagnostic-recommendation-button"
+
+                        type="button"
+
+                        data-action="reject-recommendation"
+
+                        disabled
+
+                      >
+
+                        Reject recommendation
+
+                      </button>
+
+ 
+
+                      <button
+
+                        class="primary-button"
+
+                        id="approve-diagnostic-recommendation-button"
+
+                        type="button"
+
+                        data-action="approve-recommendation"
+
+                        disabled
+
+                      >
+
+                        Approve diagnostic action
+
+                        <span aria-hidden="true">
+
+                          →
+
+                        </span>
+
+                      </button>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                14. RETEST REQUIREMENT
+
+ 
+
+                Establishes the verification boundary after a
+
+                technician-approved repair or diagnostic action.
+
+                ================================================= -->
+
+ 
+
+                <section
+
+                  class="diagnostic-section retest-section"
+
+                  id="diagnostic-retest-requirement"
+
+                  aria-labelledby="diagnostic-retest-heading"
+
+                  data-section="retest-requirement"
+
+                  data-field-group="retestRequirement"
+
+                >
+
+ 
+
+                  <div class="diagnostic-section-heading">
+
+ 
+
+                    <div>
+
+ 
+
+                      <div class="eyebrow">
+
+                        RETEST REQUIREMENT
+
+                      </div>
+
+ 
+
+                      <h3 id="diagnostic-retest-heading">
+
+                        Verification after action
+
+                      </h3>
+
+ 
+
+                    </div>
+
+ 
+
+                    <span
+
+                      class="retest-status"
+
+                      id="retest-status"
+
+                      data-field="retestStatus"
+
+                    >
+
+                      NOT READY
+
+                    </span>
+
+ 
+
+                  </div>
+
+ 
+
+                  <div class="retest-grid">
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="retestStage"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Required Test Stage
+
+                      </span>
+
+ 
+
+                      <strong id="retest-stage">
+
+                        Not defined
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="retestCondition"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Required Result
+
+                      </span>
+
+ 
+
+                      <strong id="retest-condition">
+
+                        Not defined
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                    <div
+
+                      class="diagnostic-field"
+
+                      data-field="retestResult"
+
+                    >
+
+ 
+
+                      <span>
+
+                        Current Retest Result
+
+                      </span>
+
+ 
+
+                      <strong id="retest-result">
+
+                        NOT RUN
+
+                      </strong>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                  <p
+
+                    id="retest-requirement-message"
+
+                    data-field="retestMessage"
+
+                  >
+
+                    A repair or diagnostic action cannot be considered
+
+                    verified until the required retest is documented.
+
+                  </p>
+
+ 
+
+                </section>
+
+ 
+
+                <!-- =================================================
+
+                15. DATA PROVENANCE AND PROTOTYPE DISCLOSURE
+
+ 
+
+                This region prevents demonstration intelligence from
+
+                appearing to be verified production intelligence.
+
+                ================================================= -->
+
+ 
+
+                <aside
+
+                  class="diagnostic-data-disclosure"
+
+                  id="diagnostic-data-disclosure"
+
+                  role="note"
+
+                  data-section="data-provenance"
+
+                >
+
+ 
+
+                  <div
+
+                    class="disclosure-icon"
+
+                    aria-hidden="true"
+
+                  >
+
+                    i
+
+                  </div>
+
+ 
+
+                  <div>
+
+ 
+
+                    <strong>
+
+                      Prototype / Demonstration Data
+
+                    </strong>
+
+ 
+
+                    <p
+
+                      id="diagnostic-data-disclosure-message"
+
+                    >
+
+                      This diagnostic result is illustrative unless
+
+                      connected to verified logs, test-session records,
+
+                      component history, firmware records, and approved
+
+                      production data sources.
+
+                    </p>
+
+ 
+
+                    <div class="data-provenance-list">
+
+ 
+
+                      <span>
+
+                        Source:
+
+                        <strong id="diagnostic-data-source">
+
+                          Offline demo
+
+                        </strong>
+
+                      </span>
+
+ 
+
+                      <span>
+
+                        Intelligence:
+
+                        <strong id="diagnostic-intelligence-state">
+
+                          Simulated prototype logic
+
+                        </strong>
+
+                      </span>
+
+ 
+
+                      <span>
+
+                        Hardware control:
+
+                        <strong>
+
+                          Not connected
+
+                        </strong>
+
+                      </span>
+
+ 
+
+                    </div>
+
+ 
+
+                  </div>
+
+ 
+
+                </aside>
+
+ 
+
+              </div>
+
+ 
+
+              <!-- =================================================
+
+              JAVASCRIPT EXTENSION MOUNT
+
+ 
+
+              This empty region gives app.js a safe location for
+
+              future diagnostic components without requiring the
+
+              result panel itself to be replaced.
+
+ 
+
+              It may later support:
+
+ 
+
+              - Parsed event timeline
+
+              - Evidence weighting trace
+
+              - AI explanation
+
+              - RAG citations
+
+              - Audit events
+
+              ================================================= -->
+
+ 
+
+              <div
+
+                class="diagnostic-extension-mount"
+
+                id="diagnostic-extension-mount"
+
+                data-extension-mount="diagnostic-result"
+
+                aria-live="polite"
+
+              ></div>
+
+ 
+
+            </section>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+      </section>
+
+ 
+
+      <!-- =====================================================
+
+      CASE HISTORY VIEW
+
+      ===================================================== -->
+
+ 
+
+      <section
+
+        class="view"
+
+        id="cases-view"
+
+        aria-labelledby="cases-heading"
+
+      >
+
+ 
+
+        <div class="view-heading">
+
+ 
+
+          <div>
+
+ 
+
+            <div class="eyebrow">
+
+              TRACEABLE REPAIR KNOWLEDGE
+
+            </div>
+
+ 
+
+            <h2 id="cases-heading">
+
+              Case History
+
+            </h2>
+
+ 
+
+            <p>
+
+              Confirmed cases are stored locally in this prototype
+
+              for review and demonstration.
+
+            </p>
+
+ 
+
+          </div>
+
+ 
+
+          <button
+
+            class="secondary-button"
+
+            id="clear-cases-button"
+
+            type="button"
+
+          >
+
+            Clear Local Cases
+
+          </button>
+
+ 
+
+        </div>
+
+ 
 
         <div class="panel">
 
-          <div class="panel-header">
+ 
 
-            <div>
+          <div class="table-toolbar">
 
-              <div class="eyebrow">
-                CASE INPUT
-              </div>
+ 
 
-              <h3>
-                Failure information
-              </h3>
+            <div class="table-search">
 
-            </div>
-
-            <span
-              class="case-id"
-              id="case-id-label"
-            >
-              CASE-NEW
-            </span>
-
-          </div>
-
-
-          <div class="form-grid">
-
-            <label>
-
-              <span>
-                Platform family
-              </span>
-
-              <select id="product-family">
-
-                <option>
-                  SXM GPU Server
-                </option>
-
-                <option>
-                  HGX GPU Server
-                </option>
-
-                <option>
-                  AI Motherboard
-                </option>
-
-                <option>
-                  Accelerator Card
-                </option>
-
-                <option>
-                  Networking Equipment
-                </option>
-
-              </select>
-
-            </label>
-
-
-            <label>
-
-              <span>
-                Platform model
-              </span>
-
-              <input
-                id="product-model"
-                value="NVIDIA H200 / SXM 8-GPU Demo"
-              />
-
-            </label>
-
-
-            <label>
-
-              <span>
-                Tester
-              </span>
-
-              <input
-                id="tester-name"
-                value="SXM-TESTER-04"
-              />
-
-            </label>
-
-
-            <label>
-
-              <span>
-                Technician
-              </span>
-
-              <input
-                id="technician-name"
-                value="Repair Technician"
-              />
-
-            </label>
-
-          </div>
-
-
-          <label class="full-label">
-
-            <span>
-              Technician notes
-            </span>
-
-            <textarea
-              id="technician-notes"
-              rows="3"
-              placeholder="Describe symptoms, observations, tester behavior, or recent repair activity..."
-            ></textarea>
-
-          </label>
-
-
-          <div
-            class="drop-zone"
-            id="drop-zone"
-            tabindex="0"
-            role="button"
-            aria-label="Upload a test log"
-          >
-
-            <div
-              class="upload-icon"
-              aria-hidden="true"
-            >
-              ⇧
-            </div>
-
-            <strong>
-              Drop a test log here
-            </strong>
-
-            <span>
-              or click to browse .txt, .log, or .json files
-            </span>
-
-
-            <input
-              type="file"
-              id="file-input"
-              accept=".txt,.log,.json,text/plain,application/json"
-              hidden
-            />
-
-          </div>
-
-
-          <div class="input-actions">
-
-            <button
-              class="secondary-button"
-              id="demo-log-button"
-              type="button"
-            >
-              Load Demo Log
-            </button>
-
-
-            <button
-              class="primary-button"
-              id="analyze-button"
-              type="button"
-            >
-
-              Run RepairIQ Analysis
+ 
 
               <span aria-hidden="true">
-                →
+
+                ⌕
+
               </span>
 
-            </button>
+ 
 
-          </div>
+              <input
 
-        </div>
+                id="case-search"
 
+                class="search-input"
 
-        <div class="panel log-panel">
+                type="search"
 
-          <div class="panel-header">
+                placeholder="Search cases, components, or root causes..."
 
-            <div>
+                aria-label="Search repair cases"
 
-              <div class="eyebrow">
-                RAW EVIDENCE
-              </div>
+              >
 
-              <h3>
-                Test log preview
-              </h3>
+ 
 
             </div>
 
+ 
 
-            <span
-              id="log-status"
-              class="status-pill neutral"
+            <select
+
+              id="case-filter"
+
+              aria-label="Filter repair cases"
+
+            >
+
+ 
+
+              <option value="all">
+
+                All statuses
+
+              </option>
+
+ 
+
+              <option value="Completed">
+
+                Completed
+
+              </option>
+
+ 
+
+              <option value="Escalated">
+
+                Escalated
+
+              </option>
+
+ 
+
+              <option value="Pending">
+
+                Pending
+
+              </option>
+
+ 
+
+            </select>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="case-table-wrapper">
+
+ 
+
+            <table class="case-table">
+
+ 
+
+              <caption class="sr-only">
+
+                RepairIQ repair case history
+
+              </caption>
+
+ 
+
+              <thead>
+
+ 
+
+                <tr>
+
+ 
+
+                  <th scope="col">Case</th>
+
+                  <th scope="col">Product</th>
+
+                  <th scope="col">Primary Issue</th>
+
+                  <th scope="col">Component</th>
+
+                  <th scope="col">Recommendation</th>
+
+                  <th scope="col">Status</th>
+
+ 
+
+                </tr>
+
+ 
+
+              </thead>
+
+ 
+
+              <tbody id="case-table-body">
+
+                <!-- Populated by JavaScript -->
+
+              </tbody>
+
+ 
+
+            </table>
+
+ 
+
+            <div
+
+              class="table-empty-state"
+
+              id="case-table-empty-state"
+
               role="status"
+
               aria-live="polite"
+
+              hidden
+
             >
-              Awaiting input
-            </span>
 
-          </div>
-
-
-          <pre id="log-preview">No test log loaded.</pre>
-
-        </div>
-
-      </div>
-
-
-      <div class="analysis-output-column">
-
-        <div
-          class="panel result-panel"
-          id="result-panel"
-          aria-live="polite"
-        >
-
-          <div class="empty-result">
-
-            <div
-              class="empty-orb"
-              aria-hidden="true"
-            >
-              RI
-            </div>
-
-            <h3>
-              Diagnostic results will appear here
-            </h3>
-
-            <p>
-              Search for a failure pattern, upload a log,
-              or load the demonstration case to generate
-              a prioritized repair path.
-            </p>
-
-
-            <div class="empty-result-flow">
-
-              <span>Evidence</span>
-
-              <i aria-hidden="true">→</i>
-
-              <span>Diagnosis</span>
-
-              <i aria-hidden="true">→</i>
-
-              <span>Action</span>
-
-              <i aria-hidden="true">→</i>
-
-              <span>Verification</span>
+              No repair cases match the current filter.
 
             </div>
 
+ 
+
           </div>
 
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =====================================================
-       CASE HISTORY VIEW
-       ===================================================== -->
-
-  <section
-    class="view"
-    id="cases-view"
-    aria-labelledby="cases-heading"
-  >
-
-    <div class="view-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          TRACEABLE REPAIR KNOWLEDGE
-        </div>
-
-        <h2 id="cases-heading">
-          Case History
-        </h2>
-
-        <p>
-          Confirmed cases are stored locally in this prototype
-          for review and demonstration.
-        </p>
-
-      </div>
-
-
-      <button
-        class="secondary-button"
-        id="clear-cases-button"
-        type="button"
-      >
-        Clear Local Cases
-      </button>
-
-    </div>
-
-
-    <div class="panel">
-
-      <div class="table-toolbar">
-
-        <div class="table-search">
-
-          <span aria-hidden="true">
-            ⌕
-          </span>
-
-          <input
-            id="case-search"
-            class="search-input"
-            type="search"
-            placeholder="Search cases, components, or root causes..."
-            aria-label="Search repair cases"
-          />
+ 
 
         </div>
 
+ 
 
-        <select
-          id="case-filter"
-          aria-label="Filter repair cases"
-        >
+      </section>
 
-          <option value="all">
-            All statuses
-          </option>
+ 
 
-          <option value="Completed">
-            Completed
-          </option>
+      <!-- =====================================================
 
-          <option value="Escalated">
-            Escalated
-          </option>
+      KNOWLEDGE BASE VIEW
 
-          <option value="Pending">
-            Pending
-          </option>
+      ===================================================== -->
 
-        </select>
+ 
 
-      </div>
+      <section
 
+        class="view"
 
-      <div class="case-table-wrapper">
+        id="knowledge-view"
 
-        <table class="case-table">
+        aria-labelledby="knowledge-heading"
 
-          <thead>
-
-            <tr>
-
-              <th scope="col">Case</th>
-              <th scope="col">Product</th>
-              <th scope="col">Primary Issue</th>
-              <th scope="col">Component</th>
-              <th scope="col">Recommendation</th>
-              <th scope="col">Status</th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody id="case-table-body">
-            <!-- Populated by JavaScript -->
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =====================================================
-       KNOWLEDGE BASE VIEW
-       ===================================================== -->
-
-  <section
-    class="view"
-    id="knowledge-view"
-    aria-labelledby="knowledge-heading"
-  >
-
-    <div class="view-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          PRODUCT-SPECIFIC KNOWLEDGE MODULE
-        </div>
-
-        <h2 id="knowledge-heading">
-          SXM Knowledge Base
-        </h2>
-
-        <p>
-          Transparent prototype rules used by the RepairIQ
-          decision-support engine.
-        </p>
-
-      </div>
-
-      <span class="version-badge">
-        SXM RULESET v0.2
-      </span>
-
-    </div>
-
-
-    <div class="knowledge-grid">
-
-      <div class="knowledge-card">
-
-        <div
-          class="knowledge-icon red"
-          aria-hidden="true"
-        >
-          GPU
-        </div>
-
-        <h3>
-          GPU Health / Thermal
-        </h3>
-
-        <p>
-          Prioritize threshold failures and correlate
-          heartbeat, thermal, power, and test symptoms
-          before recommending hardware isolation.
-        </p>
-
-        <div class="knowledge-footer">
-
-          <span class="rule-status verified">
-            Prototype logic
-          </span>
-
-          <span>
-            Rule SXM-GPU-001
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="knowledge-card">
-
-        <div
-          class="knowledge-icon blue"
-          aria-hidden="true"
-        >
-          PCI
-        </div>
-
-        <h3>
-          PCIe / Link State
-        </h3>
-
-        <p>
-          Verify configuration and physical state,
-          reseat when appropriate, retest, then isolate
-          the device or slot before replacement.
-        </p>
-
-        <div class="knowledge-footer">
-
-          <span class="rule-status verified">
-            Prototype logic
-          </span>
-
-          <span>
-            Rule SXM-PCI-002
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="knowledge-card">
-
-        <div
-          class="knowledge-icon purple"
-          aria-hidden="true"
-        >
-          FW
-        </div>
-
-        <h3>
-          Firmware State
-        </h3>
-
-        <p>
-          Identify platform and configuration first.
-          Firmware actions require version validation
-          and qualified technician approval.
-        </p>
-
-        <div class="knowledge-footer">
-
-          <span class="rule-status review">
-            Review required
-          </span>
-
-          <span>
-            Rule SXM-FW-003
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="knowledge-card">
-
-        <div
-          class="knowledge-icon orange"
-          aria-hidden="true"
-        >
-          TST
-        </div>
-
-        <h3>
-          Tester Failure
-        </h3>
-
-        <p>
-          Check tester state, permissions, calibration,
-          environmental conditions, and repeatability
-          before replacing hardware.
-        </p>
-
-        <div class="knowledge-footer">
-
-          <span class="rule-status draft">
-            Expansion module
-          </span>
-
-          <span>
-            Rule SXM-TST-004
-          </span>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="panel rule-panel">
-
-      <div class="panel-header">
-
-        <div>
-
-          <div class="eyebrow">
-            TRANSPARENT REASONING
-          </div>
-
-          <h3>
-            Example rule: SXM-GPU-001
-          </h3>
-
-        </div>
-
-        <span class="rule-status verified">
-          Prototype rule
-        </span>
-
-      </div>
-
-
-      <div class="rule-flow">
-
-        <div class="rule-step">
-
-          <span>01</span>
-
-          <strong>
-            Detect
-          </strong>
-
-          <p>
-            Identify a matching failure signal.
-          </p>
-
-        </div>
-
-
-        <div
-          class="rule-arrow"
-          aria-hidden="true"
-        >
-          →
-        </div>
-
-
-        <div class="rule-step">
-
-          <span>02</span>
-
-          <strong>
-            Correlate
-          </strong>
-
-          <p>
-            Compare related evidence and affected node.
-          </p>
-
-        </div>
-
-
-        <div
-          class="rule-arrow"
-          aria-hidden="true"
-        >
-          →
-        </div>
-
-
-        <div class="rule-step">
-
-          <span>03</span>
-
-          <strong>
-            Isolate
-          </strong>
-
-          <p>
-            Use controlled diagnostic actions to narrow the fault.
-          </p>
-
-        </div>
-
-
-        <div
-          class="rule-arrow"
-          aria-hidden="true"
-        >
-          →
-        </div>
-
-
-        <div class="rule-step">
-
-          <span>04</span>
-
-          <strong>
-            Decide
-          </strong>
-
-          <p>
-            Technician reviews and approves the repair path.
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =====================================================
-       PILOT METRICS VIEW
-       ===================================================== -->
-
-  <section
-    class="view"
-    id="metrics-view"
-    aria-labelledby="metrics-heading"
-  >
-
-    <div class="view-heading">
-
-      <div>
-
-        <div class="eyebrow">
-          PILOT MEASUREMENT PLAN
-        </div>
-
-        <h2 id="metrics-heading">
-          Performance Metrics
-        </h2>
-
-        <p>
-          Illustrative planning data for prototype demonstration only.
-          These values are not production-validated measurements.
-        </p>
-
-      </div>
-
-      <span class="demo-label">
-        NOT VERIFIED PRODUCTION DATA
-      </span>
-
-    </div>
-
-
-    <div class="panel">
-
-      <div class="chart-header">
-
-        <div>
-
-          <h3>
-            Before vs. RepairIQ Pilot
-          </h3>
-
-          <p>
-            Illustrative comparison for stakeholder discussion
-          </p>
-
-        </div>
-
-
-        <div
-          class="chart-legend"
-          aria-label="Performance comparison legend"
-        >
-
-          <span>
-
-            <i
-              class="legend-dot baseline"
-              aria-hidden="true"
-            ></i>
-
-            Baseline
-
-          </span>
-
-
-          <span>
-
-            <i
-              class="legend-dot pilot"
-              aria-hidden="true"
-            ></i>
-
-            With RepairIQ
-
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div
-        class="bar-chart"
-        role="img"
-        aria-label="Illustrative comparison of baseline and RepairIQ pilot metrics"
       >
 
-        <div class="bar-group">
+ 
 
-          <div class="bar-values">
+        <div class="view-heading">
 
-            <div
-              class="bar baseline-bar"
-              style="height: 88%"
-            >
-
-              <span>48m</span>
-
-            </div>
-
-
-            <div
-              class="bar pilot-bar"
-              style="height: 58%"
-            >
-
-              <span>32m</span>
-
-            </div>
-
-          </div>
-
-          <strong>
-            Diagnosis Time
-          </strong>
-
-        </div>
-
-
-        <div class="bar-group">
-
-          <div class="bar-values">
-
-            <div
-              class="bar baseline-bar"
-              style="height: 80%"
-            >
-
-              <span>3.2d</span>
-
-            </div>
-
-
-            <div
-              class="bar pilot-bar"
-              style="height: 63%"
-            >
-
-              <span>2.5d</span>
-
-            </div>
-
-          </div>
-
-          <strong>
-            Repair Cycle
-          </strong>
-
-        </div>
-
-
-        <div class="bar-group">
-
-          <div class="bar-values">
-
-            <div
-              class="bar baseline-bar"
-              style="height: 68%"
-            >
-
-              <span>68%</span>
-
-            </div>
-
-
-            <div
-              class="bar pilot-bar"
-              style="height: 78%"
-            >
-
-              <span>78%</span>
-
-            </div>
-
-          </div>
-
-          <strong>
-            First-Time Fix
-          </strong>
-
-        </div>
-
-
-        <div class="bar-group">
-
-          <div class="bar-values">
-
-            <div
-              class="bar baseline-bar"
-              style="height: 72%"
-            >
-
-              <span>72%</span>
-
-            </div>
-
-
-            <div
-              class="bar pilot-bar"
-              style="height: 95%"
-            >
-
-              <span>95%</span>
-
-            </div>
-
-          </div>
-
-          <strong>
-            Documentation
-          </strong>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="success-criteria">
-
-      <div class="panel">
-
-        <div class="panel-header">
+ 
 
           <div>
 
+ 
+
             <div class="eyebrow">
-              PILOT EXIT CRITERIA
+
+              PRODUCT-SPECIFIC KNOWLEDGE MODULE
+
             </div>
+
+ 
+
+            <h2 id="knowledge-heading">
+
+              SXM Knowledge Base
+
+            </h2>
+
+ 
+
+            <p>
+
+              Transparent prototype rules used by the RepairIQ
+
+              decision-support engine.
+
+            </p>
+
+ 
+
+          </div>
+
+ 
+
+          <span class="version-badge">
+
+            SXM RULESET v0.2
+
+          </span>
+
+ 
+
+        </div>
+
+ 
+
+        <div class="knowledge-grid">
+
+ 
+
+          <div class="knowledge-card">
+
+ 
+
+            <div
+
+              class="knowledge-icon red"
+
+              aria-hidden="true"
+
+            >
+
+              GPU
+
+            </div>
+
+ 
 
             <h3>
-              Success conditions
+
+              GPU Health / Thermal
+
             </h3>
 
+ 
+
+            <p>
+
+              Prioritize threshold failures and correlate
+
+              heartbeat, thermal, power, and test symptoms
+
+              before recommending hardware isolation.
+
+            </p>
+
+ 
+
+            <div class="knowledge-footer">
+
+ 
+
+              <span class="rule-status verified">
+
+                Prototype logic
+
+              </span>
+
+ 
+
+              <span>
+
+                Rule SXM-GPU-001
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
           </div>
+
+ 
+
+          <div class="knowledge-card">
+
+ 
+
+            <div
+
+              class="knowledge-icon blue"
+
+              aria-hidden="true"
+
+            >
+
+              PCI
+
+            </div>
+
+ 
+
+            <h3>
+
+              PCIe / Link State
+
+            </h3>
+
+ 
+
+            <p>
+
+              Verify configuration and physical state,
+
+              reseat when appropriate, retest, then isolate
+
+              the device or slot before replacement.
+
+            </p>
+
+ 
+
+            <div class="knowledge-footer">
+
+ 
+
+              <span class="rule-status verified">
+
+                Prototype logic
+
+              </span>
+
+ 
+
+              <span>
+
+                Rule SXM-PCI-002
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="knowledge-card">
+
+ 
+
+            <div
+
+              class="knowledge-icon purple"
+
+              aria-hidden="true"
+
+            >
+
+              FW
+
+            </div>
+
+ 
+
+            <h3>
+
+              Firmware State
+
+            </h3>
+
+ 
+
+            <p>
+
+              Identify platform and configuration first.
+
+              Firmware actions require version validation
+
+              and qualified technician approval.
+
+            </p>
+
+ 
+
+            <div class="knowledge-footer">
+
+ 
+
+              <span class="rule-status review">
+
+                Review required
+
+              </span>
+
+ 
+
+              <span>
+
+                Rule SXM-FW-003
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div class="knowledge-card">
+
+ 
+
+            <div
+
+              class="knowledge-icon orange"
+
+              aria-hidden="true"
+
+            >
+
+              TST
+
+            </div>
+
+ 
+
+            <h3>
+
+              Tester Failure
+
+            </h3>
+
+ 
+
+            <p>
+
+              Check tester state, permissions, calibration,
+
+              environmental conditions, and repeatability
+
+              before replacing hardware.
+
+            </p>
+
+ 
+
+            <div class="knowledge-footer">
+
+ 
+
+              <span class="rule-status draft">
+
+                Expansion module
+
+              </span>
+
+ 
+
+              <span>
+
+                Rule SXM-TST-004
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
 
         </div>
 
+ 
 
-        <div class="criteria-list">
+        <div class="panel rule-panel">
 
-          <div class="criteria-item complete">
+ 
 
-            <span aria-hidden="true">
-              ✓
-            </span>
+          <div class="panel-header">
 
-            <div>
-
-              <strong>
-                Diagnosis time reduction
-              </strong>
-
-              <small>
-                Target: at least 30%
-              </small>
-
-            </div>
-
-            <b>
-              Target
-            </b>
-
-          </div>
-
-
-          <div class="criteria-item complete">
-
-            <span aria-hidden="true">
-              ✓
-            </span>
+ 
 
             <div>
 
-              <strong>
-                Repair cycle reduction
-              </strong>
+ 
 
-              <small>
-                Target: at least 20%
-              </small>
+              <div class="eyebrow">
+
+                TRANSPARENT REASONING
+
+              </div>
+
+ 
+
+              <h3>
+
+                Example rule: SXM-GPU-001
+
+              </h3>
+
+ 
 
             </div>
 
-            <b>
-              Target
-            </b>
+ 
 
-          </div>
+            <span class="rule-status verified">
 
+              Prototype rule
 
-          <div class="criteria-item complete">
-
-            <span aria-hidden="true">
-              ✓
             </span>
 
-            <div>
-
-              <strong>
-                Documentation completeness
-              </strong>
-
-              <small>
-                Target: at least 95%
-              </small>
-
-            </div>
-
-            <b>
-              Target
-            </b>
+ 
 
           </div>
 
+ 
 
-          <div class="criteria-item pending">
+          <div class="rule-flow">
 
-            <span aria-hidden="true">
-              ○
-            </span>
+ 
 
-            <div>
+            <div class="rule-step">
+
+ 
+
+              <span>01</span>
+
+ 
 
               <strong>
-                No unacceptable quality impact
+
+                Detect
+
               </strong>
 
-              <small>
-                Requires controlled pilot validation
-              </small>
+ 
+
+              <p>
+
+                Identify a matching failure signal.
+
+              </p>
+
+ 
 
             </div>
 
-            <b>
-              Pending
-            </b>
+ 
+
+            <div
+
+              class="rule-arrow"
+
+              aria-hidden="true"
+
+            >
+
+              →
+
+            </div>
+
+ 
+
+            <div class="rule-step">
+
+ 
+
+              <span>02</span>
+
+ 
+
+              <strong>
+
+                Correlate
+
+              </strong>
+
+ 
+
+              <p>
+
+                Compare related evidence and affected node.
+
+              </p>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="rule-arrow"
+
+              aria-hidden="true"
+
+            >
+
+              →
+
+            </div>
+
+ 
+
+            <div class="rule-step">
+
+ 
+
+              <span>03</span>
+
+ 
+
+              <strong>
+
+                Isolate
+
+              </strong>
+
+ 
+
+              <p>
+
+                Use controlled diagnostic actions to narrow the fault.
+
+              </p>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="rule-arrow"
+
+              aria-hidden="true"
+
+            >
+
+              →
+
+            </div>
+
+ 
+
+            <div class="rule-step">
+
+ 
+
+              <span>04</span>
+
+ 
+
+              <strong>
+
+                Decide
+
+              </strong>
+
+ 
+
+              <p>
+
+                Technician reviews and approves the repair path.
+
+              </p>
+
+ 
+
+            </div>
+
+ 
 
           </div>
+
+ 
 
         </div>
 
-      </div>
+ 
 
-    </div>
+      </section>
 
-  </section>
+ 
 
-</main>
-```
+      <!-- =====================================================
+
+      PILOT METRICS VIEW
+
+      ===================================================== -->
+
+ 
+
+      <section
+
+        class="view"
+
+        id="metrics-view"
+
+        aria-labelledby="metrics-heading"
+
+      >
+
+ 
+
+        <div class="view-heading">
+
+ 
+
+          <div>
+
+ 
+
+            <div class="eyebrow">
+
+              PILOT MEASUREMENT PLAN
+
+            </div>
+
+ 
+
+            <h2 id="metrics-heading">
+
+              Performance Metrics
+
+            </h2>
+
+ 
+
+            <p>
+
+              Illustrative planning data for prototype demonstration only.
+
+              These values are not production-validated measurements.
+
+            </p>
+
+ 
+
+          </div>
+
+ 
+
+          <span class="demo-label">
+
+            NOT VERIFIED PRODUCTION DATA
+
+          </span>
+
+ 
+
+        </div>
+
+ 
+
+        <div class="panel">
+
+ 
+
+          <div class="chart-header">
+
+ 
+
+            <div>
+
+ 
+
+              <h3>
+
+                Before vs. RepairIQ Pilot
+
+              </h3>
+
+ 
+
+              <p>
+
+                Illustrative comparison for stakeholder discussion
+
+              </p>
+
+ 
+
+            </div>
+
+ 
+
+            <div
+
+              class="chart-legend"
+
+              aria-label="Performance comparison legend"
+
+            >
+
+ 
+
+              <span>
+
+ 
+
+                <i
+
+                  class="legend-dot baseline"
+
+                  aria-hidden="true"
+
+                ></i>
+
+ 
+
+                Baseline
+
+ 
+
+              </span>
+
+ 
+
+              <span>
+
+ 
+
+                <i
+
+                  class="legend-dot pilot"
+
+                  aria-hidden="true"
+
+                ></i>
+
+ 
+
+                With RepairIQ
+
+ 
+
+              </span>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+          <div
+
+            class="bar-chart"
+
+            role="img"
+
+            aria-label="Illustrative comparison of baseline and RepairIQ pilot metrics"
+
+          >
+
+ 
+
+            <div class="bar-group">
+
+ 
+
+              <div class="bar-values">
+
+ 
+
+                <div
+
+                  class="bar baseline-bar"
+
+                  style="height: 88%"
+
+                >
+
+                  <span>48m</span>
+
+                </div>
+
+ 
+
+                <div
+
+                  class="bar pilot-bar"
+
+                  style="height: 58%"
+
+                >
+
+                  <span>32m</span>
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <strong>
+
+                Diagnosis Time
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="bar-group">
+
+ 
+
+              <div class="bar-values">
+
+ 
+
+                <div
+
+                  class="bar baseline-bar"
+
+                  style="height: 80%"
+
+                >
+
+                  <span>3.2d</span>
+
+                </div>
+
+ 
+
+                <div
+
+                  class="bar pilot-bar"
+
+                  style="height: 63%"
+
+                >
+
+                  <span>2.5d</span>
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <strong>
+
+                Repair Cycle
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="bar-group">
+
+ 
+
+              <div class="bar-values">
+
+ 
+
+                <div
+
+                  class="bar baseline-bar"
+
+                  style="height: 68%"
+
+                >
+
+                  <span>68%</span>
+
+                </div>
+
+ 
+
+                <div
+
+                  class="bar pilot-bar"
+
+                  style="height: 78%"
+
+                >
+
+                  <span>78%</span>
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <strong>
+
+                First-Time Fix
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="bar-group">
+
+ 
+
+              <div class="bar-values">
+
+ 
+
+                <div
+
+                  class="bar baseline-bar"
+
+                  style="height: 72%"
+
+                >
+
+                  <span>72%</span>
+
+                </div>
+
+ 
+
+                <div
+
+                  class="bar pilot-bar"
+
+                  style="height: 95%"
+
+                >
+
+                  <span>95%</span>
+
+                </div>
+
+ 
+
+              </div>
+
+ 
+
+              <strong>
+
+                Documentation
+
+              </strong>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+        <div class="success-criteria">
+
+ 
+
+          <div class="panel">
+
+ 
+
+            <div class="panel-header">
+
+ 
+
+              <div>
+
+ 
+
+                <div class="eyebrow">
+
+                  PILOT EXIT CRITERIA
+
+                </div>
+
+ 
+
+                <h3>
+
+                  Success conditions
+
+                </h3>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+            <div class="criteria-list">
+
+ 
+
+              <div class="criteria-item complete">
+
+ 
+
+                <span aria-hidden="true">
+
+                  ✓
+
+                </span>
+
+ 
+
+                <div>
+
+ 
+
+                  <strong>
+
+                    Diagnosis time reduction
+
+                  </strong>
+
+ 
+
+                  <small>
+
+                    Target: at least 30%
+
+                  </small>
+
+ 
+
+                </div>
+
+ 
+
+                <b>
+
+                  Target
+
+                </b>
+
+ 
+
+              </div>
+
+ 
+
+              <div class="criteria-item complete">
+
+ 
+
+                <span aria-hidden="true">
+
+                  ✓
+
+                </span>
+
+ 
+
+                <div>
+
+ 
+
+                  <strong>
+
+                    Repair cycle reduction
+
+                  </strong>
+
+ 
+
+                  <small>
+
+                    Target: at least 20%
+
+                  </small>
+
+ 
+
+                </div>
+
+ 
+
+                <b>
+
+                  Target
+
+                </b>
+
+ 
+
+              </div>
+
+ 
+
+              <div class="criteria-item complete">
+
+ 
+
+                <span aria-hidden="true">
+
+                  ✓
+
+                </span>
+
+ 
+
+                <div>
+
+ 
+
+                  <strong>
+
+                    Documentation completeness
+
+                  </strong>
+
+ 
+
+                  <small>
+
+                    Target: at least 95%
+
+                  </small>
+
+ 
+
+                </div>
+
+ 
+
+                <b>
+
+                  Target
+
+                </b>
+
+ 
+
+              </div>
+
+ 
+
+              <div class="criteria-item pending">
+
+ 
+
+                <span aria-hidden="true">
+
+                  ○
+
+                </span>
+
+ 
+
+                <div>
+
+ 
+
+                  <strong>
+
+                    No unacceptable quality impact
+
+                  </strong>
+
+ 
+
+                  <small>
+
+                    Requires controlled pilot validation
+
+                  </small>
+
+ 
+
+                </div>
+
+ 
+
+                <b>
+
+                  Pending
+
+                </b>
+
+ 
+
+              </div>
+
+ 
+
+            </div>
+
+ 
+
+          </div>
+
+ 
+
+        </div>
+
+ 
+
+      </section>
+
+ 
+
+    </main>
+
+ 
 
   </div>
 
+ 
+
   <!-- =========================================================
-       GLOBAL TOAST
-       ========================================================= -->
+
+  GLOBAL TOAST
+
+ 
+
+  The original toast IDs and classes are preserved.
+
+  ========================================================= -->
+
+ 
 
   <div
+
     id="toast"
+
     class="toast"
+
     role="status"
+
     aria-live="polite"
+
     aria-atomic="true"
+
   >
 
-```
-<span
-  class="toast-icon"
-  aria-hidden="true"
->
-  ✓
-</span>
+ 
 
-<span id="toast-message">
-  Complete
-</span>
-```
+    <span
+
+      class="toast-icon"
+
+      aria-hidden="true"
+
+    >
+
+      ✓
+
+    </span>
+
+ 
+
+    <span id="toast-message">
+
+      Complete
+
+    </span>
+
+ 
 
   </div>
 
+ 
+
   <!-- =========================================================
-       DIAGNOSTIC DETAIL MODAL
-       ========================================================= -->
+
+  DIAGNOSTIC DETAIL MODAL
+
+ 
+
+  The modal remains compatible with the existing JavaScript
+
+  controller through its original IDs.
+
+ 
+
+  Future uses:
+
+ 
+
+  - Component detail
+
+  - Evidence inspection
+
+  - Case history
+
+  - Diagnostic reasoning
+
+  - Approval review
+
+  ========================================================= -->
+
+ 
 
   <div
+
     class="modal-overlay"
+
     id="diagnostic-modal"
+
     aria-hidden="true"
+
+    hidden
+
   >
 
-```
-<div
-  class="modal"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="modal-title"
->
+ 
 
-  <div class="modal-header">
+    <div
 
-    <div>
+      class="modal"
 
-      <div class="eyebrow">
-        DIAGNOSTIC EVIDENCE
+      role="dialog"
+
+      aria-modal="true"
+
+      aria-labelledby="modal-title"
+
+      tabindex="-1"
+
+    >
+
+ 
+
+      <div class="modal-header">
+
+ 
+
+        <div>
+
+ 
+
+          <div class="eyebrow">
+
+            DIAGNOSTIC EVIDENCE
+
+          </div>
+
+ 
+
+          <h2 id="modal-title">
+
+            Diagnostic Details
+
+          </h2>
+
+ 
+
+        </div>
+
+ 
+
+        <button
+
+          class="modal-close"
+
+          id="modal-close-button"
+
+          type="button"
+
+          aria-label="Close diagnostic details"
+
+        >
+
+          ×
+
+        </button>
+
+ 
+
       </div>
 
-      <h2 id="modal-title">
-        Diagnostic Details
-      </h2>
+ 
+
+      <div
+
+        class="modal-content"
+
+        id="modal-content"
+
+      >
+
+        <!-- Populated by JavaScript -->
+
+      </div>
+
+ 
 
     </div>
 
-
-    <button
-      class="modal-close"
-      id="modal-close-button"
-      type="button"
-      aria-label="Close diagnostic details"
-    >
-      ×
-    </button>
+ 
 
   </div>
 
-
-  <div
-    class="modal-content"
-    id="modal-content"
-  >
-    <!-- Populated by JavaScript -->
-  </div>
-
-</div>
-```
-
-  </div>
+ 
 
   <!-- =========================================================
-       APPLICATION JAVASCRIPT
-       =========================================================
 
-       app.js remains the functional controller.
+  APPLICATION JAVASCRIPT
 
-       Current responsibilities:
+ 
 
-       - Navigation
-       - Demo data
-       - Log loading
-       - Diagnostic search
-       - Analysis
-       - GPU topology
-       - Case history
-       - Knowledge interactions
-       - Metrics
-       - Toast notifications
-       - Diagnostic modal
+  app.js remains the functional controller.
 
-       Future integration targets:
+ 
 
-       - Ubuntu/Linux diagnostic environments
-       - BMC/HMC interfaces
-       - Server test systems
-       - Real telemetry
-       - Backend APIs
-       - Database services
-       - AI/ML inference services
-       - Repair knowledge systems
+  Existing responsibilities:
 
-       The browser prototype remains clearly separated from
-       real production repair authorization or hardware-control
-       systems.
-       ========================================================= -->
+ 
+
+  - Navigation
+
+  - Demo data
+
+  - Log loading
+
+  - Diagnostic search
+
+  - Analysis
+
+  - GPU topology
+
+  - Case history
+
+  - Knowledge interactions
+
+  - Metrics
+
+  - Toast notifications
+
+  - Diagnostic modal
+
+ 
+
+  New diagnostic result contract targets:
+
+ 
+
+  - #active-case-context
+
+  - #active-case-id
+
+  - #active-case-state
+
+  - #active-unit-serial
+
+  - #active-system-serial
+
+  - #active-platform
+
+  - #active-failure-stage
+
+  - #active-tester
+
+  - #active-technician
+
+  - #structured-diagnostic-result
+
+  - #diagnostic-active-case
+
+  - #diagnostic-unit-identity
+
+  - #diagnostic-test-stage
+
+  - #diagnostic-primary-finding
+
+  - #diagnostic-affected-component
+
+  - #diagnostic-root-cause-candidates
+
+  - #diagnostic-supporting-evidence
+
+  - #diagnostic-contradicting-evidence
+
+  - #diagnostic-previous-actions
+
+  - #diagnostic-do-not-repeat
+
+  - #diagnostic-confidence
+
+  - #diagnostic-next-action
+
+  - #diagnostic-technician-approval
+
+  - #diagnostic-retest-requirement
+
+  - #diagnostic-data-disclosure
+
+ 
+
+  Future integration targets:
+
+ 
+
+  - Ubuntu/Linux diagnostic environments
+
+  - BMC/HMC interfaces
+
+  - Server test systems
+
+  - Real telemetry
+
+  - Backend APIs
+
+  - Database services
+
+  - AI/ML inference services
+
+  - Repair knowledge systems
+
+ 
+
+  The browser prototype remains clearly separated from
+
+  real production repair authorization or hardware-control
+
+  systems.
+
+  ========================================================= -->
+
+ 
 
   <script
+
     src="app.js"
+
     defer
+
   ></script>
 
+ 
+
 </body>
+
+ 
 
 </html>
