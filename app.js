@@ -8,7 +8,7 @@
 
  
 
-  Version: 0.5 - Active Traveler / Diagnostic Result Contract
+  Version: 0.6 - Knowledge Engine, REX, Topology + Verification
 
  
 
@@ -418,7 +418,15 @@ const state = {
 
   lastFocusedElement: null,
 
-  modalOpen: false
+  modalOpen: false,
+
+  topology: null,
+
+  knowledgeOutput: null,
+
+  rexMessages: [],
+
+  retestWorkflow: null
 
 };
 
@@ -652,11 +660,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initializeKeyboardShortcuts();
 
+  initializeRetestWorkflow();
+
+  initializePassportActions();
+
+  initializeExtensionMount();
+
  
 
   renderCases();
 
   renderActivity();
+
+  renderTopology();
+
+  restoreRetestWorkflow();
 
  
 
@@ -3842,6 +3860,10 @@ function renderAnalysis(analysis) {
 
   renderDataDisclosure(analysis);
 
+  runKnowledgeEngine(analysis);
+
+  renderREX({ reset: true });
+
   renderResultActions(analysis);
 
  
@@ -3851,6 +3873,10 @@ function renderAnalysis(analysis) {
  
 
   updateTopologyFromAnalysis(analysis);
+
+  updatePassportFromAnalysis(analysis);
+
+  resetRetestWorkflowForAnalysis(analysis);
 
  
 
@@ -5102,7 +5128,9 @@ function renderResultActions(analysis) {
 
  
 
-  mount.innerHTML = `
+  mount.querySelector(".result-actions")?.remove();
+
+  mount.insertAdjacentHTML("beforeend", `
 
     <div class="result-actions">
 
@@ -5154,7 +5182,7 @@ function renderResultActions(analysis) {
 
     </div>
 
-  `;
+  `);
 
  
 
@@ -5230,21 +5258,15 @@ function renderResultActions(analysis) {
 
 function initializeTopology() {
 
-  addListeners("#gpu-topology .gpu-node", "click", event => {
-
-    const component = event.currentTarget.dataset.gpuId;
-
- 
-
-    if (component) {
-
-      updateSelectedComponent(component);
-
-    }
-
-  });
-
- 
+  const topology = $("#gpu-topology");
+  if (topology && topology.dataset.eventsBound !== "true") {
+    topology.dataset.eventsBound = "true";
+    topology.addEventListener("click", event => {
+      const node = event.target.closest(".gpu-node");
+      const component = node?.dataset.gpuId;
+      if (component) updateSelectedComponent(component);
+    });
+  }
 
   addListener(
 
@@ -5335,74 +5357,25 @@ function updateTopologyNodeLabels(selectedComponent) {
   $$("#gpu-topology .gpu-node").forEach(node => {
 
     const component = node.dataset.gpuId;
-
- 
-
     const health = node.querySelector(".gpu-health");
-
     const load = node.querySelector(".gpu-load");
+    if (!health || !load) return;
 
- 
-
-    if (!health || !load) {
-
-      return;
-
-    }
-
- 
-
-    const isAffected =
-
-      state.currentAnalysis &&
-
-      state.currentAnalysis.affectedComponent === component;
-
- 
-
+    const sourceComponent = safeArray(state.topology?.components)
+      .find(item => item.componentId === component);
+    const isAffected = Boolean(state.currentAnalysis && state.currentAnalysis.affectedComponent === component);
     const isSelected = selectedComponent === component;
+    const healthState = isAffected ? "critical" : (sourceComponent?.healthState || "unknown");
 
- 
-
-    node.classList.remove("critical", "warning", "healthy");
-
- 
-
-    if (isAffected) {
-
-      node.classList.add("critical");
-
-      health.textContent = "● CRITICAL";
-
-      load.textContent = "REVIEW REQUIRED";
-
-    } else if (component === "GPU7" && !state.currentAnalysis) {
-
-      node.classList.add("warning");
-
-      health.textContent = "● WARNING";
-
-      load.textContent = "REVIEW REQUIRED";
-
-    } else {
-
-      node.classList.add("healthy");
-
-      health.textContent = "● HEALTHY";
-
-      load.textContent = isSelected
-
-        ? "SELECTED"
-
-        : "AVAILABLE";
-
-    }
-
+    node.classList.remove("critical", "warning", "healthy", "unknown");
+    node.classList.add(healthState);
+    node.dataset.healthState = healthState;
+    health.textContent = `● ${healthState.toUpperCase()}${healthState === "critical" ? " · REVIEW" : ""}`;
+    load.textContent = isSelected ? "SELECTED · DEMO DATA" : healthState === "critical" ? "REVIEW REQUIRED" : "DEMO / NOT VERIFIED";
   });
 
+  updateTopologyCounts();
 }
-
- 
 
 function updateTopologyFromAnalysis(analysis) {
 
@@ -7017,3 +6990,551 @@ function showToast(message) {
   }, 3000);
 
 }
+/* ================================================================
+   50. VERSION 0.6 TOPOLOGY, KNOWLEDGE ENGINE, REX + VERIFICATION
+   ---------------------------------------------------------------
+   This extension completes the contracts declared by the v0.6
+   HTML/CSS. All conclusions remain deterministic prototype output.
+   ================================================================ */
+
+const RETEST_STORAGE_KEY = "repairiq-retest-workflows-v1";
+const RETEST_STEPS = ["action", "ready", "result", "verify", "close"];
+
+function initializeExtensionMount() {
+  const mount = $("#diagnostic-extension-mount");
+  if (!mount || mount.dataset.rexEventsBound === "true") return;
+  mount.dataset.rexEventsBound = "true";
+
+  mount.addEventListener("click", event => {
+    const chip = event.target.closest("[data-rex-query]");
+    if (chip) {
+      sendREXQuery(chip.dataset.rexQuery || chip.textContent.trim());
+      return;
+    }
+    if (event.target.closest("#rex-send-button")) sendREXQuery();
+  });
+
+  mount.addEventListener("submit", event => {
+    if (event.target.id === "rex-query-form") {
+      event.preventDefault();
+      sendREXQuery();
+    }
+  });
+
+  mount.addEventListener("keydown", event => {
+    if (event.target.id === "rex-query-input" && event.key === "Enter") {
+      event.preventDefault();
+      sendREXQuery();
+    }
+  });
+}
+
+function renderTopology() {
+  const mount = $("#gpu-topology");
+  const source = $("#gpu-topology-data");
+  if (!mount || !source) return;
+
+  try {
+    const platform = JSON.parse(source.textContent || "{}");
+    const components = Array.isArray(platform.components) ? platform.components : [];
+    state.topology = platform;
+
+    if (!components.length) throw new Error("Topology data contains no components.");
+
+    mount.innerHTML = components.map(component => {
+      const id = String(component.componentId || "Unknown");
+      const health = ["healthy", "critical", "warning", "unknown"].includes(component.healthState)
+        ? component.healthState : "unknown";
+      const verified = platform.verified === true && component.verificationState === "verified";
+      const verification = verified ? "verified" : "unverified";
+      const label = String(component.displayName || id);
+      const slot = String(component.slot || "Slot not supplied");
+      const stage = Array.isArray(component.relatedStageCodes) && component.relatedStageCodes.length
+        ? component.relatedStageCodes.join(" · ") : "Stage not supplied";
+      const status = health.toUpperCase();
+      return `
+        <button class="gpu-node ${health}" type="button"
+          data-gpu-id="${escapeHtml(id)}" data-health-state="${health}"
+          data-verification-state="${verification}" aria-pressed="false"
+          aria-label="${escapeHtml(label)}, ${status}, ${escapeHtml(slot)}, demonstration data">
+          <span class="gpu-node-title">${escapeHtml(label)}</span>
+          <span class="gpu-node-label">${escapeHtml(slot)}</span>
+          <span class="gpu-health">● ${status}</span>
+          <span class="gpu-load">${component.load == null ? "REVIEW REQUIRED" : `${escapeHtml(String(component.load))}% LOAD`}</span>
+          <span class="gpu-node-footer">
+            <span class="gpu-node-status">DEMO DATA</span>
+            <span class="gpu-node-stage">${escapeHtml(stage)}</span>
+          </span>
+          <span class="gpu-node-verified">${verified ? "VERIFIED SOURCE" : "NOT VERIFIED"}</span>
+        </button>`;
+    }).join("");
+
+    mount.setAttribute("aria-busy", "false");
+    const platformTitle = $(".topology-platform");
+    if (platformTitle) platformTitle.textContent = `${platform.platformName || "HGX demo"} · DEMONSTRATION DATA`;
+    updateTopologyCounts();
+  } catch (error) {
+    mount.innerHTML = `<p role="alert">Topology could not be loaded: ${escapeHtml(error.message)}</p>`;
+    mount.setAttribute("aria-busy", "false");
+    showToast("GPU topology data could not be loaded.");
+  }
+}
+
+function buildKnowledgeOutput(analysis) {
+  const evidence = safeArray(analysis.evidence?.supporting || analysis.supportingEvidence)
+    .map(item => typeof item === "string" ? item : item.text || item.description || "Evidence recorded.");
+  const negative = safeArray(analysis.evidence?.contradicting || analysis.contradictingEvidence)
+    .map(item => typeof item === "string" ? item : item.text || item.description || "Limiting evidence recorded.");
+  const stage = analysis.failure?.failureStage || analysis.testSession?.failureStage || "Not established";
+  const component = analysis.failure?.affectedComponent || analysis.affectedComponent || "component not isolated";
+  const pattern = {
+    title: analysis.failure?.title || analysis.title || "SXM diagnostic review required",
+    category: analysis.failure?.category || analysis.category || "General SXM failure",
+    ruleId: analysis.failure?.ruleId || analysis.ruleId || "SXM-GENERAL-000",
+    component,
+    stage,
+    summary: `${analysis.failure?.title || analysis.title || "Review required"}. Current evidence points to ${component}; this is a candidate for technician review, not a confirmed physical defect.`
+  };
+  const path = [
+    { title: "Confirm unit and test-session identity", detail: `Review the unit passport, tester (${analysis.testSession?.tester || analysis.tester || "not identified"}), and available test date before acting.` },
+    { title: "Review the primary evidence", detail: evidence[0] || "Review the complete source log and confirm the failure signature." },
+    { title: "Perform the approved isolation step", detail: analysis.recommendation || "Use the site-approved diagnostic procedure and document the technician decision." },
+    { title: "Run and document the required retest", detail: `${analysis.retest?.stage || stage}: ${analysis.retest?.expectedResult || "required stage passes without recurrence."}` }
+  ];
+  const checkFirst = [
+    `Confirm ${component} identity and physical slot against the unit record.`,
+    evidence[0] || "Review the exact failing test line and surrounding log context.",
+    "Check connector, seating, and approved configuration evidence before component substitution."
+  ];
+  const ruleOut = negative.length ? negative : ["No explicit contradictory evidence was identified in the uploaded log; absence of evidence does not rule out a cause."];
+  const escalation = [];
+  if (String(analysis.severity).toUpperCase() === "CRITICAL") escalation.push({ level: "critical", urgency: "CRITICAL", text: "Pause component replacement decisions until the failure signature and affected path are confirmed by a qualified technician." });
+  if (negative.length) escalation.push({ level: "high", urgency: "HIGH", text: "Escalate if the observed evidence conflicts with the leading candidate or if the required stage cannot be reproduced." });
+  escalation.push({ level: "medium", urgency: "MEDIUM", text: "Escalate for engineering review if the required retest fails, is inconclusive, or exposes a new fault." });
+
+  const output = {
+    pattern,
+    path,
+    checkFirst,
+    ruleOut,
+    retest: { stage: analysis.retest?.stage || stage, expected: analysis.retest?.expectedResult || "Required stage passes without recurrence." },
+    escalation,
+    provenance: {
+      ruleId: pattern.ruleId,
+      source: analysis.dataSource || "Prototype / Demonstration Data",
+      confidence: Number.isFinite(Number(analysis.confidence)) ? `${analysis.confidence}% prototype score` : "Not scored",
+      evidence: evidence.length ? evidence : ["No supporting evidence item was produced."],
+      generatedAt: new Date().toISOString()
+    },
+    parts: analysis.partsRequest || {},
+    handoff: analysis.handoff || {}
+  };
+  return output;
+}
+
+function renderKEShell(key, eyebrow, heading, body) {
+  return `<section class="diagnostic-section" data-ke-section="${escapeHtml(key)}">
+    <div class="diagnostic-section-heading"><div><div class="eyebrow">${escapeHtml(eyebrow)}</div><h4>${escapeHtml(heading)}</h4></div></div>
+    ${body}
+  </section>`;
+}
+
+function renderKnowledgeEngine(analysis) {
+  const mount = $("#diagnostic-extension-mount");
+  if (!mount || !state.knowledgeOutput) return;
+  const k = state.knowledgeOutput;
+  const escList = items => `<ul class="evidence-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+  const pattern = renderKEShell("failure-pattern", "KE · FAILURE PATTERN", k.pattern.title,
+    `<div class="ke-finding-summary"><p>${escapeHtml(k.pattern.summary)}</p></div>
+     <div class="ke-subsystem-row"><span>Pattern</span><span class="ke-chip">${escapeHtml(k.pattern.category)}</span><span class="ke-chip">${escapeHtml(k.pattern.component)}</span><span class="ke-chip">${escapeHtml(k.pattern.stage)}</span></div>
+     <div class="ke-provenance-banner"><span>RULE</span><span>${escapeHtml(k.pattern.ruleId)} · deterministic demo rule · technician review required</span></div>`);
+  const path = renderKEShell("repair-path", "KE · STAGE-AWARE PATH", "Recommended review sequence",
+    `<div>${k.path.map((step, i) => `<div class="ke-step-item"><div class="ke-step-header"><span class="ke-priority-marker">${i + 1}</span><div class="ke-step-copy"><strong>${escapeHtml(step.title)}</strong><span>${escapeHtml(step.detail)}</span></div></div><div class="ke-step-tags"><span class="ke-tag approval">TECHNICIAN APPROVAL</span>${i === 3 ? '<span class="ke-tag retest">RETEST REQUIRED</span>' : ""}</div></div>`).join("")}</div>`);
+  const check = renderKEShell("check-first", "KE · FIRST CHECKS", "What to check first",
+    `<div class="ke-evidence-basis">Based on the current structured analysis output.</div>${escList(k.checkFirst)}`);
+  const ruleOut = renderKEShell("rule-out", "KE · LIMITING EVIDENCE", "What to rule out or verify",
+    `<div class="ke-two-col"><div><strong>Contradicting or limiting signals</strong>${escList(k.ruleOut)}</div><div><strong>Review guardrail</strong><p>Do not treat an absent log signal as proof that a component or path is healthy.</p></div></div>`);
+  const retest = renderKEShell("retest-spec", "KE · VERIFICATION", "Required retest specification",
+    `<div class="ke-finding-summary"><p><strong>Stage:</strong> ${escapeHtml(k.retest.stage)}<br><strong>Expected:</strong> ${escapeHtml(k.retest.expected)}</p></div><span class="ke-tag retest">RETEST REQUIRED · NOT YET VERIFIED</span>`);
+  const escalation = renderKEShell("escalation", "KE · ESCALATION", "Escalation criteria",
+    `<div>${k.escalation.map(item => `<div class="ke-escalation-item ${item.level}"><span class="ke-escalation-marker">!</span><div><strong class="ke-escalation-urgency">${escapeHtml(item.urgency)}</strong><span class="ke-escalation-action">${escapeHtml(item.text)}</span></div></div>`).join("")}</div>`);
+  const provenance = renderKEShell("ke-provenance", "KE · PROVENANCE", "Rule and evidence provenance",
+    `<div class="ke-two-col"><div><strong>Rule and source</strong><p>${escapeHtml(k.provenance.ruleId)}<br>${escapeHtml(k.provenance.source)}</p><strong>Confidence</strong><p>${escapeHtml(k.provenance.confidence)} — not a validated probability.</p></div><div><strong>Evidence used</strong>${escList(k.provenance.evidence)}</div></div><div class="ke-provenance-banner"><span>PROTOTYPE</span><span>Deterministic rules · no production repair database, live hardware, or AI inference connected.</span></div>`);
+  const parts = renderKEShell("parts-request", "PLANNING · PARTS", "Parts planning",
+    `<div class="ke-two-col"><div><strong>${escapeHtml(k.parts.actionType || "No part recommendation yet")}</strong><p>${escapeHtml(k.parts.description || "No replacement part should be requested from current evidence.")}</p></div><div><strong>Request state</strong><p>${escapeHtml(k.parts.approvalStatus || "Not approved")} · ${escapeHtml(k.parts.warehouseStatus || "Not requested")}</p></div></div><div class="ke-provenance-banner"><span>NO ORDER</span><span>RepairIQ does not order, reserve, or authorize parts.</span></div>`);
+  const handoff = renderKEShell("shift-handoff", "HANDOFF · NEXT SHIFT", "Structured shift handoff",
+    `<div class="ke-two-col"><div><strong>Current status</strong><p>${escapeHtml(k.handoff.currentStatus || analysis.caseState || "Diagnosis ready")}</p><strong>Next required action</strong><p>${escapeHtml(k.handoff.nextRequiredAction || analysis.recommendation || "Technician review required.")}</p></div><div><strong>Retest requirement</strong><p>${escapeHtml(k.handoff.retestRequirement || k.retest.expected)}</p><strong>Notes</strong><p>${escapeHtml(k.handoff.notes || "Prototype handoff; verify against source records.")}</p></div></div>`);
+  mount.querySelectorAll("[data-ke-section]").forEach(node => node.remove());
+  mount.insertAdjacentHTML("afterbegin", pattern + path + check + ruleOut + retest + escalation + provenance + parts + handoff);
+}
+
+function runKnowledgeEngine(analysis) {
+  if (!analysis) return;
+  state.knowledgeOutput = buildKnowledgeOutput(analysis);
+  renderKnowledgeEngine(analysis);
+}
+
+function renderREX({ reset = false } = {}) {
+  const mount = $("#diagnostic-extension-mount");
+  if (!mount || !state.knowledgeOutput) return;
+  if (reset || !state.rexMessages.length) {
+    state.rexMessages = [{ role: "rex", text: `I reviewed the structured Knowledge Engine output for ${state.knowledgeOutput.pattern.component}. Ask about the pattern, checks, repair path, retest, escalation, or evidence.`, citation: state.knowledgeOutput.provenance.ruleId }];
+  }
+  mount.querySelector('[data-ke-section="rex"]')?.remove();
+  const messages = state.rexMessages.map(message => `
+    <div class="rex-message ${message.role === "user" ? "user" : "rex"}">
+      <span class="rex-avatar ${message.role === "user" ? "technician" : ""}">${message.role === "user" ? "T" : "RX"}</span>
+      <div class="rex-bubble ${message.role === "user" ? "user" : "rex"}"><div class="rex-bubble-content">${escapeHtml(message.text)}</div>${message.citation ? `<div class="rex-citation">Source: ${escapeHtml(message.citation)} · Knowledge Engine output · prototype data</div>` : ""}</div>
+    </div>`).join("");
+  const section = `<section class="diagnostic-section" data-ke-section="rex"><div class="rex-panel">
+    <div class="diagnostic-section-heading"><div><div class="eyebrow">REX · REPAIR EXPERIENCE</div><h4>Ask the current case knowledge</h4></div><span class="rex-active-badge"><span class="rex-active-dot"></span>ACTIVE · LOCAL RULE OUTPUT</span></div>
+    <div class="rex-conversation" id="rex-conversation" aria-live="polite">${messages}</div>
+    <div class="rex-quick-queries"><span>QUICK ASK</span><button class="rex-query-chip" type="button" data-rex-query="What is the leading pattern?">Leading pattern</button><button class="rex-query-chip" type="button" data-rex-query="What should I check first?">Check first</button><button class="rex-query-chip" type="button" data-rex-query="What retest is required?">Retest</button><button class="rex-query-chip" type="button" data-rex-query="When should I escalate?">Escalation</button></div>
+    <form class="rex-input-row" id="rex-query-form"><label class="rex-input-field"><span aria-hidden="true">⌕</span><input id="rex-query-input" type="text" maxlength="240" placeholder="Ask about this analysis..." autocomplete="off" aria-label="Ask REX about the current analysis"></label><button class="primary-button" id="rex-send-button" type="submit">Ask REX</button></form>
+    <div class="rex-footer-notice">REX only summarizes this case’s Knowledge Engine output. It does not inspect raw logs, authorize repairs, or provide production-validated guidance.</div>
+  </div></section>`;
+  const provenance = mount.querySelector('[data-ke-section="ke-provenance"]');
+  if (provenance) provenance.insertAdjacentHTML("afterend", section);
+  else mount.insertAdjacentHTML("beforeend", section);
+  const conversation = $("#rex-conversation");
+  if (conversation) conversation.scrollTop = conversation.scrollHeight;
+}
+
+function answerREX(query) {
+  const k = state.knowledgeOutput;
+  if (!k) return { text: "Run an analysis first. REX only uses the structured Knowledge Engine output.", citation: "No active Knowledge Engine output" };
+  const q = String(query || "").toLowerCase();
+  if (/retest|verify|pass|stage/.test(q)) return { text: `${k.retest.stage}: ${k.retest.expected} The retest has not passed until a technician records its result in the verification workflow.`, citation: `${k.pattern.ruleId} · retest specification` };
+  if (/first|check|inspect|start/.test(q)) return { text: k.checkFirst.map((item, i) => `${i + 1}. ${item}`).join("\n"), citation: `${k.pattern.ruleId} · check-first output` };
+  if (/escalat|stop|risk|when/.test(q)) return { text: k.escalation.map(item => `${item.urgency}: ${item.text}`).join("\n"), citation: `${k.pattern.ruleId} · escalation criteria` };
+  if (/rule out|contradict|negative|exclude/.test(q)) return { text: k.ruleOut.join("\n"), citation: `${k.pattern.ruleId} · limiting evidence` };
+  if (/path|steps|repair|next|action/.test(q)) return { text: k.path.map((step, i) => `${i + 1}. ${step.title}: ${step.detail}`).join("\n"), citation: `${k.pattern.ruleId} · stage-aware repair path` };
+  if (/evidence|source|confidence|rule|why/.test(q)) return { text: `${k.pattern.summary}\nEvidence: ${k.provenance.evidence.join("; ")}\nConfidence: ${k.provenance.confidence}.`, citation: `${k.provenance.ruleId} · provenance` };
+  return { text: `The current pattern is ${k.pattern.title} (${k.pattern.category}) for ${k.pattern.component}. I can summarize the checks, repair path, limiting evidence, required retest, or escalation criteria from this case’s structured output.`, citation: `${k.pattern.ruleId} · failure-pattern output` };
+}
+
+function sendREXQuery(query = "") {
+  const input = $("#rex-query-input");
+  const question = String(query || input?.value || "").trim();
+  if (!question) { input?.focus(); return; }
+  if (!state.knowledgeOutput) { showToast("Run an analysis before asking REX."); return; }
+  const answer = answerREX(question);
+  state.rexMessages.push({ role: "user", text: question });
+  state.rexMessages.push({ role: "rex", text: answer.text, citation: answer.citation });
+  renderREX();
+  if (input) input.value = "";
+}
+
+function initializeRetestWorkflow() {
+  addListener("#open-retest-workflow-button", "click", () => {
+    const section = $("#retest-verification");
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  addListener("#record-technician-action-button", "click", recordTechnicianAction);
+  addListener("#prepare-retest-button", "click", prepareRequiredRetest);
+  addListener("#record-retest-result-button", "click", recordRequiredRetestResult);
+  addListener("#verify-repair-button", "click", verifyRepairOutcome);
+  addListener("#reject-verification-button", "click", rejectRepairVerification);
+  addListener("#close-case-button", "click", closeVerifiedCase);
+
+  const upload = $("#retest-file-input");
+  const zone = $("#retest-upload-zone");
+  if (upload && zone) {
+    zone.addEventListener("click", () => upload.click());
+    zone.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); upload.click(); }
+    });
+    upload.addEventListener("change", async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { showToast("Retest evidence must be 2 MB or smaller."); return; }
+      try {
+        const text = await file.text();
+        $("#verification-retest-evidence").value = text.slice(0, 100000);
+        zone.setAttribute("aria-pressed", "true");
+        zone.querySelector("strong").textContent = file.name;
+        showToast("Retest evidence loaded locally. Record the result to save it.");
+      } catch { showToast("The selected retest evidence file could not be read."); }
+    });
+  }
+  ["#technician-action-description", "#verification-technician", "#verification-rationale-input"].forEach(selector => {
+    addListener(selector, "input", updateRetestWorkflowUI);
+  });
+  addListener("#verification-retest-result", "change", updateRetestWorkflowUI);
+}
+
+function workflowStoreRead() {
+  try { return JSON.parse(localStorage.getItem(RETEST_STORAGE_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+function workflowStoreWrite(workflow) {
+  try {
+    const store = workflowStoreRead();
+    store[workflow.caseId || "unassigned"] = workflow;
+    localStorage.setItem(RETEST_STORAGE_KEY, JSON.stringify(store));
+  } catch { showToast("Browser storage is unavailable; workflow changes may not persist after closing this page."); }
+}
+
+function newRetestWorkflow(caseId = "unassigned") {
+  return { caseId, actionRecorded: false, action: null, retestReady: false, retest: null, resultRecorded: false, verification: "PENDING", rationale: "", verified: false, escalated: false, closed: false, updatedAt: new Date().toISOString() };
+}
+
+function restoreRetestWorkflow() {
+  const records = workflowStoreRead();
+  const latest = Object.values(records).sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))).at(0);
+  state.retestWorkflow = latest || newRetestWorkflow();
+  populateRetestInputs(state.retestWorkflow);
+  updateRetestWorkflowUI();
+}
+
+function resetRetestWorkflowForAnalysis(analysis) {
+  if (!analysis) return;
+  const records = workflowStoreRead();
+  state.retestWorkflow = records[analysis.caseId] || newRetestWorkflow(analysis.caseId);
+  const workflow = state.retestWorkflow;
+  if (!workflow.retest) workflow.retest = {};
+  const stage = String(analysis.retest?.stage || "INIT").match(/\b(INIT|FLT|FLB|FCT|DCC|RIN)\b/i)?.[1]?.toUpperCase() || "INIT";
+  if (!workflow.retest.stage) workflow.retest.stage = stage;
+  if (!workflow.retest.tester) workflow.retest.tester = analysis.tester === "Tester not identified" ? "" : analysis.tester;
+  if (!workflow.retest.startedAt) workflow.retest.startedAt = toLocalDateTimeValue(new Date());
+  populateRetestInputs(workflow);
+  updateRetestWorkflowUI();
+}
+
+function toLocalDateTimeValue(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function populateRetestInputs(workflow) {
+  const put = (id, value) => { const el = $(id); if (el && value != null) el.value = value; };
+  put("#technician-action-description", workflow.action?.description || "");
+  put("#verification-technician", workflow.action?.technician || state.currentAnalysis?.technician || "");
+  put("#technician-action-timestamp", workflow.action?.timestamp || "");
+  put("#verification-retest-stage", workflow.retest?.stage || "INIT");
+  put("#verification-retest-tester", workflow.retest?.tester || "");
+  put("#verification-retest-session-id", workflow.retest?.sessionId || "");
+  put("#verification-retest-started-at", workflow.retest?.startedAt || "");
+  put("#verification-retest-result", workflow.retest?.result || "NOT RUN");
+  put("#verification-retest-completed-at", workflow.retest?.completedAt || "");
+  put("#verification-retest-evidence", workflow.retest?.evidence || "");
+  put("#verification-rationale-input", workflow.rationale || "");
+}
+
+function persistRetestWorkflow() {
+  if (!state.retestWorkflow) return;
+  state.retestWorkflow.updatedAt = new Date().toISOString();
+  workflowStoreWrite(state.retestWorkflow);
+}
+
+function recordTechnicianAction() {
+  if (!state.currentAnalysis) { showToast("Analyze a case before recording a repair action."); return; }
+  const description = getInputValue("#technician-action-description");
+  const technician = getInputValue("#verification-technician");
+  if (!description || !technician) { showToast("Enter the action performed and technician name."); return; }
+  const timestamp = $("#technician-action-timestamp");
+  if (timestamp && !timestamp.value) timestamp.value = toLocalDateTimeValue(new Date());
+  const workflow = state.retestWorkflow || newRetestWorkflow(state.currentAnalysis.caseId);
+  workflow.action = { description, technician, timestamp: timestamp?.value || "" };
+  workflow.actionRecorded = true;
+  workflow.retestReady = false;
+  workflow.resultRecorded = false;
+  workflow.verified = false;
+  workflow.closed = false;
+  workflow.escalated = false;
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  saveAnalyzedCase("In Progress", `Technician action recorded: ${description}`);
+  showToast("Technician action recorded. Prepare the required retest.");
+}
+
+function prepareRequiredRetest() {
+  const workflow = state.retestWorkflow;
+  if (!workflow?.actionRecorded) { showToast("Record the technician action before preparing a retest."); return; }
+  const tester = getInputValue("#verification-retest-tester");
+  if (!tester) { showToast("Enter the tester ID before preparing the retest."); return; }
+  const session = $("#verification-retest-session-id");
+  const started = $("#verification-retest-started-at");
+  if (session && !session.value) session.value = `RETEST-${Date.now().toString(36).toUpperCase()}`;
+  if (started && !started.value) started.value = toLocalDateTimeValue(new Date());
+  workflow.retest = { ...(workflow.retest || {}), stage: getInputValue("#verification-retest-stage") || "INIT", tester, sessionId: session?.value || "", startedAt: started?.value || "", result: "NOT RUN", completedAt: "", evidence: "" };
+  workflow.retestReady = true;
+  workflow.resultRecorded = false;
+  workflow.verified = false;
+  workflow.closed = false;
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  showToast("Retest prepared. Run it on the approved tester and record the observed result.");
+}
+
+function recordRequiredRetestResult() {
+  const workflow = state.retestWorkflow;
+  if (!workflow?.retestReady) { showToast("Prepare the retest before recording a result."); return; }
+  const result = getInputValue("#verification-retest-result");
+  if (!["PASSED", "FAILED", "INCONCLUSIVE"].includes(result)) { showToast("Select Passed, Failed, or Inconclusive."); return; }
+  const completed = $("#verification-retest-completed-at");
+  if (completed && !completed.value) completed.value = toLocalDateTimeValue(new Date());
+  workflow.retest = { ...workflow.retest, result, completedAt: completed?.value || "", evidence: getInputValue("#verification-retest-evidence") };
+  workflow.resultRecorded = true;
+  workflow.verified = false;
+  workflow.closed = false;
+  workflow.verification = result === "PASSED" ? "READY FOR TECHNICIAN VERIFICATION" : "FAILED / ESCALATION REQUIRED";
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  saveAnalyzedCase(result === "PASSED" ? "Retest Passed" : "Escalated", `Retest ${result.toLowerCase()} at ${workflow.retest.stage}.`);
+  showToast(result === "PASSED" ? "Passing retest recorded. Technician verification is still required." : "Retest result recorded. Case cannot be closed.");
+}
+
+function verifyRepairOutcome() {
+  const workflow = state.retestWorkflow;
+  const rationale = getInputValue("#verification-rationale-input");
+  if (!workflow?.resultRecorded || workflow.retest?.result !== "PASSED") { showToast("A passing required-stage retest is needed before verification."); return; }
+  if (rationale.length < 8) { showToast("Enter a verification rationale of at least 8 characters."); return; }
+  workflow.rationale = rationale;
+  workflow.verified = true;
+  workflow.escalated = false;
+  workflow.verification = "VERIFIED BY TECHNICIAN";
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  saveAnalyzedCase("Verified", `Technician verified the repair: ${rationale}`);
+  showToast("Technician verification recorded. The closure gate is ready.");
+}
+
+function rejectRepairVerification() {
+  const workflow = state.retestWorkflow;
+  const rationale = getInputValue("#verification-rationale-input");
+  if (!workflow?.resultRecorded) { showToast("Record a retest result before rejecting verification."); return; }
+  if (rationale.length < 8) { showToast("Enter a reason of at least 8 characters to escalate."); return; }
+  workflow.rationale = rationale;
+  workflow.verified = false;
+  workflow.escalated = true;
+  workflow.closed = false;
+  workflow.verification = "REJECTED / ESCALATED";
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  saveAnalyzedCase("Escalated", rationale);
+  showToast("Verification rejected and escalated for review.");
+}
+
+function closeVerifiedCase() {
+  const workflow = state.retestWorkflow;
+  if (!workflow?.verified || workflow.retest?.result !== "PASSED") { showToast("Case closure is blocked until a passing retest and technician verification are recorded."); return; }
+  workflow.closed = true;
+  state.retestWorkflow = workflow;
+  persistRetestWorkflow();
+  updateRetestWorkflowUI();
+  saveAnalyzedCase("Closed", "Case closed after passing retest and technician verification.");
+  if (state.currentAnalysis) state.currentAnalysis.caseState = "CLOSED";
+  setText("#active-case-state", "CLOSED");
+  showToast("Case closed after verification.");
+}
+
+function updateRetestWorkflowUI() {
+  const w = state.retestWorkflow || newRetestWorkflow();
+  const action = Boolean(w.actionRecorded);
+  const ready = Boolean(w.retestReady);
+  const result = Boolean(w.resultRecorded);
+  const verified = Boolean(w.verified);
+  const closed = Boolean(w.closed);
+  const current = closed ? "close" : !action ? "action" : !ready ? "ready" : !result ? "result" : !verified ? "verify" : "close";
+  const stepIndex = RETEST_STEPS.indexOf(current);
+  $$("[data-retest-step]").forEach(el => {
+    const index = RETEST_STEPS.indexOf(el.dataset.retestStep);
+    el.classList.toggle("complete", closed || index < stepIndex || (verified && el.dataset.retestStep === "verify"));
+    el.classList.toggle("active", el.dataset.retestStep === current && !closed);
+    if (el.dataset.retestStep === current && !closed) el.setAttribute("aria-current", "step");
+    else el.removeAttribute("aria-current");
+  });
+  $$(".retest-progress-line").forEach((el, i) => el.classList.toggle("complete", closed || i < stepIndex));
+  const cardStates = { action: action ? "COMPLETE" : "READY", ready: ready ? "READY" : action ? "READY" : "LOCKED", result: result ? "COMPLETE" : ready ? "READY" : "LOCKED", verify: verified ? "COMPLETE" : result ? "READY" : "LOCKED" };
+  Object.entries(cardStates).forEach(([step, label]) => {
+    const el = $(`[data-retest-card="${step}"] .workflow-card-state`);
+    if (el) { el.textContent = label; el.className = `workflow-card-state ${label === "COMPLETE" ? "complete" : label === "READY" ? "ready" : "locked"}`; }
+  });
+  const setDisabled = (id, disabled) => { const el = $(id); if (el) el.disabled = disabled; };
+  setDisabled("#prepare-retest-button", !action || ready || closed);
+  setDisabled("#record-retest-result-button", !ready || result || closed);
+  const passed = result && w.retest?.result === "PASSED";
+  const rationale = getInputValue("#verification-rationale-input");
+  setDisabled("#verify-repair-button", !passed || verified || rationale.length < 8 || closed);
+  setDisabled("#reject-verification-button", !result || verified || closed || rationale.length < 8);
+  setDisabled("#close-case-button", !verified || w.retest?.result !== "PASSED" || closed);
+  setText("#technician-action-state", action ? "COMPLETE" : "READY");
+  setText("#retest-ready-state", ready ? "READY" : action ? "READY" : "LOCKED");
+  setText("#retest-result-state", result ? w.retest?.result || "RECORDED" : ready ? "READY" : "LOCKED");
+  setText("#repair-verification-state", verified ? "VERIFIED" : result ? "REVIEW" : "LOCKED");
+  setText("#verification-retest-status", closed ? "CLOSED" : ready ? "RETEST READY" : action ? "ACTION RECORDED" : "NOT READY");
+  setText("#verification-retest-status-display", w.retest?.result || "NOT RUN");
+  setText("#verification-status", w.verification || "PENDING");
+  setText("#verification-decision", w.verification || "PENDING");
+  setText("#verification-rationale", w.rationale || (passed ? "Passing retest recorded; technician rationale is required." : "A passing required-stage retest is needed before verification."));
+  setText("#verification-closure-status", verified && passed ? "TRUE" : "FALSE");
+  setText("#diagnostic-verification-status", w.verification || "PENDING");
+  setText("#diagnostic-closure-status", verified && passed ? "TRUE" : "FALSE");
+  setText("#closure-eligibility-status", verified && passed ? "ELIGIBLE" : "BLOCKED");
+  setText("#closure-gate-title", closed ? "Case closed" : verified && passed ? "Closure eligible" : "Closure blocked");
+  setText("#closure-gate-message", closed ? "This prototype case was closed after a documented passing retest and technician verification." : verified && passed ? "Required retest passed and technician verification is recorded. The technician may close this case." : "Record the technician action, prepare the required retest, capture a passing result, and verify the repair before closure.");
+  const gate = $("#closure-gate");
+  if (gate) { gate.dataset.closureEligible = String(verified && passed); gate.dataset.closureState = closed ? "closed" : verified && passed ? "eligible" : "open"; }
+  setText("#retest-status", ready ? "RETEST READY" : "NOT READY");
+  setText("#retest-result", w.retest?.result || "NOT RUN");
+  setText("#retest-stage", w.retest?.stage || state.currentAnalysis?.retest?.stage || "Not defined");
+  setText("#retest-condition", state.currentAnalysis?.retest?.expectedResult || "Required stage passes without recurrence.");
+  setText("#retest-requirement-message", passed ? "Passing retest recorded. Technician verification and case closure remain separate steps." : "A diagnostic recommendation cannot be considered verified until the required retest is documented.");
+}
+
+function initializePassportActions() {
+  addListener("#passport-view-history-button", "click", () => openComponentHistoryModal(state.currentAnalysis?.affectedComponent || state.activeComponent));
+  addListener("#passport-export-button", "click", () => exportPassport());
+  addListener("#genealogy-export-button", "click", () => exportGenealogy());
+  addListener("#stage-export-button", "click", () => exportTestStages());
+  addListener("#topology-export-button", "click", () => exportTopology());
+}
+
+function updatePassportFromAnalysis(analysis) {
+  if (!analysis) return;
+  setText("#diagnostic-unit-serial-passport", analysis.unit?.unitSerialNumber || "Not supplied");
+  setText("#diagnostic-system-serial-passport", analysis.unit?.systemSerialNumber || "Not supplied");
+  const stages = analysis.testSession?.stages || {};
+  ["init", "flt", "flb", "fct", "dcc", "rin"].forEach(code => {
+    const stage = code.toUpperCase();
+    const value = stages[stage] || "NOT RUN";
+    setText(`#passport-stage-result-${code}`, value);
+    setText(`#passport-stage-status-${code}`, value === "PASS" ? "PASSED" : value === "FAIL" ? "FAILED" : value);
+    const card = $(`#passport-stage-card-${code}`);
+    if (card) {
+      card.dataset.stageState = value === "PASS" ? "passed" : value === "FAIL" ? "failed" : "not-run";
+      card.classList.remove("passed", "failed", "not-reached", "retest-required");
+      card.classList.add(value === "PASS" ? "passed" : value === "FAIL" ? "failed" : "not-reached");
+    }
+  });
+  const cards = $$(".genealogy-component-card");
+  cards.forEach(card => {
+    const label = card.querySelector(".genealogy-node-copy span")?.textContent || "";
+    const match = label.match(/GPU\s*(\d)/i);
+    if (!match) return;
+    const id = `GPU${match[1]}`;
+    const isAffected = id === analysis.affectedComponent;
+    const stateLabel = isAffected ? String(analysis.severity || "REVIEW").toUpperCase() : "DEMO / NOT VERIFIED";
+    const health = card.querySelector(".genealogy-health");
+    if (health) { health.textContent = stateLabel; health.classList.toggle("critical", isAffected && String(analysis.severity).toUpperCase() === "CRITICAL"); }
+    card.classList.toggle("critical", isAffected && String(analysis.severity).toUpperCase() === "CRITICAL");
+  });
+}
+
+function passportRecord() {
+  const a = state.currentAnalysis;
+  return { recordType: "RepairIQ Unit Digital Passport — Prototype", verified: false, caseId: a?.caseId || null, travelerId: a?.travelerId || null, unit: a?.unit || null, product: a?.product || null, affectedComponent: a?.affectedComponent || null, testSession: a?.testSession || null, dataSource: a?.dataSource || "Prototype / Demonstration Data", generatedAt: new Date().toISOString() };
+}
+function exportPassport() { downloadFile(JSON.stringify(passportRecord(), null, 2), `repairiq-passport-${state.currentAnalysis?.caseId || "demo"}.json`, "application/json"); }
+function exportGenealogy() { const record = passportRecord(); record.genealogy = { verified: false, platformId: state.topology?.platformId || "DEMO", components: safeArray(state.topology?.components).map(x => ({ componentId: x.componentId, displayName: x.displayName, slot: x.slot, healthState: x.healthState, verificationState: "unverified" })) }; downloadFile(JSON.stringify(record, null, 2), `repairiq-genealogy-${state.currentAnalysis?.caseId || "demo"}.json`, "application/json"); }
+function exportTestStages() { const a = state.currentAnalysis; downloadFile(JSON.stringify({ caseId: a?.caseId || null, failureStage: a?.testSession?.failureStage || "Not established", stages: a?.testSession?.stages || {}, dataSource: a?.dataSource || "Prototype / Demonstration Data", verified: false }, null, 2), `repairiq-test-stages-${a?.caseId || "demo"}.json`, "application/json"); }
+function exportTopology() { const t = state.topology || {}; downloadFile(JSON.stringify({ ...t, verified: false, components: safeArray(t.components).map(x => ({ ...x, verificationState: "unverified" })) }, null, 2), `repairiq-topology-${t.platformId || "demo"}.json`, "application/json"); }
