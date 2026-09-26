@@ -11141,3 +11141,792 @@ pre {
 @media (prefers-reduced-motion: reduce) {
   #rex-view .rex-message, .rex-avatar-stage .rex-voice-hud span, .rex-avatar-stage .rex-diagnostic-ring span { animation: none !important; }
 }
+
+
+/* =========================================================
+   VIRTUAL TEST LAB — v0.10
+   Synthetic room visualization and tester monitoring UI.
+========================================================= */
+.lab-view-heading { align-items: center; }
+.lab-heading-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.lab-prototype-badge,.lab-event-label { display:inline-flex; align-items:center; gap:7px; color:var(--orange); font-size:9px; font-weight:800; letter-spacing:.09em; }
+.lab-prototype-badge { min-height:30px; padding:0 11px; border:1px solid rgba(255,180,92,.25); border-radius:999px; background:rgba(255,180,92,.06); }
+.lab-prototype-badge span,.lab-event-label i { width:6px; height:6px; border-radius:50%; background:var(--orange); box-shadow:0 0 9px var(--orange); }
+.lab-metric-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin:20px 0 14px; }
+.lab-metric { min-width:0; padding:13px 15px; border:1px solid var(--border); border-radius:var(--radius-md); background:linear-gradient(145deg,rgba(18,38,53,.9),rgba(6,16,24,.94)); }
+.lab-metric span,.lab-metric strong,.lab-metric small { display:block; }
+.lab-metric span { color:var(--text-muted); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
+.lab-metric strong { margin-top:3px; color:var(--text); font:750 25px var(--font-mono); }
+.lab-metric small { color:var(--text-dim); font-size:8px; }
+.lab-metric.testing strong { color:var(--cyan); }.lab-metric.available strong { color:var(--green); }.lab-metric.attention strong { color:var(--orange); }.lab-metric.failed strong { color:var(--red); }
+.lab-workspace { display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,370px); gap:14px; align-items:start; }
+.lab-main-column { display:grid; gap:13px; min-width:0; }
+.lab-scene-panel,.lab-environment-panel,.lab-operations-panel,.lab-event-panel,.lab-detail-panel { min-width:0; padding:17px; }
+.lab-panel-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.lab-panel-header h3,.lab-detail-header h3 { margin:3px 0 0; color:var(--text); font-size:15px; }
+.lab-panel-header p { margin:4px 0 0; color:var(--text-muted); font-size:9px; }
+.lab-view-switch { display:flex; gap:3px; padding:3px; border:1px solid var(--border); border-radius:9px; background:rgba(0,5,9,.46); }
+.lab-view-switch button { min-height:27px; padding:0 9px; border:0; border-radius:6px; background:transparent; color:var(--text-muted); font-size:9px; }
+.lab-view-switch button.active { background:rgba(99,232,255,.13); color:var(--cyan-bright); }
+.lab-main-stage { min-height:346px; margin-top:14px; overflow:hidden; border:1px solid rgba(99,232,255,.17); border-radius:12px; background:radial-gradient(ellipse at 50% 30%,rgba(34,129,168,.17),transparent 55%),linear-gradient(180deg,#091925,#061018 76%); }
+.lab-room-scene { position:relative; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; min-height:346px; padding:58px 18px 24px; perspective:900px; background:linear-gradient(180deg,rgba(13,40,55,.12),rgba(0,0,0,.25)),repeating-linear-gradient(90deg,transparent 0 58px,rgba(99,232,255,.025) 59px 60px); }
+.lab-room-scene::before { position:absolute; inset:0 0 auto; height:46px; border-bottom:1px solid rgba(99,232,255,.14); background:linear-gradient(180deg,rgba(79,175,205,.08),transparent); content:"TEST OPERATIONS ROOM · 12 DEMO STATIONS"; padding:14px 16px; color:rgba(142,205,222,.65); font:800 8px var(--font-mono); letter-spacing:.13em; }
+.lab-room-scene::after { position:absolute; right:5%; bottom:10px; left:5%; height:36px; border-radius:50%; background:radial-gradient(ellipse,rgba(64,171,207,.12),transparent 72%); content:""; pointer-events:none; }
+.lab-rack { position:relative; z-index:1; display:flex; min-width:0; min-height:242px; flex-direction:column; justify-content:flex-start; padding:8px 7px; border:1px solid rgba(110,183,207,.25); border-top-color:rgba(125,213,238,.58); border-radius:6px; background:linear-gradient(145deg,rgba(20,49,64,.95),rgba(4,14,22,.98) 60%); box-shadow:0 16px 25px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.05); transform:rotateY(-5deg); cursor:pointer; transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.lab-rack:hover,.lab-rack.selected { z-index:2; border-color:var(--cyan); box-shadow:0 0 0 1px rgba(99,232,255,.2),0 0 24px rgba(99,232,255,.12); transform:translateY(-4px) rotateY(-2deg); }
+.lab-rack::before { position:absolute; top:7px; right:7px; width:5px; height:5px; border-radius:50%; background:var(--station-color,var(--cyan)); box-shadow:0 0 8px var(--station-color,var(--cyan)); content:""; }
+.lab-rack-name { color:var(--text-soft); font:800 8px var(--font-mono); letter-spacing:.04em; }
+.lab-rack-state { display:block; margin:6px 0 8px; padding:3px 4px; border-radius:4px; background:color-mix(in srgb,var(--station-color,var(--cyan)) 17%,transparent); color:var(--station-color,var(--cyan)); font-size:7px; font-weight:800; text-align:center; }
+.lab-rack-unit { display:flex; height:79px; flex-direction:column; justify-content:center; align-items:center; gap:3px; overflow:hidden; border:1px solid rgba(99,232,255,.1); border-radius:4px; background:linear-gradient(180deg,#0b1b26,#050b11); color:rgba(162,213,226,.65); font:700 7px var(--font-mono); text-align:center; }
+.lab-rack-unit img { width:100%; height:57px; object-fit:contain; filter:drop-shadow(0 2px 7px rgba(0,0,0,.7)); }
+.lab-rack-placeholder { display:grid; width:36px; height:42px; place-items:center; border:1px solid rgba(99,232,255,.2); border-radius:3px; color:var(--cyan); font-size:8px; }
+.lab-rack-progress { height:3px; margin-top:7px; overflow:hidden; border-radius:9px; background:rgba(255,255,255,.08); }
+.lab-rack-progress i { display:block; height:100%; border-radius:inherit; background:var(--station-color,var(--cyan)); }
+.lab-rack-meta { display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-top:6px; color:var(--text-dim); font:7px var(--font-mono); }
+.lab-rack-meta b { color:var(--text-soft); font-weight:600; }
+.lab-rack[data-status="testing"] { --station-color:var(--cyan); }.lab-rack[data-status="available"] { --station-color:var(--green); }.lab-rack[data-status="attention"] { --station-color:var(--orange); }.lab-rack[data-status="failed"] { --station-color:var(--red); }
+.lab-rack[data-status="attention"] { box-shadow:0 0 18px rgba(255,180,92,.1),0 16px 25px rgba(0,0,0,.3); }.lab-rack[data-status="failed"] .lab-rack-state { animation:lab-failure-pulse 1.8s ease-in-out infinite; }
+@keyframes lab-failure-pulse { 50% { filter:brightness(1.5); } }
+.lab-tester-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; padding:14px; }
+.lab-grid-card { display:grid; gap:7px; min-width:0; padding:10px; border:1px solid var(--border); border-radius:9px; background:rgba(1,8,13,.42); text-align:left; cursor:pointer; }
+.lab-grid-card:hover,.lab-grid-card.selected { border-color:var(--cyan); background:rgba(99,232,255,.055); }
+.lab-grid-card strong { color:var(--text); font:800 9px var(--font-mono); }.lab-grid-card span { color:var(--text-muted); font-size:8px; }.lab-grid-card b { color:var(--station-color,var(--cyan)); font-size:8px; }
+.lab-grid-card[data-status="testing"] { --station-color:var(--cyan); }.lab-grid-card[data-status="available"] { --station-color:var(--green); }.lab-grid-card[data-status="attention"] { --station-color:var(--orange); }.lab-grid-card[data-status="failed"] { --station-color:var(--red); }
+.lab-tester-list-wrap { max-width:100%; overflow:auto; }.lab-tester-list { width:100%; min-width:620px; border-collapse:collapse; }.lab-tester-list th,.lab-tester-list td { padding:9px 10px; border-bottom:1px solid rgba(143,190,211,.1); color:var(--text-soft); font-size:8px; text-align:left; }.lab-tester-list th { color:var(--text-muted); text-transform:uppercase; }.lab-tester-list tbody tr { cursor:pointer; }.lab-tester-list tbody tr:hover { background:rgba(99,232,255,.06); }
+.lab-state-pill { display:inline-flex; align-items:center; justify-content:center; min-height:22px; padding:0 8px; border:1px solid var(--border); border-radius:999px; color:var(--text-muted); font-size:8px; font-weight:800; letter-spacing:.06em; white-space:nowrap; }
+.lab-state-pill.testing { border-color:rgba(99,232,255,.3); color:var(--cyan); }.lab-state-pill.available,.lab-state-pill.normal { border-color:rgba(79,226,162,.28); color:var(--green); }.lab-state-pill.attention { border-color:rgba(255,180,92,.32); color:var(--orange); }.lab-state-pill.failed { border-color:rgba(255,95,117,.36); color:var(--red); }
+.lab-scene-footer { display:flex; align-items:center; gap:13px; flex-wrap:wrap; margin-top:11px; color:var(--text-muted); font-size:8px; }.lab-scene-footer span { display:inline-flex; align-items:center; gap:5px; }.lab-legend-dot { width:6px; height:6px; border-radius:50%; }.lab-legend-dot.testing { background:var(--cyan); }.lab-legend-dot.available { background:var(--green); }.lab-legend-dot.attention { background:var(--orange); }.lab-legend-dot.failed { background:var(--red); }.lab-scene-footer small { margin-left:auto; color:var(--text-dim); font:7px var(--font-mono); }
+.lab-lower-grid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:13px; }.lab-environment-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:13px; }.lab-env-reading { min-width:0; padding:10px; border:1px solid rgba(99,232,255,.1); border-radius:8px; background:rgba(0,7,12,.24); }.lab-env-reading span,.lab-env-reading strong { display:block; }.lab-env-reading span { color:var(--text-muted); font-size:8px; }.lab-env-reading strong { margin-top:4px; color:var(--text); font:700 14px var(--font-mono); }.lab-sparkline { position:relative; height:17px; margin-top:7px; overflow:hidden; }.lab-sparkline::before { position:absolute; inset:3px 0; background:linear-gradient(160deg,transparent 0 9%,currentColor 10% 12%,transparent 13% 25%,currentColor 26% 29%,transparent 30% 40%,currentColor 41% 43%,transparent 44% 57%,currentColor 58% 60%,transparent 61% 73%,currentColor 74% 76%,transparent 77%); opacity:.78; content:""; }.lab-sparkline.cyan { color:var(--cyan); }.lab-sparkline.blue { color:var(--blue); }.lab-sparkline.red { color:var(--red); }.lab-sparkline.green { color:var(--green); }.lab-airflow-bars { display:flex; gap:3px; align-items:end; height:17px; margin-top:7px; }.lab-airflow-bars i { width:5px; height:10px; border-radius:4px; background:var(--cyan); opacity:.7; }.lab-airflow-bars i:nth-child(2),.lab-airflow-bars i:nth-child(4) { height:15px; }.lab-power-light { margin-top:8px; color:var(--text-dim); font-size:7px; }.lab-power-light i { display:inline-block; width:5px; height:5px; margin-right:4px; border-radius:50%; background:var(--green); }
+.lab-ops-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:16px; }.lab-ops-stats div { padding:10px 5px; border:1px solid rgba(99,232,255,.11); border-radius:8px; background:rgba(0,7,12,.2); text-align:center; }.lab-ops-stats strong,.lab-ops-stats span { display:block; }.lab-ops-stats strong { color:var(--cyan-bright); font:700 17px var(--font-mono); }.lab-ops-stats span { margin-top:3px; color:var(--text-muted); font-size:7px; }.lab-data-note { margin:10px 0 0; color:var(--text-dim); font-size:8px; }
+.lab-event-list { display:grid; gap:0; margin-top:9px; }.lab-event-item { display:grid; grid-template-columns:48px 9px minmax(0,1fr) auto; gap:8px; align-items:start; padding:9px 0; border-bottom:1px solid rgba(143,190,211,.08); color:var(--text-muted); font-size:9px; }.lab-event-item:last-child { border-bottom:0; }.lab-event-time { color:var(--text-dim); font:8px var(--font-mono); }.lab-event-marker { width:6px; height:6px; margin-top:4px; border-radius:50%; background:var(--cyan); }.lab-event-item.warning .lab-event-marker { background:var(--orange); }.lab-event-item.error .lab-event-marker { background:var(--red); }.lab-event-item.good .lab-event-marker { background:var(--green); }.lab-event-item strong { color:var(--text-soft); font-weight:650; }.lab-event-source { color:var(--text-dim); font:7px var(--font-mono); }
+.lab-detail-panel { position:sticky; top:16px; overflow:hidden; padding:0; }.lab-detail-header { display:flex; align-items:center; justify-content:space-between; gap:9px; padding:16px 16px 12px; }.lab-detail-header h3 { font:800 13px var(--font-mono); }.lab-detail-tabs { display:grid; grid-template-columns:repeat(4,1fr); padding:0 10px; border-bottom:1px solid rgba(143,190,211,.12); }.lab-detail-tabs button { min-height:34px; border:0; border-bottom:2px solid transparent; background:transparent; color:var(--text-muted); font-size:8px; }.lab-detail-tabs button.active { border-bottom-color:var(--cyan); color:var(--cyan-bright); }.lab-detail-content { padding:12px; }.lab-detail-tab-panel h4 { margin:1px 0 4px; color:var(--text); font-size:13px; }.lab-detail-tab-panel > p { margin:0 0 12px; color:var(--text-muted); font-size:8px; }
+.lab-unit-visual { position:relative; display:grid; height:145px; place-items:center; overflow:hidden; border:1px solid rgba(99,232,255,.13); border-radius:9px; background:radial-gradient(ellipse,rgba(80,153,180,.17),transparent 70%),#030b11; }.lab-unit-visual img { width:90%; height:128px; object-fit:contain; filter:drop-shadow(0 7px 15px rgba(0,0,0,.7)); }.lab-unit-visual span { position:absolute; right:8px; bottom:7px; padding:3px 5px; border-radius:4px; background:rgba(0,0,0,.62); color:var(--text-muted); font:7px var(--font-mono); }
+.lab-unit-meta { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:11px; }.lab-unit-meta div { min-width:0; }.lab-unit-meta span,.lab-unit-meta strong { display:block; }.lab-unit-meta span { color:var(--text-dim); font-size:7px; text-transform:uppercase; }.lab-unit-meta strong { margin-top:2px; overflow:hidden; color:var(--text-soft); font:700 8px var(--font-mono); text-overflow:ellipsis; white-space:nowrap; }
+.lab-progress-block { margin-top:11px; }.lab-progress-block > div:first-child { display:flex; justify-content:space-between; color:var(--text-muted); font-size:8px; }.lab-progress-block strong { color:var(--cyan); font:700 9px var(--font-mono); }.lab-progress-track { height:5px; margin-top:5px; overflow:hidden; border-radius:9px; background:rgba(255,255,255,.08); }.lab-progress-track i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#168bad,var(--cyan)); transition:width .35s ease; }
+.lab-telemetry-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:12px; }.lab-telemetry-card { min-width:0; padding:9px; border:1px solid rgba(99,232,255,.1); border-radius:8px; background:rgba(0,7,12,.29); }.lab-telemetry-card > span { display:block; color:var(--text-muted); font-size:7px; }.lab-telemetry-card > strong { display:block; margin-top:2px; color:var(--cyan-bright); font:700 15px var(--font-mono); }.lab-telemetry-card.danger { border-color:rgba(255,95,117,.24); }.lab-telemetry-card.danger > strong { color:var(--red); }
+.lab-alert-box { margin-top:10px; padding:9px; border:1px solid rgba(255,95,117,.2); border-radius:8px; background:rgba(255,95,117,.055); }.lab-alert-heading { display:flex; justify-content:space-between; color:var(--red); font-size:8px; }.lab-alert-heading span { font:700 8px var(--font-mono); }.lab-alert-item { display:grid; grid-template-columns:8px minmax(0,1fr) auto; gap:6px; align-items:start; padding-top:7px; color:#f0a6b0; font-size:8px; }.lab-alert-item i { width:6px; height:6px; margin-top:3px; border-radius:50%; background:var(--red); }.lab-alert-item.warning { color:#f1c27e; }.lab-alert-item.warning i { background:var(--orange); }.lab-alert-item time { color:var(--text-dim); font:7px var(--font-mono); white-space:nowrap; }
+.lab-software-row,.lab-health-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:10px; padding-top:9px; border-top:1px solid rgba(143,190,211,.09); }.lab-software-row span,.lab-health-row span { color:var(--text-dim); font-size:7px; }.lab-software-row strong,.lab-health-row strong { display:block; margin-top:3px; color:var(--text-soft); font:700 8px var(--font-mono); }.lab-health-row strong { color:var(--green); }
+.lab-rex-insight { display:flex; gap:8px; margin-top:11px; padding:9px; border:1px solid rgba(167,123,255,.2); border-radius:8px; background:rgba(167,123,255,.05); }.lab-rex-mark { display:grid; width:23px; height:23px; flex:0 0 auto; place-items:center; border:1px solid rgba(167,123,255,.4); border-radius:50%; color:#d8c9ff; font:800 8px var(--font-mono); }.lab-rex-insight strong { color:#d8c9ff; font-size:7px; letter-spacing:.07em; }.lab-rex-insight p { margin:3px 0 0; color:var(--text-muted); font-size:8px; line-height:1.45; }.lab-detail-actions { display:flex; gap:6px; margin-top:11px; }.lab-detail-actions button { flex:1 1 0; min-width:0; padding:0 8px; font-size:8px; }
+.lab-detail-tab-panel[hidden] { display:none; }.lab-detail-tab-panel.active { display:block; }.lab-telemetry-large { margin-top:12px; padding:12px; border:1px solid var(--border); border-radius:8px; background:rgba(0,7,12,.25); }.lab-telemetry-large > span { display:block; color:var(--text-muted); font-size:8px; }.lab-telemetry-large > strong { display:block; color:var(--cyan-bright); font:700 18px var(--font-mono); }.lab-chart-line { position:relative; height:42px; margin-top:8px; overflow:hidden; border-bottom:1px solid rgba(99,232,255,.16); }.lab-chart-line::before { position:absolute; inset:4px 0; background:linear-gradient(155deg,transparent 0 9%,rgba(255,95,117,.8) 10% 11%,transparent 12% 22%,rgba(255,95,117,.8) 23% 24%,transparent 25% 36%,rgba(255,95,117,.8) 37% 39%,transparent 40% 52%,rgba(255,95,117,.8) 53% 54%,transparent 55% 66%,rgba(255,95,117,.8) 67% 69%,transparent 70%); content:""; }.lab-chart-line.blue::before { filter:hue-rotate(110deg); }.lab-chart-line.green::before { filter:hue-rotate(50deg); }
+.lab-selected-log { display:grid; gap:7px; }.lab-log-line { padding:8px; border-left:2px solid var(--cyan); background:rgba(99,232,255,.035); color:var(--text-soft); font-size:8px; }.lab-log-line.warning { border-color:var(--orange); }.lab-log-line.error { border-color:var(--red); }.lab-log-line time { display:block; margin-bottom:3px; color:var(--text-dim); font:7px var(--font-mono); }.lab-environment-detail { display:grid; gap:7px; }.lab-environment-detail div { display:flex; justify-content:space-between; padding:9px; border:1px solid var(--border); border-radius:8px; color:var(--text-muted); font-size:8px; }.lab-environment-detail strong { color:var(--text-soft); font-family:var(--font-mono); }
+.lab-disclosure { display:flex; gap:9px; margin-top:13px; padding:11px 13px; border:1px solid rgba(255,180,92,.18); border-radius:10px; background:rgba(255,180,92,.035); color:var(--text-muted); font-size:9px; }.lab-disclosure strong { flex:0 0 auto; color:var(--orange); }
+#tester-lab-view[data-monitoring="on"] #lab-monitor-toggle { border-color:rgba(255,95,117,.4); color:#ffc2ca; }
+@media (max-width:1200px) { .lab-workspace { grid-template-columns:minmax(0,1fr) 320px; }.lab-room-scene { grid-template-columns:repeat(4,minmax(0,1fr)); }.lab-rack { min-height:225px; } }
+@media (max-width:980px) { .lab-workspace,.lab-lower-grid { grid-template-columns:1fr; }.lab-detail-panel { position:static; }.lab-detail-panel { order:-1; }.lab-tester-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:680px) { .lab-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.lab-metric:first-child { grid-column:1/-1; }.lab-heading-actions { justify-content:flex-start; margin-top:12px; }.lab-scene-panel,.lab-environment-panel,.lab-operations-panel,.lab-event-panel { padding:13px; }.lab-panel-header { display:grid; }.lab-view-switch { width:fit-content; }.lab-room-scene { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:56px 9px 20px; }.lab-rack { min-height:210px; padding:7px 5px; }.lab-rack-unit { height:67px; }.lab-rack-unit img { height:48px; }.lab-tester-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.lab-environment-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.lab-disclosure { display:block; }.lab-disclosure span { display:block; margin-top:4px; }.lab-detail-actions { flex-direction:column; }.lab-scene-footer small { width:100%; margin-left:0; } }
+@media (prefers-reduced-motion:reduce) { .lab-rack[data-status="failed"] .lab-rack-state { animation:none; } }
+
+
+/* =========================================================
+   REPAIRIQ v0.11 — IMMERSIVE VIRTUAL TEST LAB
+   Realistic room background layer.
+
+   Required asset:
+   assets/testlab/repairiq-test-room.PNG
+
+   This upgrade intentionally changes ROOM VIEW only.
+   Grid View, List View, tester selection, telemetry,
+   Analyzer handoff, REX, and all existing v0.10 behavior
+   remain controlled by the existing HTML / JavaScript.
+========================================================= */
+
+#lab-main-stage[data-view="room"] .lab-room-scene {
+  position: relative;
+  isolation: isolate;
+  min-height: 520px;
+  padding: 82px 22px 28px;
+  overflow: hidden;
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(2, 10, 17, 0.12) 0%,
+      rgba(2, 10, 17, 0.18) 48%,
+      rgba(2, 10, 17, 0.62) 100%
+    ),
+    url("assets/testlab/repairiq-test-room.PNG");
+
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(99, 232, 255, 0.18);
+  border-radius: 10px;
+
+  box-shadow:
+    inset 0 0 90px rgba(0, 0, 0, 0.34),
+    inset 0 -90px 100px rgba(1, 8, 13, 0.52),
+    0 18px 45px rgba(0, 0, 0, 0.26);
+}
+
+/* Dark cinematic edge treatment while preserving the room image. */
+#lab-main-stage[data-view="room"] .lab-room-scene::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: auto;
+  padding: 16px 18px;
+
+  content: "TEST OPERATIONS ROOM · 12 DEMO STATIONS";
+
+  pointer-events: none;
+
+  border: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2, 10, 17, 0.76) 0,
+      rgba(2, 10, 17, 0.30) 58px,
+      transparent 130px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(2, 10, 17, 0.28),
+      transparent 22%,
+      transparent 78%,
+      rgba(2, 10, 17, 0.28)
+    );
+
+  color: rgba(188, 237, 248, 0.78);
+  font: 800 8px var(--font-mono);
+  letter-spacing: 0.13em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Floor glow / depth layer. */
+#lab-main-stage[data-view="room"] .lab-room-scene::after {
+  position: absolute;
+  right: 7%;
+  bottom: -18px;
+  left: 7%;
+  z-index: 0;
+
+  height: 145px;
+
+  content: "";
+  pointer-events: none;
+
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(71, 218, 255, 0.18) 0%,
+      rgba(31, 147, 186, 0.07) 38%,
+      transparent 72%
+    );
+
+  filter: blur(8px);
+}
+
+/*
+   Existing tester stations remain real DOM controls.
+   They are translucent so the realistic room stays visible.
+*/
+#lab-main-stage[data-view="room"] .lab-rack {
+  z-index: 2;
+
+  min-height: 194px;
+  padding: 7px 7px 8px;
+
+  border-color: rgba(135, 222, 245, 0.30);
+  border-top-color: rgba(142, 229, 252, 0.72);
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(8, 30, 43, 0.78),
+      rgba(2, 12, 20, 0.84) 66%
+    );
+
+  -webkit-backdrop-filter: blur(5px) saturate(1.12);
+  backdrop-filter: blur(5px) saturate(1.12);
+
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.42),
+    inset 0 1px rgba(255, 255, 255, 0.055);
+
+  transform: perspective(900px) rotateY(-3deg);
+}
+
+#lab-main-stage[data-view="room"] .lab-rack:nth-child(n+7) {
+  align-self: end;
+}
+
+#lab-main-stage[data-view="room"] .lab-rack:hover,
+#lab-main-stage[data-view="room"] .lab-rack.selected {
+  border-color: var(--station-color, var(--cyan));
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(9, 38, 54, 0.90),
+      rgba(2, 13, 21, 0.94) 66%
+    );
+
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--station-color, var(--cyan)) 30%, transparent),
+    0 0 30px color-mix(in srgb, var(--station-color, var(--cyan)) 22%, transparent),
+    0 18px 32px rgba(0, 0, 0, 0.46);
+
+  transform: translateY(-5px) scale(1.015);
+}
+
+/* Make the hardware tile blend into the room rather than becoming a box. */
+#lab-main-stage[data-view="room"] .lab-rack-unit {
+  height: 62px;
+
+  border-color: rgba(99, 232, 255, 0.10);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(4, 15, 23, 0.52),
+      rgba(2, 8, 13, 0.68)
+    );
+}
+
+#lab-main-stage[data-view="room"] .lab-rack-unit img {
+  height: 46px;
+
+  filter:
+    drop-shadow(0 5px 8px rgba(0, 0, 0, 0.86))
+    drop-shadow(0 0 5px rgba(91, 221, 255, 0.10));
+}
+
+/* Improve label readability over the photograph. */
+#lab-main-stage[data-view="room"] .lab-rack-name,
+#lab-main-stage[data-view="room"] .lab-rack-meta,
+#lab-main-stage[data-view="room"] .lab-rack-unit {
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95);
+}
+
+#lab-main-stage[data-view="room"] .lab-rack-state {
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--station-color, var(--cyan)) 12%,
+        transparent
+      );
+}
+
+/* Selected tester gets a stronger location beacon. */
+#lab-main-stage[data-view="room"] .lab-rack.selected::after {
+  position: absolute;
+  top: -7px;
+  right: 50%;
+
+  width: 38px;
+  height: 3px;
+
+  content: "";
+
+  border-radius: 999px;
+
+  background: var(--station-color, var(--cyan));
+
+  box-shadow:
+    0 0 8px var(--station-color, var(--cyan)),
+    0 0 20px
+      color-mix(
+        in srgb,
+        var(--station-color, var(--cyan)) 55%,
+        transparent
+      );
+
+  transform: translateX(50%);
+}
+
+/* Status-specific ambient glow against the room. */
+#lab-main-stage[data-view="room"] .lab-rack[data-status="testing"] {
+  --station-color: var(--cyan);
+}
+
+#lab-main-stage[data-view="room"] .lab-rack[data-status="available"] {
+  --station-color: var(--green);
+}
+
+#lab-main-stage[data-view="room"] .lab-rack[data-status="attention"] {
+  --station-color: var(--orange);
+
+  box-shadow:
+    0 0 22px rgba(255, 180, 92, 0.15),
+    0 14px 28px rgba(0, 0, 0, 0.42);
+}
+
+#lab-main-stage[data-view="room"] .lab-rack[data-status="failed"] {
+  --station-color: var(--red);
+
+  box-shadow:
+    0 0 24px rgba(255, 88, 111, 0.16),
+    0 14px 28px rgba(0, 0, 0, 0.42);
+}
+
+/* The room should feel larger on wide displays. */
+@media (min-width: 1500px) {
+  #lab-main-stage[data-view="room"] .lab-room-scene {
+    min-height: 575px;
+    padding-top: 96px;
+  }
+
+  #lab-main-stage[data-view="room"] .lab-rack {
+    min-height: 205px;
+  }
+}
+
+/* Preserve the immersive room while adapting the station overlay. */
+@media (max-width: 1200px) {
+  #lab-main-stage[data-view="room"] .lab-room-scene {
+    min-height: 560px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 78px 16px 24px;
+    background-position: center center;
+  }
+}
+
+@media (max-width: 680px) {
+  #lab-main-stage[data-view="room"] .lab-room-scene {
+    min-height: 620px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    padding: 68px 9px 20px;
+    background-position: center center;
+  }
+
+  #lab-main-stage[data-view="room"] .lab-rack {
+    min-height: 180px;
+    padding: 6px 5px;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+
+  #lab-main-stage[data-view="room"] .lab-rack-unit {
+    height: 56px;
+  }
+
+  #lab-main-stage[data-view="room"] .lab-rack-unit img {
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #lab-main-stage[data-view="room"] .lab-rack,
+  #lab-main-stage[data-view="room"] .lab-rack:hover,
+  #lab-main-stage[data-view="room"] .lab-rack.selected {
+    transition: none;
+  }
+}
+
+
+/* =========================================================
+   REPAIRIQ v0.12 — DASHBOARD HERO VULCAN UPGRADE
+
+   Replaces the generic RI center block inside the dashboard
+   hero visualization with the existing Vulcan HGX asset.
+
+   Required asset:
+   assets/vulcan-hgx-demo.png
+
+   The cyan digital-twin board, floating BMC / NVSwitch /
+   GPU nodes, telemetry footer, and all existing dashboard
+   behavior remain intact.
+========================================================= */
+
+.hero-visual .compute-zone.compute-zone-vulcan {
+  top: 48%;
+  left: 50%;
+
+  display: grid;
+
+  width: 58%;
+  height: 62%;
+
+  place-items: center;
+
+  overflow: visible;
+
+  border: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  transform: translate(-50%, -50%) translateZ(34px);
+}
+
+.hero-vulcan-image {
+  display: block;
+
+  width: min(100%, 310px);
+  max-width: none;
+  height: auto;
+  max-height: 190px;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(0 18px 18px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 8px rgba(99, 232, 255, 0.22))
+    drop-shadow(0 0 22px rgba(38, 185, 224, 0.14));
+
+  transform:
+    perspective(850px)
+    rotateX(-4deg)
+    rotateZ(2deg)
+    scale(1.06);
+
+  transform-origin: center center;
+}
+
+/* Subtle platform glow beneath the physical Vulcan render. */
+.hero-visual .compute-zone.compute-zone-vulcan::after {
+  position: absolute;
+  right: 8%;
+  bottom: 5%;
+  left: 8%;
+
+  height: 22%;
+
+  content: "";
+  pointer-events: none;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(99, 232, 255, 0.20) 0%,
+      rgba(45, 177, 216, 0.08) 40%,
+      transparent 72%
+    );
+
+  filter: blur(8px);
+
+  transform: translateZ(-1px);
+}
+
+/*
+   The image is the physical-unit layer.
+   Existing board geometry remains the digital-twin layer.
+*/
+.hero-visual .compute-zone.compute-zone-vulcan .compute-core,
+.hero-visual .compute-zone.compute-zone-vulcan .compute-zone-label,
+.hero-visual .compute-zone.compute-zone-vulcan .compute-zone-status {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .hero-vulcan-image {
+    width: min(96%, 270px);
+    max-height: 168px;
+  }
+
+  .hero-visual .compute-zone.compute-zone-vulcan {
+    width: 56%;
+    height: 58%;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-vulcan-image {
+    width: min(94%, 225px);
+    max-height: 142px;
+  }
+
+  .hero-visual .compute-zone.compute-zone-vulcan {
+    top: 47%;
+    width: 54%;
+    height: 54%;
+  }
+}
+
+
+/* =========================================================
+   REPAIRIQ v0.13 — SXM ANALYZER TECHNICIAN WORKSTATION
+   Author: DMarques Coleman
+   Organization: DCENTRIC
+   Developed for: SMS InfoComm Corporation
+
+   PURPOSE
+   ---------------------------------------------------------
+   Converts the vertically long Analyzer into a focused,
+   stage-based technician review center without removing or
+   renaming the existing diagnostic controls and data bindings.
+
+   ACCESSIBILITY
+   ---------------------------------------------------------
+   - Native buttons are used for workflow navigation.
+   - Visible keyboard focus is preserved.
+   - Active state is communicated with aria-selected in JS.
+   - Reduced-motion preferences are respected.
+========================================================= */
+
+#analyzer-view {
+  --workstation-accent: var(--cyan);
+}
+
+.analyzer-workstation-shell {
+  margin: 0 0 16px;
+  padding: 16px 18px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  background:
+    linear-gradient(135deg, rgba(72, 218, 255, 0.055), transparent 42%),
+    var(--panel);
+
+  box-shadow: var(--shadow-soft);
+}
+
+.analyzer-workstation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.analyzer-workstation-heading h3 {
+  margin: 4px 0 0;
+  font-size: 17px;
+}
+
+.analyzer-workstation-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 11px;
+
+  border: 1px solid rgba(93, 226, 255, 0.24);
+  border-radius: 999px;
+
+  background: rgba(4, 20, 29, 0.72);
+
+  color: var(--text-secondary);
+  font: 700 10px var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.analyzer-workstation-status .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px rgba(83, 226, 255, 0.75);
+}
+
+.analyzer-workstation-nav {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.analyzer-workstation-tab {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 9px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  background: rgba(3, 16, 24, 0.74);
+
+  color: var(--text-muted);
+
+  font: 800 10px var(--font-ui);
+  letter-spacing: 0.02em;
+
+  cursor: pointer;
+
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.analyzer-workstation-tab:hover {
+  color: var(--text-primary);
+  border-color: rgba(92, 225, 255, 0.42);
+  background: rgba(8, 31, 43, 0.88);
+  transform: translateY(-1px);
+}
+
+.analyzer-workstation-tab.active,
+.analyzer-workstation-tab[aria-selected="true"] {
+  color: #dffaff;
+  border-color: rgba(89, 226, 255, 0.70);
+  background:
+    linear-gradient(180deg, rgba(36, 154, 187, 0.22), rgba(7, 31, 43, 0.88));
+
+  box-shadow:
+    inset 0 -2px 0 var(--cyan),
+    0 0 18px rgba(68, 216, 255, 0.09);
+}
+
+.analyzer-workstation-tab:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.workstation-step {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+
+  border: 1px solid rgba(132, 209, 227, 0.24);
+  border-radius: 6px;
+
+  color: var(--cyan);
+  background: rgba(4, 18, 27, 0.66);
+
+  font: 800 8px var(--font-mono);
+}
+
+.analyzer-workstation-help {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------
+   WORKSPACE VISIBILITY
+   Only the active technician task is presented at full length.
+--------------------------------------------------------- */
+
+#analyzer-view [data-analyzer-panel] {
+  display: none;
+}
+
+#analyzer-view[data-analyzer-workspace="case"] [data-analyzer-panel="case"],
+#analyzer-view[data-analyzer-workspace="log"] [data-analyzer-panel="log"],
+#analyzer-view[data-analyzer-workspace="evidence"] [data-analyzer-panel="evidence"],
+#analyzer-view[data-analyzer-workspace="verify"] [data-analyzer-panel="verify"] {
+  display: block;
+}
+
+/* The result column is required for evidence/diagnosis/repair/verify/close. */
+#analyzer-view[data-analyzer-workspace="evidence"] [data-analyzer-panel="results"],
+#analyzer-view[data-analyzer-workspace="diagnosis"] [data-analyzer-panel="results"],
+#analyzer-view[data-analyzer-workspace="repair"] [data-analyzer-panel="results"],
+#analyzer-view[data-analyzer-workspace="verify"] [data-analyzer-panel="results"],
+#analyzer-view[data-analyzer-workspace="close"] [data-analyzer-panel="results"] {
+  display: block;
+}
+
+/* When reviewing a result-focused stage, collapse the old two-column shell. */
+#analyzer-view[data-analyzer-workspace="evidence"] .analyzer-layout,
+#analyzer-view[data-analyzer-workspace="diagnosis"] .analyzer-layout,
+#analyzer-view[data-analyzer-workspace="repair"] .analyzer-layout,
+#analyzer-view[data-analyzer-workspace="verify"] .analyzer-layout,
+#analyzer-view[data-analyzer-workspace="close"] .analyzer-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Diagnostic result stages */
+#analyzer-view .structured-diagnostic-result [data-analyzer-result-stage] {
+  display: none;
+}
+
+#analyzer-view[data-analyzer-workspace="case"]
+  .structured-diagnostic-result [data-analyzer-result-stage="case"],
+#analyzer-view[data-analyzer-workspace="evidence"]
+  .structured-diagnostic-result [data-analyzer-result-stage="evidence"],
+#analyzer-view[data-analyzer-workspace="diagnosis"]
+  .structured-diagnostic-result [data-analyzer-result-stage="diagnosis"],
+#analyzer-view[data-analyzer-workspace="repair"]
+  .structured-diagnostic-result [data-analyzer-result-stage="repair"],
+#analyzer-view[data-analyzer-workspace="verify"]
+  .structured-diagnostic-result [data-analyzer-result-stage="verify"],
+#analyzer-view[data-analyzer-workspace="close"]
+  .structured-diagnostic-result [data-analyzer-result-stage="close"] {
+  display: block;
+}
+
+/* Keep result identity visible whenever a result workspace is open. */
+#analyzer-view [data-analyzer-result-header="true"] {
+  display: block;
+}
+
+/* Compact spacing for workstation use. */
+#analyzer-view .view-heading {
+  margin-bottom: 14px;
+}
+
+#analyzer-view .diagnostic-search,
+#analyzer-view #active-case-context,
+#analyzer-view .analyzer-layout,
+#analyzer-view .unit-digital-passport,
+#analyzer-view .component-genealogy-section,
+#analyzer-view .test-stage-intelligence-section,
+#analyzer-view .retest-verification-section {
+  margin-top: 14px;
+}
+
+#analyzer-view .diagnostic-section[data-analyzer-result-stage] {
+  margin-top: 12px;
+}
+
+/* Case workspace: turn large sections into a review-center rhythm. */
+#analyzer-view[data-analyzer-workspace="case"] #active-case-context {
+  margin-top: 0;
+}
+
+#analyzer-view[data-analyzer-workspace="log"] .diagnostic-search {
+  margin-top: 0;
+}
+
+/* Result-focused workspaces should not inherit a narrow right column. */
+#analyzer-view[data-analyzer-workspace="evidence"] .analysis-output-column,
+#analyzer-view[data-analyzer-workspace="diagnosis"] .analysis-output-column,
+#analyzer-view[data-analyzer-workspace="repair"] .analysis-output-column,
+#analyzer-view[data-analyzer-workspace="verify"] .analysis-output-column,
+#analyzer-view[data-analyzer-workspace="close"] .analysis-output-column {
+  width: 100%;
+  max-width: none;
+}
+
+/* Responsive workstation navigation */
+@media (max-width: 1180px) {
+  .analyzer-workstation-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .analyzer-workstation-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analyzer-workstation-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analyzer-workstation-tab {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analyzer-workstation-tab {
+    transition: none;
+  }
+
+  .analyzer-workstation-tab:hover {
+    transform: none;
+  }
+}

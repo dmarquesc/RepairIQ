@@ -647,8 +647,10 @@ function titleCase(value) {
 document.addEventListener("DOMContentLoaded", () => {
 
   initializeNavigation();
+  initializeVirtualTestLab();
 
   initializeAnalyzer();
+  initializeAnalyzerWorkstation();
 
   initializeTopology();
 
@@ -839,6 +841,7 @@ function getViewTitle(viewName) {
     dashboard: "Repair Operations Dashboard",
 
     analyzer: "SXM Log Analyzer",
+    "tester-lab": "Virtual Test Lab",
 
     cases: "Case History",
 
@@ -7716,3 +7719,374 @@ function rexInitializeV08() {
   }
 }
 document.addEventListener("DOMContentLoaded", rexInitializeV08);
+
+
+/* ================================================================
+   53. VIRTUAL TEST LAB — OFFLINE DEMONSTRATION
+   ---------------------------------------------------------------
+   These stations, temperatures, alerts, sessions and event times
+   are synthetic UI data. The local animation never polls hardware,
+   BMC/HMC, test systems, firmware services or backend APIs.
+   ================================================================ */
+const VIRTUAL_LAB_STATIONS = [
+  { id:"01", unit:"VULCAN-HGX-001", status:"testing", stage:"FCT", progress:61, duration:"00:37:42", temp:68, fan:64, power:5.2, board:43, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"02", unit:"VULCAN-HGX-002", status:"testing", stage:"FLB", progress:84, duration:"01:12:05", temp:64, fan:59, power:4.9, board:42, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"03", unit:"VULCAN-HGX-003", status:"attention", stage:"INIT — HMC BIST", progress:47, duration:"00:28:17", temp:82, fan:78, power:5.6, board:46, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[{level:"warning",text:"GPU2 temperature threshold exceeded",time:"10:26:14"},{level:"error",text:"HMC BIST failure detected",time:"10:25:03"}], result:"REVIEW" },
+  { id:"04", unit:"VULCAN-HGX-004", status:"failed", stage:"INIT — HMC BIST", progress:100, duration:"01:04:33", temp:71, fan:72, power:5.1, board:45, script:"v3.8.14 · Stopped", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[{level:"error",text:"Initialization stage failed",time:"10:20:18"}], result:"FAILED" },
+  { id:"05", unit:"VULCAN-HGX-005", status:"testing", stage:"MEM", progress:29, duration:"00:19:21", temp:66, fan:62, power:4.8, board:43, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"06", unit:"—", status:"available", stage:"Ready for next unit", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"AVAILABLE" },
+  { id:"07", unit:"VULCAN-HGX-007", status:"testing", stage:"FLT", progress:53, duration:"00:42:08", temp:67, fan:66, power:5.0, board:44, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"08", unit:"VULCAN-HGX-008", status:"testing", stage:"FCT", progress:76, duration:"01:08:41", temp:69, fan:68, power:5.3, board:45, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"09", unit:"VULCAN-HGX-009", status:"testing", stage:"DCC", progress:91, duration:"01:31:06", temp:65, fan:61, power:4.7, board:42, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"10", unit:"VULCAN-HGX-010", status:"testing", stage:"INIT", progress:18, duration:"00:08:54", temp:61, fan:54, power:4.4, board:40, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
+  { id:"11", unit:"—", status:"available", stage:"Ready for next unit", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"AVAILABLE" },
+  { id:"12", unit:"VULCAN-HGX-012", status:"testing", stage:"RIN", progress:38, duration:"00:22:49", temp:63, fan:58, power:4.6, board:41, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" }
+];
+let virtualLabSelectedId = "03";
+let virtualLabMode = "room";
+let virtualLabTimer = null;
+let virtualLabTick = 0;
+const labStatusLabels = { testing:"TESTING", available:"AVAILABLE", attention:"ATTENTION", failed:"FAILED" };
+
+function initializeVirtualTestLab() {
+  const root = $("#tester-lab-view");
+  if (!root) return;
+  root.addEventListener("click", event => {
+    const station = event.target.closest("[data-lab-station]");
+    if (station) { selectVirtualLabStation(station.dataset.labStation); return; }
+    const mode = event.target.closest("[data-lab-view]");
+    if (mode) { setVirtualLabMode(mode.dataset.labView); return; }
+    const tab = event.target.closest("[data-lab-tab]");
+    if (tab) { setVirtualLabTab(tab.dataset.labTab); return; }
+  });
+  root.addEventListener("keydown", event => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.matches("tr[data-lab-station]")) {
+      event.preventDefault(); selectVirtualLabStation(event.target.dataset.labStation);
+    }
+  });
+  addListener("#lab-monitor-toggle", "click", toggleVirtualLabMonitoring);
+  addListener("#lab-open-analyzer", "click", () => { loadDemoCase(); runAnalysis(); });
+  addListener("#lab-view-report", "click", () => setVirtualLabTab("logs"));
+  renderVirtualLab();
+}
+
+function renderVirtualLab() {
+  const room = $("#lab-room-scene");
+  const grid = $("#lab-tester-grid");
+  const list = $("#lab-tester-list");
+  if (!room || !grid || !list) return;
+  const getStationMarkup = station => ({
+    selected: station.id === virtualLabSelectedId,
+    stateLabel: labStatusLabels[station.status] || "UNKNOWN",
+    temp: station.temp ? `${station.temp}°C` : "—",
+    progress: station.progress || 0,
+    unit: station.unit === "—" ? "NO UNIT" : station.unit
+  });
+  room.innerHTML = VIRTUAL_LAB_STATIONS.map(station => {
+    const v = getStationMarkup(station);
+    return `<button class="lab-rack ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}" aria-label="Tester ${station.id}, ${v.stateLabel}, ${escapeHtml(station.unit)}">
+      <span class="lab-rack-name">TESTER ${station.id}</span><span class="lab-rack-state">${v.stateLabel}</span>
+      <span class="lab-rack-unit">${station.unit === "—" ? `<span class="lab-rack-placeholder">READY</span>` : `<img src="assets/vulcan-hgx-demo.png" alt="" loading="lazy">`}<span>${escapeHtml(v.unit)}</span></span>
+      <span class="lab-rack-progress"><i style="width:${v.progress}%"></i></span>
+      <span class="lab-rack-meta"><span>${escapeHtml(station.stage)}</span><b>${v.temp}</b></span>
+    </button>`;
+  }).join("");
+  grid.innerHTML = VIRTUAL_LAB_STATIONS.map(station => {
+    const v = getStationMarkup(station);
+    return `<button class="lab-grid-card ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}"><strong>TESTER ${station.id}</strong><span>${escapeHtml(station.unit)} · ${escapeHtml(station.stage)}</span><b>${v.stateLabel} · ${v.progress}% · ${v.temp}</b></button>`;
+  }).join("");
+  list.innerHTML = VIRTUAL_LAB_STATIONS.map(station => `<tr data-lab-station="${station.id}" tabindex="0" role="button" aria-label="View tester ${station.id}"><td>TESTER ${station.id}</td><td>${escapeHtml(station.unit)}</td><td><span class="lab-state-pill ${station.status}">${labStatusLabels[station.status]}</span></td><td>${escapeHtml(station.stage)}</td><td>${station.progress}%</td><td>${station.temp ? `${station.temp}°C` : "—"}</td></tr>`).join("");
+  const totals = VIRTUAL_LAB_STATIONS.reduce((acc, station) => { acc[station.status] = (acc[station.status] || 0) + 1; return acc; }, {});
+  setText("#lab-total-testers", String(VIRTUAL_LAB_STATIONS.length));
+  setText("#lab-testing-count", String(totals.testing || 0));
+  setText("#lab-available-count", String(totals.available || 0));
+  setText("#lab-attention-count", String(totals.attention || 0));
+  setText("#lab-failed-count", String(totals.failed || 0));
+  const selected = VIRTUAL_LAB_STATIONS.find(station => station.id === virtualLabSelectedId) || VIRTUAL_LAB_STATIONS[0];
+  renderVirtualLabDetail(selected);
+  renderVirtualLabEvents();
+  const now = new Date();
+  setText("#lab-last-update", `DEMO DATA · LOCAL REFRESH ${now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}`);
+  const insight = state.knowledgeOutput?.pattern?.summary || "Run a case analysis to have R.E.X. summarize structured prototype evidence here.";
+  setText("#lab-rex-insight-text", insight);
+  setVirtualLabMode(virtualLabMode);
+}
+
+function renderVirtualLabEvents() {
+  const list = $("#lab-event-list");
+  if (!list) return;
+  const events = [
+    {time:"10:26:14",kind:"warning",station:"TESTER 03",text:"GPU2 temperature crossed the illustrative review threshold during INIT."},
+    {time:"10:25:03",kind:"error",station:"TESTER 03",text:"HMC BIST failure signal recorded in the synthetic session log."},
+    {time:"10:20:18",kind:"error",station:"TESTER 04",text:"INIT stage marked failed; simulated run stopped for technician review."},
+    {time:"10:16:47",kind:"good",station:"TESTER 08",text:"Firmware compatibility check completed in demo data."},
+    {time:"10:14:32",kind:"good",station:"TESTER 12",text:"Test script v3.8.14 started for the illustrative RIN stage."},
+    {time:"10:03:00",kind:"good",station:"TESTER 03",text:"Demo session started; pre-test environment marked normal."}
+  ];
+  list.innerHTML = events.map(event => `<div class="lab-event-item ${event.kind}"><time class="lab-event-time">${event.time}</time><i class="lab-event-marker" aria-hidden="true"></i><span><strong>${event.station}</strong> · ${escapeHtml(event.text)}</span><span class="lab-event-source">SYNTHETIC</span></div>`).join("");
+}
+
+function renderVirtualLabDetail(station) {
+  if (!station) return;
+  const statusLabel = labStatusLabels[station.status] || "UNKNOWN";
+  setText("#lab-detail-title", `TESTER ${station.id}`);
+  const pill = $("#lab-detail-state");
+  if (pill) { pill.textContent = statusLabel; pill.className = `lab-state-pill ${station.status}`; }
+  setText("#lab-unit-id", station.unit);
+  setText("#lab-tester-id", `SXM-TEST-${station.id}`);
+  setText("#lab-current-stage", station.stage);
+  setText("#lab-session-duration", station.duration);
+  setText("#lab-progress-label", `${station.progress}%`);
+  const progress = $("#lab-progress-bar"); if (progress) progress.style.width = `${station.progress}%`;
+  setText("#lab-gpu-temp", station.temp ? `${station.temp}°C` : "—");
+  setText("#lab-fan-speed", station.fan ? `${station.fan}%` : "—");
+  setText("#lab-power-draw", station.power ? `${station.power.toFixed(1)} kW` : "—");
+  setText("#lab-board-temp", station.board ? `${station.board}°C` : "—");
+  setText("#lab-telemetry-temp", station.temp ? `${station.temp}°C` : "—");
+  setText("#lab-telemetry-power", station.power ? `${station.power.toFixed(1)} kW` : "—");
+  setText("#lab-telemetry-fan", station.fan ? `${station.fan}%` : "—");
+  setText("#lab-script-version", station.script);
+  setText("#lab-firmware-version", station.firmware);
+  setText("#lab-tester-health", station.health);
+  setText("#lab-tester-environment", station.environment);
+  setText("#lab-alert-count", String(station.alerts.length));
+  const alerts = $("#lab-selected-alerts");
+  if (alerts) alerts.innerHTML = station.alerts.length ? station.alerts.map(alert => `<div class="lab-alert-item ${alert.level === "warning" ? "warning" : ""}"><i aria-hidden="true"></i><span>${escapeHtml(alert.text)}</span><time>${escapeHtml(alert.time)}</time></div>`).join("") : `<div class="lab-alert-item warning"><i aria-hidden="true"></i><span>No active alerts in this demo session.</span></div>`;
+  const logs = $("#lab-selected-log");
+  if (logs) {
+    const entries = station.alerts.length ? station.alerts : [{level:"good",time:"10:12:08",text:"Tester heartbeat nominal · demo event"},{level:"good",time:"10:12:11",text:`${station.stage} test stage ${station.result.toLowerCase()} · demo event`},{level:"warning",time:"10:12:15",text:"Script and firmware labels are synthetic interface values."}];
+    logs.innerHTML = entries.map(item => `<div class="lab-log-line ${item.level === "warning" ? "warning" : item.level === "error" ? "error" : ""}"><time>${escapeHtml(item.time)} · DEMO SOURCE</time>${escapeHtml(item.text)}</div>`).join("");
+  }
+  const environment = $("#lab-environment-detail");
+  if (environment) environment.innerHTML = [["Tester health",station.health],["Room condition",station.environment],["Script",station.script],["Firmware",station.firmware],["Data source","Synthetic demonstration values"]].map(([name,value])=>`<div><span>${escapeHtml(name)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
+}
+
+function selectVirtualLabStation(id) {
+  if (!VIRTUAL_LAB_STATIONS.some(station => station.id === id)) return;
+  virtualLabSelectedId = id;
+  renderVirtualLab();
+}
+
+function setVirtualLabMode(mode) {
+  if (!["room","grid","list"].includes(mode)) return;
+  virtualLabMode = mode;
+  const stage = $("#lab-main-stage");
+  if (stage) stage.dataset.view = mode;
+  const room = $("#lab-room-scene"); if (room) room.hidden = mode !== "room";
+  const grid = $("#lab-tester-grid"); if (grid) grid.hidden = mode !== "grid";
+  const list = $("#lab-tester-list-wrap"); if (list) list.hidden = mode !== "list";
+  $$('[data-lab-view]').forEach(button => {
+    const active = button.dataset.labView === mode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function setVirtualLabTab(tabName) {
+  $$('[data-lab-tab]').forEach(button => {
+    const active = button.dataset.labTab === tabName;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+  $$('[data-lab-panel]').forEach(panel => {
+    const active = panel.dataset.labPanel === tabName;
+    panel.hidden = !active;
+    panel.classList.toggle("active", active);
+  });
+}
+
+function toggleVirtualLabMonitoring() {
+  const root = $("#tester-lab-view");
+  const button = $("#lab-monitor-toggle");
+  if (!root || !button) return;
+  if (virtualLabTimer) {
+    clearInterval(virtualLabTimer);
+    virtualLabTimer = null;
+    root.dataset.monitoring = "off";
+    button.textContent = "Resume Demo Monitoring";
+    showToast("Demo monitoring paused. No hardware connection was active.");
+    return;
+  }
+  root.dataset.monitoring = "on";
+  button.textContent = "Pause Demo Monitoring";
+  showToast("Local demo monitoring started. All values remain simulated.");
+  virtualLabTimer = window.setInterval(() => {
+    virtualLabTick += 1;
+    for (const station of VIRTUAL_LAB_STATIONS) {
+      if (station.status !== "testing" && station.status !== "attention") continue;
+      const delta = virtualLabTick % 2 ? 1 : -1;
+      station.temp = clamp(station.temp + delta, 58, station.status === "attention" ? 84 : 73);
+      station.fan = clamp(station.fan + (virtualLabTick % 3 === 0 ? 1 : -1), 48, 85);
+      if (station.status === "testing") station.progress = Math.min(99, station.progress + (virtualLabTick % 3 === 0 ? 1 : 0));
+    }
+    renderVirtualLab();
+  }, 2200);
+}
+
+
+/* ================================================================
+   REPAIRIQ v0.13
+   ANALYZER TECHNICIAN WORKSTATION CONTROLLER
+
+   Author: DMarques Coleman
+   Organization: DCENTRIC
+   Developed for: SMS InfoComm Corporation
+
+   RESPONSIBILITY
+   ---------------------------------------------------------------
+   Provides accessible stage navigation for the SXM Analyzer while
+   preserving all existing RepairIQ diagnostic, approval, retest,
+   verification, Knowledge Engine, and REX behavior.
+
+   IMPORTANT
+   ---------------------------------------------------------------
+   This controller changes presentation state only. It does not
+   authorize repairs, change diagnostic evidence, or bypass any
+   technician-controlled workflow gate.
+================================================================ */
+
+function initializeAnalyzerWorkstation() {
+  const analyzerView = document.querySelector("#analyzer-view");
+  const nav = document.querySelector("#analyzer-workstation-nav");
+
+  if (!analyzerView || !nav) {
+    return;
+  }
+
+  const tabs = Array.from(
+    nav.querySelectorAll("[data-analyzer-tab]")
+  );
+
+  const statusText = document.querySelector(
+    "#analyzer-workstation-status-text"
+  );
+
+  const stageLabels = {
+    case: "Case context",
+    log: "Log ingestion",
+    evidence: "Evidence review",
+    diagnosis: "Diagnostic review",
+    repair: "Repair decision",
+    verify: "Retest + verification",
+    close: "Closure review"
+  };
+
+  function activateAnalyzerWorkspace(stage, options = {}) {
+    const target = tabs.find(
+      tab => tab.dataset.analyzerTab === stage
+    );
+
+    if (!target) {
+      return;
+    }
+
+    analyzerView.dataset.analyzerWorkspace = stage;
+
+    tabs.forEach(tab => {
+      const isActive = tab === target;
+
+      tab.classList.toggle("active", isActive);
+      tab.setAttribute(
+        "aria-selected",
+        isActive ? "true" : "false"
+      );
+
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+
+    if (statusText) {
+      statusText.textContent =
+        stageLabels[stage] || "Diagnostic workstation";
+    }
+
+    if (options.focus === true) {
+      target.focus();
+    }
+
+    if (options.scroll !== false) {
+      analyzerView
+        .querySelector(".analyzer-workstation-shell")
+        ?.scrollIntoView({
+          behavior: window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+          ).matches
+            ? "auto"
+            : "smooth",
+          block: "start"
+        });
+    }
+  }
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => {
+      activateAnalyzerWorkspace(
+        tab.dataset.analyzerTab,
+        { scroll: false }
+      );
+    });
+
+    tab.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      let nextIndex = index;
+
+      if (event.key === "ArrowRight") {
+        nextIndex = (index + 1) % tabs.length;
+      }
+
+      if (event.key === "ArrowLeft") {
+        nextIndex = (index - 1 + tabs.length) % tabs.length;
+      }
+
+      if (event.key === "Home") {
+        nextIndex = 0;
+      }
+
+      if (event.key === "End") {
+        nextIndex = tabs.length - 1;
+      }
+
+      activateAnalyzerWorkspace(
+        tabs[nextIndex].dataset.analyzerTab,
+        { focus: true, scroll: false }
+      );
+    });
+  });
+
+  /*
+   * Helpful workflow handoff:
+   * after the technician explicitly starts analysis, move the
+   * workstation to Evidence so the parsed signals are immediately
+   * available for review. Existing analysis logic still runs first.
+   */
+  document.querySelector("#analyze-button")?.addEventListener(
+    "click",
+    () => {
+      window.setTimeout(() => {
+        activateAnalyzerWorkspace("evidence");
+      }, 80);
+    }
+  );
+
+  /*
+   * Approval/rejection remains controlled by the existing RepairIQ
+   * handlers. We only move the visual workspace to verification
+   * after a technician explicitly approves the recommendation.
+   */
+  document
+    .querySelector("#approve-diagnostic-recommendation-button")
+    ?.addEventListener("click", () => {
+      window.setTimeout(() => {
+        activateAnalyzerWorkspace("verify");
+      }, 80);
+    });
+
+  activateAnalyzerWorkspace(
+    analyzerView.dataset.analyzerWorkspace || "case",
+    { scroll: false }
+  );
+}
