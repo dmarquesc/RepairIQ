@@ -14,7 +14,7 @@
 
  
 
-    Version: 0.6 — Knowledge Engine + REX
+    Version: 0.9 — R.E.X. Motion
 
  
 
@@ -8577,7 +8577,7 @@
           <div>
             <div class="eyebrow">REPAIRIQ INTELLIGENCE CORE</div>
             <h2>R.E.X. Assistant</h2>
-            <p>Chat with the Repair Engineer Xpert about the active diagnostic case.</p>
+            <p>Talk with R.E.X. anytime. Case intelligence joins the conversation when an analysis is available.</p>
           </div>
           <div class="rex-online-status" aria-label="R.E.X. is online">
             <span class="status-dot" aria-hidden="true"></span>
@@ -8620,6 +8620,7 @@
                 />
                 <div class="rex-avatar-fallback" id="rex-avatar-fallback" hidden>R.E.X.</div>
                 <div class="rex-scanline" aria-hidden="true"></div>
+                <div class="rex-voice-hud" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <div class="rex-telemetry telemetry-one" aria-hidden="true">
                   <span class="telemetry-label">CORE</span>
                   <strong>ONLINE</strong>
@@ -8630,15 +8631,13 @@
                 </div>
                 <div class="rex-status-chip" role="status" aria-live="polite">
                   <span class="status-dot" aria-hidden="true"></span>
-                  <span id="rexStatusText">Ready for diagnostic input</span>
+                  <span id="rexStatusText">Online · ready to talk</span>
                 </div>
               </div>
 
               <div class="rex-introduction">
                 <p>
-                  I’m R.E.X., your Repair Engineer Xpert. Ask about symptoms,
-                  error logs, test results, or the next recommended check. I use
-                  the current case’s structured Knowledge Engine output.
+                  I’m R.E.X., your Repair Engineer Xpert. Talk with me about your day, ideas, or a repair. When case evidence is available, I can explain the structured analysis.
                 </p>
               </div>
             </div>
@@ -8646,12 +8645,15 @@
             <div class="rex-chat-column">
               <div class="rex-chat-heading">
                 <div>
-                  <p class="eyebrow">CASE-AWARE CONVERSATION</p>
+                  <p class="eyebrow">ALWAYS-ON CONVERSATION</p>
                   <h3>Ask R.E.X.</h3>
                 </div>
-                <span class="rex-chat-scope" id="rexChatScope">No active analysis</span>
+                <span class="rex-chat-scope" id="rexChatScope">GENERAL MODE</span>
               </div>
 
+              <div class="rex-memory-toolbar"><span id="rexMemorySummary">MEMORY · LOCAL</span><button type="button" id="rex-memory-inspect">What R.E.X. knows</button><button type="button" id="rex-memory-clear">Clear chat</button></div>
+              <div id="rex-memory-details" class="rex-memory-details" hidden></div>
+              <div class="rex-live-status" id="rex-live-status" role="status" aria-live="polite">R.E.X. is ready</div>
               <div
                 class="rex-chat-messages"
                 id="rex-chat-messages"
@@ -8661,6 +8663,9 @@
 
               <div class="rex-quick-queries" aria-label="Suggested questions">
                 <span>QUICK ASK</span>
+                <button class="rex-query-chip" type="button" data-rex-query="Morning R.E.X.">Say hello</button>
+                <button class="rex-query-chip" type="button" data-rex-query="Help me brainstorm a RepairIQ feature">Brainstorm</button>
+                <button class="rex-query-chip" type="button" data-rex-query="What do you remember?">Recall</button>
                 <button class="rex-query-chip" type="button" data-rex-query="What is the leading pattern?">Leading pattern</button>
                 <button class="rex-query-chip" type="button" data-rex-query="What should I check first?">Check first</button>
                 <button class="rex-query-chip" type="button" data-rex-query="What retest is required?">Retest</button>
@@ -8675,19 +8680,16 @@
                     name="rexQuestion"
                     type="text"
                     maxlength="240"
-                    placeholder="Ask about this case..."
+                    placeholder="Talk to R.E.X. about anything..."
                     autocomplete="off"
-                    aria-label="Ask R.E.X. about the active case"
+                    aria-label="Talk to R.E.X."
                   />
                 </label>
                 <button class="primary-button" id="rex-dedicated-send" type="submit">Send</button>
               </form>
 
               <p class="rex-footer-notice">
-                R.E.X. summarizes the prototype’s structured case output. It
-                does not inspect raw logs directly, authorize repairs, or provide
-                production-validated guidance. Run an analysis to activate
-                case-specific answers.
+                Prototype conversation uses local scripted responses and browser storage. It is not connected to an LLM. Case answers cite structured prototype output; R.E.X. does not authorize repairs.
               </p>
             </div>
           </div>

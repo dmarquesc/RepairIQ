@@ -8,7 +8,7 @@
 
  
 
-  Version: 0.7 - Knowledge Engine, R.E.X. Case Memory + Verification
+  Version: 0.6 - Knowledge Engine, REX, Topology + Verification
 
  
 
@@ -426,12 +426,6 @@ const state = {
 
   rexMessages: [],
 
-  rexCaseId: "unassigned",
-
-  rexMemory: null,
-
-  rexVisualTimer: null,
-
   retestWorkflow: null
 
 };
@@ -672,8 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initializeExtensionMount();
 
-  initializeDedicatedREX();
-
  
 
   renderCases();
@@ -689,10 +681,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateSelectedComponent("GPU2");
 
   updateActiveCaseContext(createInitialCaseContext());
-
-  restoreREXForActiveCase();
-
-  renderDedicatedREX();
 
 });
 
@@ -791,10 +779,6 @@ function switchView(viewName) {
  
 
   state.activeView = viewName;
-
-  if (viewName === "rex") {
-    renderDedicatedREX();
-  }
 
  
 
@@ -3879,7 +3863,6 @@ function renderAnalysis(analysis) {
   runKnowledgeEngine(analysis);
 
   renderREX({ reset: true });
-  renderDedicatedREX();
 
   renderResultActions(analysis);
 
@@ -7015,16 +6998,7 @@ function showToast(message) {
    ================================================================ */
 
 const RETEST_STORAGE_KEY = "repairiq-retest-workflows-v1";
-const REX_MEMORY_STORAGE_KEY = "repairiq-rex-memory-v1";
 const RETEST_STEPS = ["action", "ready", "result", "verify", "close"];
-
-const REX_PERSONA = Object.freeze({
-  name: "R.E.X.",
-  role: "Repair Engineer Xpert",
-  principle: "Evidence before replacement. Testing before assumptions. Root cause before closure.",
-  voice: "calm, precise, practical, direct, humble, safety-minded",
-  memoryNotice: "Local browser case memory only"
-});
 
 function initializeExtensionMount() {
   const mount = $("#diagnostic-extension-mount");
@@ -7037,7 +7011,7 @@ function initializeExtensionMount() {
       sendREXQuery(chip.dataset.rexQuery || chip.textContent.trim());
       return;
     }
-    if (event.target.closest("#rex-send-button")) sendREXQuery();
+    // The form submit handler sends once for both click and Enter.
   });
 
   mount.addEventListener("submit", event => {
@@ -7200,146 +7174,24 @@ function runKnowledgeEngine(analysis) {
   renderKnowledgeEngine(analysis);
 }
 
-function rexMemoryStoreRead() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(REX_MEMORY_STORAGE_KEY) || "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function rexMemoryStoreWrite(store) {
-  try {
-    const entries = Object.entries(store || {})
-      .sort(([, a], [, b]) => String(b?.updatedAt || "").localeCompare(String(a?.updatedAt || "")))
-      .slice(0, 25);
-    localStorage.setItem(REX_MEMORY_STORAGE_KEY, JSON.stringify(Object.fromEntries(entries)));
-  } catch {
-    showToast("R.E.X. local memory is unavailable in this browser session.");
-  }
-}
-
-function getActiveREXCaseId() {
-  return String(state.currentAnalysis?.caseId || state.rexCaseId || "unassigned");
-}
-
-function buildREXMemorySnapshot() {
-  const analysis = state.currentAnalysis;
-  const k = state.knowledgeOutput;
-  return {
-    caseId: getActiveREXCaseId(),
-    component: k?.pattern?.component || analysis?.affectedComponent || "No component selected",
-    pattern: k?.pattern?.title || analysis?.title || "No active pattern",
-    stage: k?.pattern?.stage || analysis?.failure?.failureStage || "Not established",
-    ruleId: k?.pattern?.ruleId || "No rule fired",
-    errorCode: analysis?.failure?.errorCode || analysis?.errorCode || "Not established",
-    recommendation: analysis?.recommendation || k?.path?.[0]?.detail || "No recommendation yet",
-    technician: analysis?.technician || "Technician not identified",
-    updatedAt: new Date().toISOString()
-  };
-}
-
-function seedREXMessage() {
-  if (!state.knowledgeOutput) {
-    return {
-      role: "rex",
-      text: "I’m R.E.X., your Repair Engineer Xpert. Run an analysis and I’ll stay scoped to the active case, its structured evidence, and the repair history stored in this browser.",
-      citation: "R.E.X. prototype · no active case"
-    };
-  }
-  const k = state.knowledgeOutput;
-  return {
-    role: "rex",
-    text: `I’m on the case. I reviewed the structured output for ${k.pattern.component}. My operating rule is simple: evidence before replacement. Ask me what failed, why the pattern leads there, what to check next, what to rule out, how to retest, or whether a similar local case exists.`,
-    citation: `${k.provenance.ruleId} · active Knowledge Engine output`
-  };
-}
-
-function restoreREXForActiveCase({ forceSeed = false } = {}) {
-  const caseId = state.currentAnalysis?.caseId || "unassigned";
-  state.rexCaseId = caseId;
-  const store = rexMemoryStoreRead();
-  const saved = store[caseId];
-  const savedMessages = Array.isArray(saved?.messages) ? saved.messages : [];
-  state.rexMessages = !forceSeed && savedMessages.length
-    ? savedMessages.slice(-60)
-    : [seedREXMessage()];
-  state.rexMemory = saved?.memory || buildREXMemorySnapshot();
-}
-
-function persistREXMemory() {
-  const caseId = getActiveREXCaseId();
-  const store = rexMemoryStoreRead();
-  store[caseId] = {
-    caseId,
-    memory: buildREXMemorySnapshot(),
-    messages: state.rexMessages.slice(-60),
-    updatedAt: new Date().toISOString()
-  };
-  state.rexMemory = store[caseId].memory;
-  rexMemoryStoreWrite(store);
-}
-
-function clearActiveREXMemory() {
-  const caseId = getActiveREXCaseId();
-  const store = rexMemoryStoreRead();
-  delete store[caseId];
-  rexMemoryStoreWrite(store);
-  state.rexMessages = [seedREXMessage()];
-  state.rexMemory = buildREXMemorySnapshot();
-  renderREX();
-  renderDedicatedREX();
-  showToast(`R.E.X. conversation memory cleared for ${caseId}.`);
-}
-
-function setREXVisualState(mode = "ready", statusText = "Ready for diagnostic input", resetAfter = 0) {
-  const stage = $("#rexAvatarStage");
-  const modeLabel = $("#rexModeLabel");
-  const status = $("#rexStatusText");
-  if (stage) stage.dataset.rexState = mode;
-  if (modeLabel) modeLabel.textContent = String(mode).toUpperCase();
-  if (status) status.textContent = statusText;
-  window.clearTimeout(state.rexVisualTimer);
-  if (resetAfter > 0) {
-    state.rexVisualTimer = window.setTimeout(() => {
-      if (stage) stage.dataset.rexState = "ready";
-      if (modeLabel) modeLabel.textContent = "READY";
-      if (status) status.textContent = state.knowledgeOutput ? "Case memory active · ready for next question" : "Ready for diagnostic input";
-    }, resetAfter);
-  }
-}
-
-function rexMessageMarkup(message) {
-  const isUser = message.role === "user";
-  return `
-    <div class="rex-message ${isUser ? "user" : "rex"}">
-      <span class="rex-avatar ${isUser ? "technician" : ""}">${isUser ? "T" : "RX"}</span>
-      <div class="rex-bubble ${isUser ? "user" : "rex"}">
-        <div class="rex-bubble-content">${escapeHtml(message.text)}</div>
-        ${message.citation ? `<div class="rex-citation">Source: ${escapeHtml(message.citation)} · prototype data</div>` : ""}
-      </div>
-    </div>`;
-}
-
-function rexConversationMarkup() {
-  return state.rexMessages.map(rexMessageMarkup).join("");
-}
-
 function renderREX({ reset = false } = {}) {
   const mount = $("#diagnostic-extension-mount");
   if (!mount || !state.knowledgeOutput) return;
-  if (reset || state.rexCaseId !== String(state.currentAnalysis?.caseId || "unassigned") || !state.rexMessages.length) {
-    restoreREXForActiveCase();
+  if (reset || !state.rexMessages.length) {
+    state.rexMessages = [{ role: "rex", text: `I reviewed the structured Knowledge Engine output for ${state.knowledgeOutput.pattern.component}. Ask about the pattern, checks, repair path, retest, escalation, or evidence.`, citation: state.knowledgeOutput.provenance.ruleId }];
   }
   mount.querySelector('[data-ke-section="rex"]')?.remove();
-  const messages = rexConversationMarkup();
+  const messages = state.rexMessages.map(message => `
+    <div class="rex-message ${message.role === "user" ? "user" : "rex"}">
+      <span class="rex-avatar ${message.role === "user" ? "technician" : ""}">${message.role === "user" ? "T" : "RX"}</span>
+      <div class="rex-bubble ${message.role === "user" ? "user" : "rex"}"><div class="rex-bubble-content">${escapeHtml(message.text)}</div>${message.citation ? `<div class="rex-citation">Source: ${escapeHtml(message.citation)} · Knowledge Engine output · prototype data</div>` : ""}</div>
+    </div>`).join("");
   const section = `<section class="diagnostic-section" data-ke-section="rex"><div class="rex-panel">
-    <div class="diagnostic-section-heading"><div><div class="eyebrow">R.E.X. · REPAIR ENGINEER XPERT</div><h4>Case-aware repair intelligence</h4></div><span class="rex-active-badge"><span class="rex-active-dot"></span>ACTIVE · LOCAL CASE MEMORY</span></div>
+    <div class="diagnostic-section-heading"><div><div class="eyebrow">REX · REPAIR EXPERIENCE</div><h4>Ask the current case knowledge</h4></div><span class="rex-active-badge"><span class="rex-active-dot"></span>ACTIVE · LOCAL RULE OUTPUT</span></div>
     <div class="rex-conversation" id="rex-conversation" aria-live="polite">${messages}</div>
-    <div class="rex-quick-queries"><span>QUICK ASK</span><button class="rex-query-chip" type="button" data-rex-query="What is the leading pattern?">Leading pattern</button><button class="rex-query-chip" type="button" data-rex-query="What should I check first?">Check first</button><button class="rex-query-chip" type="button" data-rex-query="What retest is required?">Retest</button><button class="rex-query-chip" type="button" data-rex-query="When should I escalate?">Escalation</button><button class="rex-query-chip" type="button" data-rex-query="What do you remember about this case?">Memory</button></div>
-    <form class="rex-input-row" id="rex-query-form"><label class="rex-input-field"><span aria-hidden="true">⌕</span><input id="rex-query-input" type="text" maxlength="240" placeholder="Ask about this analysis..." autocomplete="off" aria-label="Ask R.E.X. about the current analysis"></label><button class="primary-button" id="rex-send-button" type="submit">Ask R.E.X.</button></form>
-    <div class="rex-footer-notice">R.E.X. uses this case’s Knowledge Engine output and browser-local case memory. He does not inspect raw logs directly or authorize repairs.</div>
+    <div class="rex-quick-queries"><span>QUICK ASK</span><button class="rex-query-chip" type="button" data-rex-query="What is the leading pattern?">Leading pattern</button><button class="rex-query-chip" type="button" data-rex-query="What should I check first?">Check first</button><button class="rex-query-chip" type="button" data-rex-query="What retest is required?">Retest</button><button class="rex-query-chip" type="button" data-rex-query="When should I escalate?">Escalation</button></div>
+    <form class="rex-input-row" id="rex-query-form"><label class="rex-input-field"><span aria-hidden="true">⌕</span><input id="rex-query-input" type="text" maxlength="240" placeholder="Ask about this analysis..." autocomplete="off" aria-label="Ask REX about the current analysis"></label><button class="primary-button" id="rex-send-button" type="submit">Ask REX</button></form>
+    <div class="rex-footer-notice">REX only summarizes this case’s Knowledge Engine output. It does not inspect raw logs, authorize repairs, or provide production-validated guidance.</div>
   </div></section>`;
   const provenance = mount.querySelector('[data-ke-section="ke-provenance"]');
   if (provenance) provenance.insertAdjacentHTML("afterend", section);
@@ -7348,144 +7200,29 @@ function renderREX({ reset = false } = {}) {
   if (conversation) conversation.scrollTop = conversation.scrollHeight;
 }
 
-function getSimilarLocalCases() {
-  if (!state.currentAnalysis) return [];
-  const current = state.currentAnalysis;
-  const currentCode = String(current.failure?.errorCode || current.errorCode || "").toLowerCase();
-  const currentComponent = String(current.affectedComponent || current.failure?.affectedComponent || "").toLowerCase();
-  return getCases().filter(item => {
-    if (item.id === current.caseId) return false;
-    const codeMatch = currentCode && String(item.errorCode || "").toLowerCase() === currentCode;
-    const componentMatch = currentComponent && String(item.component || "").toLowerCase().includes(currentComponent.split("/")[0].trim());
-    return codeMatch || componentMatch;
-  }).slice(0, 3);
-}
-
 function answerREX(query) {
   const k = state.knowledgeOutput;
-  if (!k) {
-    return { text: "Run an analysis first. I keep my answers tied to structured case evidence rather than guessing from an empty workspace.", citation: "No active Knowledge Engine output" };
-  }
+  if (!k) return { text: "Run an analysis first. REX only uses the structured Knowledge Engine output.", citation: "No active Knowledge Engine output" };
   const q = String(query || "").toLowerCase();
-  const memory = buildREXMemorySnapshot();
-
-  if (/remember|memory|what do you know|case summary/.test(q)) {
-    return {
-      text: `Here’s what I’m holding for this case:\nCase: ${memory.caseId}\nFocus: ${memory.component}\nPattern: ${memory.pattern}\nStage: ${memory.stage}\nError: ${memory.errorCode}\nRule: ${memory.ruleId}\nConversation: ${Math.floor(state.rexMessages.length / 2)} recorded exchange(s) in this browser.\n\nI treat that as working case memory, not verified production truth.`,
-      citation: `${k.pattern.ruleId} · local case memory`
-    };
-  }
-
-  if (/similar|seen before|previous case|history|prior case/.test(q)) {
-    const matches = getSimilarLocalCases();
-    if (!matches.length) {
-      return { text: "I don’t see a matching prior case in the browser-local prototype history. That means no local match was found — not that this failure has never happened elsewhere.", citation: "Local prototype case history" };
-    }
-    return {
-      text: `I found ${matches.length} related local case${matches.length === 1 ? "" : "s"}:\n${matches.map((item, i) => `${i + 1}. ${item.id} — ${item.issue}; ${item.component}; status ${item.status}; retest ${item.retestResult || "not recorded"}.`).join("\n")}\n\nUse these as context only. I would still prove the current failure from current evidence.`,
-      citation: "Local prototype case history"
-    };
-  }
-
-  if (/who are you|personality|how do you work|your role/.test(q)) {
-    return { text: `I’m ${REX_PERSONA.name}, the ${REX_PERSONA.role}. I’m designed to be ${REX_PERSONA.voice}. My rule is: ${REX_PERSONA.principle} I’ll tell you what the evidence supports, what it does not support, and the next lowest-risk confirmation step.`, citation: "R.E.X. persona v0.7" };
-  }
-
-  if (/retest|verify|pass|stage/.test(q)) {
-    return { text: `Verification path: ${k.retest.stage}. Expected result: ${k.retest.expected}\n\nI will not call the repair complete until a technician records the retest result and the closure gate is satisfied.`, citation: `${k.pattern.ruleId} · retest specification` };
-  }
-  if (/first|check|inspect|start/.test(q)) {
-    return { text: `Start with the lowest-risk checks that can eliminate the most possibilities:\n${k.checkFirst.map((item, i) => `${i + 1}. ${item}`).join("\n")}\n\nDo not replace the reporting component until these checks support that move.`, citation: `${k.pattern.ruleId} · check-first output` };
-  }
-  if (/escalat|stop|risk|when/.test(q)) {
-    return { text: `Escalation triggers:\n${k.escalation.map(item => `${item.urgency}: ${item.text}`).join("\n")}\n\nIf new evidence conflicts with the current theory, change the theory — not the evidence.`, citation: `${k.pattern.ruleId} · escalation criteria` };
-  }
-  if (/rule out|contradict|negative|exclude/.test(q)) {
-    return { text: `Before locking onto the leading cause, verify these limiting signals:\n${k.ruleOut.map((item, i) => `${i + 1}. ${item}`).join("\n")}\n\nAn absent signal is not proof of health.`, citation: `${k.pattern.ruleId} · limiting evidence` };
-  }
-  if (/path|steps|repair|next|action/.test(q)) {
-    return { text: `Recommended path:\n${k.path.map((step, i) => `${i + 1}. ${step.title} — ${step.detail}`).join("\n")}\n\nThe technician remains the decision authority at every physical repair step.`, citation: `${k.pattern.ruleId} · stage-aware repair path` };
-  }
-  if (/evidence|source|confidence|rule|why|reason/.test(q)) {
-    return { text: `Why I’m leaning this way:\n${k.pattern.summary}\n\nEvidence used: ${k.provenance.evidence.join("; ")}\nConfidence label: ${k.provenance.confidence}.\n\nThat confidence is a prototype score, not a validated probability.`, citation: `${k.provenance.ruleId} · provenance` };
-  }
-  return { text: `My current read is ${k.pattern.title} (${k.pattern.category}) focused on ${k.pattern.component}. I can walk you through the evidence, first checks, repair path, limiting evidence, retest, escalation criteria, or the local case memory.`, citation: `${k.pattern.ruleId} · failure-pattern output` };
+  if (/retest|verify|pass|stage/.test(q)) return { text: `${k.retest.stage}: ${k.retest.expected} The retest has not passed until a technician records its result in the verification workflow.`, citation: `${k.pattern.ruleId} · retest specification` };
+  if (/first|check|inspect|start/.test(q)) return { text: k.checkFirst.map((item, i) => `${i + 1}. ${item}`).join("\n"), citation: `${k.pattern.ruleId} · check-first output` };
+  if (/escalat|stop|risk|when/.test(q)) return { text: k.escalation.map(item => `${item.urgency}: ${item.text}`).join("\n"), citation: `${k.pattern.ruleId} · escalation criteria` };
+  if (/rule out|contradict|negative|exclude/.test(q)) return { text: k.ruleOut.join("\n"), citation: `${k.pattern.ruleId} · limiting evidence` };
+  if (/path|steps|repair|next|action/.test(q)) return { text: k.path.map((step, i) => `${i + 1}. ${step.title}: ${step.detail}`).join("\n"), citation: `${k.pattern.ruleId} · stage-aware repair path` };
+  if (/evidence|source|confidence|rule|why/.test(q)) return { text: `${k.pattern.summary}\nEvidence: ${k.provenance.evidence.join("; ")}\nConfidence: ${k.provenance.confidence}.`, citation: `${k.provenance.ruleId} · provenance` };
+  return { text: `The current pattern is ${k.pattern.title} (${k.pattern.category}) for ${k.pattern.component}. I can summarize the checks, repair path, limiting evidence, required retest, or escalation criteria from this case’s structured output.`, citation: `${k.pattern.ruleId} · failure-pattern output` };
 }
 
-function renderDedicatedREX() {
-  const target = $("#rex-chat-messages");
-  if (!target) return;
-  if (!state.rexMessages.length || state.rexCaseId !== String(state.currentAnalysis?.caseId || "unassigned")) {
-    restoreREXForActiveCase();
-  }
-  target.innerHTML = rexConversationMarkup();
-  target.scrollTop = target.scrollHeight;
-
-  const caseId = state.currentAnalysis?.caseId || "No active analysis";
-  const component = state.knowledgeOutput?.pattern?.component || "No component selected";
-  setText("#rexChatScope", state.currentAnalysis ? `${caseId} · ${component}` : "No active analysis");
-  setText("#rexMemoryCase", state.currentAnalysis ? caseId : "Awaiting analysis");
-  setText("#rexMemoryFocus", component);
-  const exchanges = Math.max(0, Math.floor((state.rexMessages.length - 1) / 2));
-  setText("#rexMemoryCount", `${exchanges} exchange${exchanges === 1 ? "" : "s"}`);
-
-  if (state.knowledgeOutput) {
-    setREXVisualState("ready", "Case memory active · ready for next question");
-  } else {
-    setREXVisualState("ready", "Run an analysis to activate case intelligence");
-  }
-}
-
-function initializeDedicatedREX() {
-  const view = $("#rex-view");
-  if (!view || view.dataset.rexEventsBound === "true") return;
-  view.dataset.rexEventsBound = "true";
-
-  view.addEventListener("click", event => {
-    const chip = event.target.closest("[data-rex-query]");
-    if (chip) {
-      sendREXQuery(chip.dataset.rexQuery || chip.textContent.trim(), "dedicated");
-      return;
-    }
-    if (event.target.closest("#rex-clear-memory")) clearActiveREXMemory();
-  });
-
-  addListener("#rex-dedicated-form", "submit", event => {
-    event.preventDefault();
-    sendREXQuery("", "dedicated");
-  });
-
-  const avatar = $("#rex-avatar-image");
-  avatar?.addEventListener("error", () => {
-    avatar.hidden = true;
-    const fallback = $("#rex-avatar-fallback");
-    if (fallback) fallback.hidden = false;
-  }, { once: true });
-}
-
-function sendREXQuery(query = "", source = "embedded") {
-  const embeddedInput = $("#rex-query-input");
-  const dedicatedInput = $("#rex-dedicated-input");
-  const activeInput = source === "dedicated" ? dedicatedInput : embeddedInput;
-  const question = String(query || activeInput?.value || dedicatedInput?.value || embeddedInput?.value || "").trim();
-  if (!question) { activeInput?.focus(); return; }
-  if (!state.knowledgeOutput) {
-    setREXVisualState("ready", "Analysis required before case-specific reasoning", 1800);
-    showToast("Run an analysis before asking R.E.X. a case-specific question.");
-    return;
-  }
-
-  setREXVisualState(/remember|history|similar/i.test(question) ? "remembering" : "analyzing", "Reviewing structured case evidence…");
-  state.rexMessages.push({ role: "user", text: question, createdAt: new Date().toISOString() });
+function sendREXQuery(query = "") {
+  const input = $("#rex-query-input");
+  const question = String(query || input?.value || "").trim();
+  if (!question) { input?.focus(); return; }
+  if (!state.knowledgeOutput) { showToast("Run an analysis before asking REX."); return; }
   const answer = answerREX(question);
-  state.rexMessages.push({ role: "rex", text: answer.text, citation: answer.citation, createdAt: new Date().toISOString() });
-  persistREXMemory();
-
-  if (embeddedInput) embeddedInput.value = "";
-  if (dedicatedInput) dedicatedInput.value = "";
+  state.rexMessages.push({ role: "user", text: question });
+  state.rexMessages.push({ role: "rex", text: answer.text, citation: answer.citation });
   renderREX();
-  renderDedicatedREX();
-  setREXVisualState("speaking", "Response grounded in active case evidence", 1200);
+  if (input) input.value = "";
 }
 
 function initializeRetestWorkflow() {
@@ -7801,3 +7538,181 @@ function exportPassport() { downloadFile(JSON.stringify(passportRecord(), null, 
 function exportGenealogy() { const record = passportRecord(); record.genealogy = { verified: false, platformId: state.topology?.platformId || "DEMO", components: safeArray(state.topology?.components).map(x => ({ componentId: x.componentId, displayName: x.displayName, slot: x.slot, healthState: x.healthState, verificationState: "unverified" })) }; downloadFile(JSON.stringify(record, null, 2), `repairiq-genealogy-${state.currentAnalysis?.caseId || "demo"}.json`, "application/json"); }
 function exportTestStages() { const a = state.currentAnalysis; downloadFile(JSON.stringify({ caseId: a?.caseId || null, failureStage: a?.testSession?.failureStage || "Not established", stages: a?.testSession?.stages || {}, dataSource: a?.dataSource || "Prototype / Demonstration Data", verified: false }, null, 2), `repairiq-test-stages-${a?.caseId || "demo"}.json`, "application/json"); }
 function exportTopology() { const t = state.topology || {}; downloadFile(JSON.stringify({ ...t, verified: false, components: safeArray(t.components).map(x => ({ ...x, verificationState: "unverified" })) }, null, 2), `repairiq-topology-${t.platformId || "demo"}.json`, "application/json"); }
+/* ================================================================
+   R.E.X. v0.8 — ALWAYS-ON PROTOTYPE CONVERSATION
+   Local scripted replies; no remote model or production knowledge.
+   ================================================================ */
+const REX_MEMORY_KEY_V08 = "repairiq-rex-memory-v08";
+const rexMemoryV08 = { personal: [], conversations: { general: [], cases: {} } };
+let rexScopeV08 = "general";
+let rexMotionTimerV09 = null;
+let rexReplyTimerV09 = null;
+let rexInteractionV09 = 0;
+
+function rexLoadV08() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(REX_MEMORY_KEY_V08) || "{}");
+    if (Array.isArray(saved.personal)) rexMemoryV08.personal = saved.personal.filter(x => x && typeof x.value === "string").slice(-20);
+    if (Array.isArray(saved.conversations?.general)) rexMemoryV08.conversations.general = saved.conversations.general.slice(-60);
+    if (saved.conversations?.cases && typeof saved.conversations.cases === "object") rexMemoryV08.conversations.cases = saved.conversations.cases;
+  } catch (_) { /* Unavailable browser storage: conversation stays in this tab. */ }
+}
+function rexSaveV08() {
+  try { localStorage.setItem(REX_MEMORY_KEY_V08, JSON.stringify(rexMemoryV08)); }
+  catch (_) { /* The prototype remains usable if storage is unavailable. */ }
+}
+function rexCaseIdV08() { return state.currentAnalysis?.caseId || null; }
+function rexConversationV08() {
+  const id = rexScopeV08 === "case" ? rexCaseIdV08() : null;
+  if (!id) return rexMemoryV08.conversations.general;
+  const cases = rexMemoryV08.conversations.cases;
+  if (!Array.isArray(cases[id])) cases[id] = [];
+  return cases[id];
+}
+function rexWelcomeV08() {
+  return { role: "rex", text: "Hey, I'm R.E.X. I'm here whenever you want to talk or think something through. Repairs are my specialty, but we don't need a diagnostic to start a conversation. What's on your mind?", source: "Prototype introduction" };
+}
+function rexMessageMarkupV08(message) {
+  const user = message.role === "user";
+  return `<div class="rex-message ${user ? "user" : "rex"}"><span class="rex-avatar ${user ? "technician" : ""}">${user ? "YOU" : "RX"}</span><div class="rex-bubble ${user ? "user" : "rex"}"><div class="rex-bubble-content">${escapeHtml(String(message.text || ""))}</div>${message.source ? `<div class="rex-citation">${escapeHtml(message.source)}</div>` : ""}</div></div>`;
+}
+function rexRenderV08() {
+  const id = rexCaseIdV08();
+  if (!id) rexScopeV08 = "general";
+  const conversation = rexConversationV08();
+  const messages = conversation.length ? conversation : [rexWelcomeV08()];
+  const html = messages.slice(-60).map(rexMessageMarkupV08).join("");
+  for (const target of [$("#rex-chat-messages"), $("#rex-conversation")]) {
+    if (target) { target.innerHTML = html; target.scrollTop = target.scrollHeight; }
+  }
+  const label = rexScopeV08 === "case" && id ? `CASE MODE · ${id}` : "GENERAL MODE";
+  setText("#rexChatScope", label);
+  setText("#rexModeLabel", rexScopeV08 === "case" && id ? "CASE" : "GENERAL");
+  setText("#rexStatusText", rexScopeV08 === "case" && id ? "Case context available · ready to talk" : "Online · ready to talk");
+  const stage = $("#rexAvatarStage");
+  if (stage && !["listening", "analyzing", "remembering", "speaking"].includes(stage.dataset.rexState)) stage.dataset.rexState = "ready";
+  setText("#rexMemorySummary", `MEMORY · ${rexMemoryV08.personal.length} PERSONAL · ${conversation.length} MESSAGES · LOCAL`);
+  const details = $("#rex-memory-details");
+  if (details && !details.hidden) rexMemoryDetailsV08();
+}
+function rexMemoryDetailsV08() {
+  const box = $("#rex-memory-details");
+  if (!box) return;
+  const personal = rexMemoryV08.personal.map(x => `• ${x.value} (you asked R.E.X. to remember)`).join("\n") || "No saved personal notes.";
+  const id = rexCaseIdV08();
+  box.textContent = `PERSONAL NOTES\n${personal}\n\nCONVERSATION\n${rexConversationV08().length} messages in this scope.\n\nCASE EVIDENCE\n${id && state.knowledgeOutput ? `${id}: structured prototype Knowledge Engine output available.` : "No active analysis."}\n\nStorage: this browser only. Personal notes are user supplied, never verified case evidence.`;
+}
+function rexRememberV08(question) {
+  const match = question.match(/^(?:remember that|remember:|please remember that)\s+(.+)/i);
+  if (!match) return null;
+  const value = match[1].trim().slice(0, 180);
+  if (!value) return null;
+  rexMemoryV08.personal.push({ value, source: "User request", at: new Date().toISOString() });
+  rexMemoryV08.personal = rexMemoryV08.personal.slice(-20);
+  return { text: `Got it. I'll keep this as a personal note in this browser: “${value}” You can inspect or remove these notes in the memory panel.`, source: "User supplied · local personal memory" };
+}
+function rexReplyV08(question) {
+  const q = question.toLowerCase();
+  const remembered = rexRememberV08(question);
+  if (remembered) return remembered;
+  if (/forget (everything|all|my (personal )?notes)/.test(q)) {
+    rexMemoryV08.personal = [];
+    return { text: "I cleared the personal notes saved in this browser.", source: "Local personal memory" };
+  }
+  if (/what do you remember|what (do you|have you) know about me|recall/.test(q)) {
+    return { text: rexMemoryV08.personal.length ? `Here's what you explicitly asked me to remember:\n${rexMemoryV08.personal.map(x => `• ${x.value}`).join("\n")}\nThese are your notes, not verified repair evidence.` : "I don't have any personal notes yet. If you'd like, say ‘Remember that…’ and I'll save it in this browser. Our conversation is also kept locally by scope.", source: "Local personal memory" };
+  }
+  if (/danger|shock|smoke|fire|electrical hazard|burn|injur/.test(q)) return { text: "Stop work and follow your site's safety and power isolation procedure. If there's immediate danger, leave the area and contact the appropriate safety team. I can't assess physical conditions from this chat.", source: "Safety guidance · no remote assessment" };
+  const technical = /gpu|hmc|bist|retest|verify|escalat|repair|failure|pattern|evidence|check first|diagnos|component|server|log|replace/.test(q);
+  if (technical && state.knowledgeOutput && rexScopeV08 === "case") {
+    const result = answerREX(question);
+    return { text: result.text, source: `Structured prototype case output · ${result.citation || "case context"}` };
+  }
+  if (technical && /leading pattern|check first|retest|escalat|case evidence/.test(q) && !state.knowledgeOutput)
+    return { text: "I can discuss the approach now, but there isn't an analyzed case to cite yet. Tell me what you've observed, or run a diagnostic for structured case evidence. Evidence before replacement—otherwise the parts shelf starts looking like a guessing game.", source: "General guidance · no case evidence" };
+  if (/morning|hello|hey|hi rex|good evening|good afternoon/.test(q)) return { text: "Hey! I'm online. We can talk, brainstorm, or work through a repair. What are we tackling today?", source: "Scripted prototype response" };
+  if (/who are you|your personality|what can you do/.test(q)) return { text: "I'm R.E.X., the Repair Engineer Xpert. I'm calm, curious, direct, and occasionally funny when the moment calls for it. I can discuss ideas and organize thoughts here; when structured case data exists, I can explain it with a source. This prototype uses scripted responses, so I don't have open-ended AI reasoning yet.", source: "R.E.X. personality · scripted prototype" };
+  if (/brainstorm|idea|feature|build|create/.test(q)) return { text: "I'm in. Give me the goal, the person using it, and what feels broken today. We'll shape an idea around those three things. The whiteboard is metaphorical; the enthusiasm is real.", source: "Scripted brainstorming prompt" };
+  if (/frustrat|stressed|rough day|tired/.test(q)) return { text: "That sounds like a lot. Want to vent for a minute, or should we break the problem into one manageable next step?", source: "Scripted supportive response" };
+  if (technical) return { text: "Let's separate what we know from what we're assuming. What symptom, test result, and component are you looking at? I can help organize the checks, but I won't call a part defective without evidence.", source: "General repair guidance · no case citation" };
+  return { text: "I'm with you. Tell me a little more about what you want to accomplish, and I'll help organize the next step. This prototype's conversation is scripted; a future LLM connection will make the dialogue much more flexible.", source: "Scripted prototype response" };
+}
+function rexSetMotionV09(mode, status, duration = 0) {
+  const stage = $("#rexAvatarStage");
+  if (rexMotionTimerV09) clearTimeout(rexMotionTimerV09);
+  if (stage) stage.dataset.rexState = mode;
+  setText("#rex-live-status", status);
+  if (duration) rexMotionTimerV09 = setTimeout(() => {
+    if (stage?.dataset.rexState === mode) stage.dataset.rexState = "ready";
+    setText("#rex-live-status", "R.E.X. is ready");
+  }, duration);
+}
+function rexSendV08(value, input) {
+  const question = String(value || "").trim().slice(0, 500);
+  if (!question) { input?.focus(); return; }
+  const conversation = rexConversationV08();
+  const interaction = ++rexInteractionV09;
+  if (rexReplyTimerV09) clearTimeout(rexReplyTimerV09);
+  conversation.push({ role: "user", text: question });
+  if (conversation.length > 60) conversation.splice(0, conversation.length - 60);
+  rexSaveV08(); rexRenderV08();
+  if (input) input.value = "";
+  const recalling = /remember|recall|forget/i.test(question);
+  rexSetMotionV09(recalling ? "remembering" : "analyzing", recalling ? "R.E.X. is checking local memory" : "R.E.X. is thinking");
+  rexReplyTimerV09 = setTimeout(() => {
+    if (interaction !== rexInteractionV09) return;
+    rexReplyTimerV09 = null;
+    const reply = rexReplyV08(question);
+    conversation.push({ role: "rex", ...reply });
+    if (conversation.length > 60) conversation.splice(0, conversation.length - 60);
+    rexSaveV08(); rexRenderV08();
+    const duration = Math.min(3500, Math.max(1300, reply.text.length * 18));
+    rexSetMotionV09("speaking", "R.E.X. is responding", duration);
+  }, 520);
+}
+function sendREXQuery(query = "") { const input = $("#rex-query-input"); rexSendV08(query || input?.value, input); }
+function renderREX({ reset = false } = {}) {
+  const mount = $("#diagnostic-extension-mount");
+  if (!mount || !state.knowledgeOutput) { rexRenderV08(); return; }
+  rexScopeV08 = "case";
+  const id = rexCaseIdV08();
+  const conversation = rexConversationV08();
+  if (!conversation.length) conversation.push({ role: "rex", text: `I have the structured analysis for ${id}. Ask me about the pattern, checks, evidence, retest, or escalation. The repair decision stays with the technician.`, source: `Structured prototype output · ${state.knowledgeOutput.provenance.ruleId}` });
+  mount.querySelector('[data-ke-section="rex"]')?.remove();
+  const section = `<section class="diagnostic-section" data-ke-section="rex"><div class="rex-panel"><div class="diagnostic-section-heading"><div><div class="eyebrow">R.E.X. · CASE MODE</div><h4>Ask about this case</h4></div><span class="rex-active-badge">PROTOTYPE CASE OUTPUT</span></div><div class="rex-conversation" id="rex-conversation" aria-live="polite"></div><div class="rex-quick-queries"><span>QUICK ASK</span><button class="rex-query-chip" type="button" data-rex-query="What is the leading pattern?">Leading pattern</button><button class="rex-query-chip" type="button" data-rex-query="What should I check first?">Check first</button><button class="rex-query-chip" type="button" data-rex-query="What retest is required?">Retest</button></div><form class="rex-input-row" id="rex-query-form"><label class="rex-input-field"><input id="rex-query-input" type="text" maxlength="500" placeholder="Ask R.E.X. about this case" aria-label="Ask R.E.X. about this case"></label><button class="primary-button" id="rex-send-button" type="submit">Ask R.E.X.</button></form><div class="rex-footer-notice">Prototype case reasoning. A technician verifies evidence and approves repairs.</div></div></section>`;
+  const provenance = mount.querySelector('[data-ke-section="ke-provenance"]');
+  if (provenance) provenance.insertAdjacentHTML("afterend", section); else mount.insertAdjacentHTML("beforeend", section);
+  rexSaveV08(); rexRenderV08();
+}
+function rexInitializeV08() {
+  rexLoadV08(); rexRenderV08();
+  const panel = $("#rex-view");
+  panel?.addEventListener("submit", event => {
+    if (event.target.id !== "rex-dedicated-form") return;
+    event.preventDefault();
+    const input = $("#rex-dedicated-input"); rexSendV08(input?.value, input);
+  });
+  panel?.addEventListener("click", event => {
+    const chip = event.target.closest("[data-rex-query]");
+    if (chip) rexSendV08(chip.dataset.rexQuery || chip.textContent, $("#rex-dedicated-input"));
+    if (event.target.closest("#rex-memory-inspect")) {
+      const details = $("#rex-memory-details"); details.hidden = !details.hidden;
+      if (!details.hidden) rexMemoryDetailsV08();
+    }
+    if (event.target.closest("#rex-memory-clear")) {
+      ++rexInteractionV09; if (rexReplyTimerV09) clearTimeout(rexReplyTimerV09);
+      rexConversationV08().length = 0; rexSaveV08(); rexSetMotionV09("ready", "R.E.X. is ready"); rexRenderV08();
+    }
+  });
+  const dedicatedInput = $("#rex-dedicated-input");
+  dedicatedInput?.addEventListener("focus", () => { if (!rexReplyTimerV09) rexSetMotionV09("listening", "R.E.X. is listening"); });
+  dedicatedInput?.addEventListener("blur", () => { if ($("#rexAvatarStage")?.dataset.rexState === "listening") rexSetMotionV09("ready", "R.E.X. is ready"); });
+  const image = $("#rex-avatar-image");
+  if (image) {
+    const fallback = $("#rex-avatar-fallback");
+    const failed = () => { image.hidden = true; if (fallback) fallback.hidden = false; };
+    image.addEventListener("error", failed);
+    if (image.complete && !image.naturalWidth) failed();
+  }
+}
+document.addEventListener("DOMContentLoaded", rexInitializeV08);
