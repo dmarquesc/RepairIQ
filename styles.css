@@ -1,6 +1,6 @@
 /* =========================================================
 
-   REPAIRIQ v0.6
+   REPAIRIQ v0.7
 
    DATA-DRIVEN GPU TOPOLOGY + RETEST VERIFICATION
 
@@ -11098,3 +11098,160 @@ pre {
   .rex-avatar-image, .rex-halo, .rex-diagnostic-ring, .rex-scanline { animation: none !important; }
   .rex-chat-messages { scroll-behavior: auto; }
 }
+
+/* =========================================================
+   R.E.X. v0.7 — CASE MEMORY + INTELLIGENCE PRESENCE
+   Local-browser prototype memory; no remote persistence.
+========================================================= */
+
+.rex-chat-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rex-memory-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid rgba(115,230,166,.18);
+  border-radius: 999px;
+  background: rgba(5,20,18,.48);
+  color: #73e6a6;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rex-memory-badge .status-dot {
+  width: 5px;
+  height: 5px;
+  margin: 0;
+  background: currentColor;
+  box-shadow: 0 0 9px currentColor;
+}
+
+.rex-intelligence-strip {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr) auto;
+  gap: 1px;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(87,215,255,.12);
+  border-radius: 10px;
+  background: rgba(87,215,255,.12);
+}
+
+.rex-intelligence-cell {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 9px 11px;
+  background: rgba(4,13,21,.88);
+}
+
+.rex-intelligence-cell span {
+  color: #6f8b98;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.rex-intelligence-cell strong {
+  overflow: hidden;
+  color: #cfe8ef;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rex-memory-clear {
+  min-height: 52px;
+  padding: 0 12px;
+  border: 0;
+  background: rgba(4,13,21,.88);
+  color: #7895a1;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.rex-memory-clear:hover {
+  background: rgba(87,215,255,.07);
+  color: #b9f0ff;
+}
+
+.rex-chat-messages:empty::before {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  color: #617c88;
+  font-size: 10px;
+  text-align: center;
+  content: "R.E.X. is standing by for a structured case analysis.";
+}
+
+.rex-message.rex .rex-bubble {
+  box-shadow: inset 2px 0 0 rgba(87,215,255,.22);
+}
+
+.rex-message.user .rex-bubble {
+  box-shadow: inset -2px 0 0 rgba(181,130,255,.18);
+}
+
+.rex-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+}
+
+.rex-typing i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #57d7ff;
+  animation: rex-thinking-dot 1s ease-in-out infinite;
+}
+
+.rex-typing i:nth-child(2) { animation-delay: .14s; }
+.rex-typing i:nth-child(3) { animation-delay: .28s; }
+
+@keyframes rex-thinking-dot {
+  0%, 100% { transform: translateY(0); opacity: .35; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+
+.rex-avatar-stage[data-rex-state="remembering"] .rex-halo-two {
+  background: rgba(181,130,255,.16);
+  animation-duration: 1.4s;
+}
+
+.rex-avatar-stage[data-rex-state="remembering"] .rex-diagnostic-ring {
+  border-color: rgba(181,130,255,.38);
+  animation-duration: 5s;
+}
+
+@media (max-width: 760px) {
+  .rex-chat-heading { align-items: stretch; }
+  .rex-chat-heading-actions { align-items: flex-end; flex-direction: column; }
+  .rex-memory-badge { display: none; }
+  .rex-intelligence-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .rex-memory-clear { min-height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rex-typing i { animation: none !important; }
+}
+
