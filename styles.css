@@ -11642,7 +11642,7 @@ pre {
 
 
 /* =========================================================
-   REPAIRIQ v0.13 — SXM ANALYZER TECHNICIAN WORKSTATION
+   REPAIRIQ v1.0 — SXM ANALYZER TECHNICIAN WORKSTATION
    Author: DMarques Coleman
    Organization: DCENTRIC
    Developed for: SMS InfoComm Corporation
@@ -11930,3 +11930,24 @@ pre {
     transform: none;
   }
 }
+
+
+/* =========================================================
+   REPAIRIQ v1.0 RELEASE NOTES
+
+   Concept and Prototype Development: DMarques Coleman
+   DCENTRIC
+   Prototype prepared for SMS InfoComm Corporation
+
+   RELEASE PRINCIPLES
+   ---------------------------------------------------------
+   - Technician-controlled decision support
+   - Evidence-oriented diagnostic workflow
+   - Human approval before consequential repair actions
+   - Verification before case closure
+   - Responsive, keyboard-accessible workstation navigation
+   - Prototype/demo boundaries remain explicit
+
+   This stylesheet preserves the established RepairIQ visual
+   system and the v1.0 Analyzer Technician Workstation.
+========================================================= */

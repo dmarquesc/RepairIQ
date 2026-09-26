@@ -7925,7 +7925,7 @@ function toggleVirtualLabMonitoring() {
 
 
 /* ================================================================
-   REPAIRIQ v0.13
+   REPAIRIQ v1.0
    ANALYZER TECHNICIAN WORKSTATION CONTROLLER
 
    Author: DMarques Coleman
@@ -8090,3 +8090,32 @@ function initializeAnalyzerWorkstation() {
     { scroll: false }
   );
 }
+
+
+/* ================================================================
+   REPAIRIQ v1.0 RELEASE NOTES
+
+   Concept and Prototype Development: DMarques Coleman
+   DCENTRIC
+   Prototype prepared for SMS InfoComm Corporation
+
+   RELEASE PRINCIPLES
+   ---------------------------------------------------------------
+   RepairIQ provides technician decision support. Existing human
+   approval, retest, verification, and closure controls remain the
+   authoritative workflow gates in this prototype.
+
+   The v1.0 release preserves:
+   - Dashboard and GPU topology behavior
+   - SXM Analyzer and Diagnostic Workstation
+   - Knowledge Engine presentation
+   - R.E.X. assistant interface
+   - Virtual Test Lab
+   - Case History
+   - Metrics
+   - Local prototype persistence and export behavior
+
+   Production deployment requires validated backend integrations,
+   authentication/authorization, security review, data governance,
+   observability, testing, and operational approval.
+================================================================ */
