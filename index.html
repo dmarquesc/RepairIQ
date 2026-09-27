@@ -12,7 +12,7 @@
 
  
 
-    Version: 0.10 — Virtual Test Lab + R.E.X. Motion
+    Version: 1.0 — Multi-Build Test Lab + Repair Intelligence
 
  
 
@@ -657,9 +657,9 @@
   -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="RepairIQ — SXM Repair Intelligence Command Center. Prototype v0.10." name="description"/>
+<meta content="RepairIQ — SXM Repair Intelligence Command Center. Prototype v1.0." name="description"/>
 <meta content="noindex, nofollow" name="robots"/>
-<title>RepairIQ — SXM Repair Intelligence v0.10</title>
+<title>RepairIQ — SXM Repair Intelligence v1.0</title>
 <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
@@ -925,7 +925,7 @@
 <span>H200 · HGX · NVSwitch</span>
 <span style="margin-top: 2px; color: var(--cyan); font-size: 9px;">
 
-            Knowledge Engine v0.1 · REX Active
+            Knowledge Engine · R.E.X. Active
 
           </span>
 </div>
@@ -939,6 +939,10 @@
 <button class="nav-item" data-view="analyzer" type="button">
 <span aria-hidden="true" class="nav-icon">⊕</span>
 <span>SXM Analyzer</span>
+</button>
+<button class="nav-item" data-view="repair-floor" type="button">
+<span aria-hidden="true" class="nav-icon">◇</span>
+<span>Repair Floor</span>
 </button>
 <button class="nav-item" data-view="tester-lab" type="button">
 <span aria-hidden="true" class="nav-icon">▤</span>
@@ -1031,7 +1035,7 @@
 </div>
 <div class="version-label">
 
-          RepairIQ v0.10 · Prototype
+          RepairIQ v1.0 · Prototype
 
         </div>
 <p class="sidebar-note">
@@ -1063,7 +1067,7 @@
 <h1 id="page-title">Repair Operations Dashboard</h1>
 <p class="topbar-context">
 
-            Prototype v0.10 · Knowledge Engine + REX ·
+            Prototype v1.0 · Knowledge Engine + REX ·
 
             Technician decision support only
 
@@ -3454,6 +3458,147 @@
 <!-- /retest-verification-section -->
 </div>
 <!-- /analyzer-view -->
+
+<!-- ======================================================
+     REPAIR FLOOR DIGITAL TWIN
+     Floor staging / cone workflow / traveler intake
+     Synthetic demonstration only.
+     ====================================================== -->
+<section aria-label="RepairIQ repair floor digital twin" class="view" id="repair-floor-view" role="main">
+  <div class="view-heading floor-view-heading">
+    <div>
+      <div class="eyebrow">REPAIRIQ · FLOOR OPERATIONS</div>
+      <h2>Repair Floor Digital Twin</h2>
+      <p>Track staged units after build, after testing, through SWAP/repair, and back to retest. Green is the final floor disposition before Label.</p>
+    </div>
+    <div class="floor-heading-actions">
+      <span class="lab-prototype-badge"><span></span> SYNTHETIC FLOOR · OFFLINE</span>
+      <button class="primary-button" id="floor-scan-traveler" type="button">▦ Scan Traveler</button>
+    </div>
+  </div>
+
+  <div class="floor-metric-grid" aria-label="Repair floor status summary">
+    <article class="floor-metric total"><span>Units on Floor</span><strong id="floor-total-count">0</strong><small>Current demo staging</small></article>
+    <article class="floor-metric orange"><span>Ready Test / Retest</span><strong id="floor-orange-count">0</strong><small>Orange cone</small></article>
+    <article class="floor-metric red"><span>Failed / SWAP</span><strong id="floor-red-count">0</strong><small>Red cone</small></article>
+    <article class="floor-metric blue"><span>Component Swap</span><strong id="floor-blue-count">0</strong><small>Blue cone</small></article>
+    <article class="floor-metric baseboard"><span>Baseboard Swap</span><strong id="floor-baseboard-count">0</strong><small>Red + blue disk</small></article>
+    <article class="floor-metric green"><span>Passed / Label</span><strong id="floor-green-count">0</strong><small>Final floor stage</small></article>
+  </div>
+
+  <div class="floor-workspace">
+    <section class="panel floor-scene-panel" aria-label="Interactive repair floor">
+      <div class="floor-panel-header">
+        <div>
+          <div class="eyebrow">DIGITAL FLOOR TWIN</div>
+          <h3>Floor staging overview</h3>
+          <p>36-position section view · four 9-unit racks · 18 positions front + 18 positions back. Click any occupied slot to inspect the unit.</p>
+        </div>
+        <div class="floor-scene-actions">
+          <span class="floor-capacity-badge"><strong id="floor-capacity-count">0 / 36</strong> POSITIONS OCCUPIED</span><button class="secondary-button" id="floor-reset-demo" type="button">Reset Demo Floor</button>
+        </div>
+      </div>
+
+      <div class="floor-scene" id="floor-scene" aria-label="Structured 36-position repair floor section">
+        <div class="floor-scene-shade"></div>
+        <div class="floor-direction floor-direction-test">TO TESTERS →</div>
+        <div class="floor-direction floor-direction-label">LABEL / SHIPPING →</div>
+        <div class="floor-section-stage">
+          <div class="floor-section-title"><span>SECTION A</span><strong>36 POSITION STAGING</strong><small>FRONT 18 · BACK 18</small></div>
+          <div class="floor-rack-grid" id="floor-unit-layer"></div>
+        </div>
+      </div>
+
+      <div class="floor-cone-key" aria-label="Physical cone workflow legend">
+        <span><i class="floor-key-cone orange"></i><b>ORANGE</b> Ready for test / retest</span>
+        <span><i class="floor-key-cone red"></i><b>RED</b> Failed / SWAP troubleshooting</span>
+        <span><i class="floor-key-cone blue"></i><b>BLUE</b> Component swap</span>
+        <span><i class="floor-key-combo"></i><b>RED + BLUE DISK</b> Baseboard swap</span>
+        <span><i class="floor-key-cone green"></i><b>GREEN</b> Passed → Label</span>
+      </div>
+    </section>
+
+    <aside class="panel floor-detail-panel" aria-label="Selected floor unit">
+      <div class="floor-detail-header">
+        <div><div class="eyebrow">SELECTED FLOOR UNIT</div><h3 id="floor-detail-title">Select a unit</h3></div>
+        <span class="floor-status-pill" id="floor-detail-status">—</span>
+      </div>
+
+      <div class="floor-selected-visual">
+        <img id="floor-detail-image" src="assets/vulcan-hgx-demo.png" alt="Selected RepairIQ demonstration unit"/>
+        <div class="floor-selected-cone" id="floor-selected-cone" data-cone="orange">
+          <i class="floor-cone-object"></i><i class="floor-blue-disk-object"></i>
+        </div>
+      </div>
+
+      <div class="floor-detail-grid">
+        <div><span>Floor Bay</span><strong id="floor-detail-bay">—</strong></div>
+        <div><span>Build</span><strong id="floor-detail-build">—</strong></div>
+        <div><span>Unit</span><strong id="floor-detail-unit">—</strong></div>
+        <div><span>Traveler</span><strong id="floor-detail-traveler">—</strong></div>
+        <div><span>Previous Tester</span><strong id="floor-detail-tester">—</strong></div>
+        <div><span>Case</span><strong id="floor-detail-case">—</strong></div>
+      </div>
+
+      <div class="floor-workflow-card">
+        <span>CURRENT PHYSICAL STATUS</span>
+        <strong id="floor-detail-status-label">—</strong>
+        <p id="floor-detail-next">Select a unit on the floor.</p>
+      </div>
+
+      <div class="floor-history-block">
+        <div class="floor-subheading"><strong>Unit journey</strong><span id="floor-history-count">0 events</span></div>
+        <div class="floor-history-list" id="floor-history-list"></div>
+      </div>
+
+      <div class="floor-detail-actions">
+        <button class="primary-button" id="floor-open-passport" type="button">Open Digital Passport</button>
+        <button class="secondary-button" id="floor-open-analyzer" type="button">View Test Evidence</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="floor-disclosure" role="note">
+    <strong>Prototype boundary</strong>
+    <span>This Repair Floor is a visual demonstration. Floor positions, travelers, statuses, timestamps, and unit movement are synthetic. No production traveler, WMS, tester, barcode scanner, or hardware system is connected.</span>
+  </div>
+</section>
+
+<!-- Traveler Scan / Intake Modal -->
+<div class="floor-scan-modal" id="floor-scan-modal" hidden>
+  <div class="floor-scan-backdrop" data-floor-scan-close></div>
+  <section class="floor-scan-card" role="dialog" aria-modal="true" aria-labelledby="floor-scan-title">
+    <button class="floor-scan-close" data-floor-scan-close type="button" aria-label="Close traveler scanner">×</button>
+    <div class="eyebrow">TRAVELER INTAKE · DEMONSTRATION</div>
+    <h2 id="floor-scan-title">Scan Traveler</h2>
+    <p>In production, the traveler barcode would establish the unit identity. For v1.0, enter or choose a synthetic traveler.</p>
+    <label class="floor-scan-field">
+      <span>Traveler / Barcode</span>
+      <div><input id="floor-traveler-input" type="text" autocomplete="off" placeholder="TRV-2026-0927-001"/><button class="primary-button" id="floor-load-traveler" type="button">Load Unit</button></div>
+    </label>
+    <div class="floor-demo-travelers">
+      <span>DEMO TRAVELERS</span>
+      <div id="floor-demo-traveler-buttons"></div>
+    </div>
+    <div class="floor-scan-result" id="floor-scan-result" hidden>
+      <div class="floor-scan-result-head"><span>TRAVELER FOUND</span><strong id="floor-scan-result-unit">—</strong></div>
+      <div class="floor-scan-result-grid">
+        <div><span>Build</span><strong id="floor-scan-result-build">—</strong></div>
+        <div><span>Floor Bay</span><strong id="floor-scan-result-bay">—</strong></div>
+        <div><span>System Serial</span><strong id="floor-scan-result-system">—</strong></div>
+        <div><span>Baseboard S/N</span><strong id="floor-scan-result-board">—</strong></div>
+        <div><span>Floor Status</span><strong id="floor-scan-result-status">—</strong></div>
+        <div><span>Identity</span><strong id="floor-scan-result-identity">DEMO RECORD</strong></div>
+      </div>
+      <div class="floor-intake-choice" id="floor-intake-choice">
+        <button class="primary-button" id="floor-stage-unit" type="button">Stage on Repair Floor</button>
+        <button class="secondary-button" id="floor-send-tester" type="button">Send Directly to Tester</button>
+      </div>
+      <button class="secondary-button" id="floor-go-to-unit" type="button">Locate Current Floor Position</button>
+    </div>
+  </section>
+</div>
+
 <!-- ======================================================
            VIRTUAL TEST LAB VIEW
            Synthetic tester-room monitoring for demonstration only.
@@ -3525,8 +3670,18 @@
 </div>
 <div class="lab-detail-content" id="lab-detail-content">
 <section class="lab-detail-tab-panel active" data-lab-panel="overview" role="tabpanel">
-<div class="lab-unit-visual"><img alt="Vulcan HGX demonstration unit visual; illustrative image, not a CAD model" src="assets/vulcan-hgx-demo.png"/><span>VULCAN HGX · DEMO VISUAL</span></div>
-<div class="lab-unit-meta"><div><span>Unit</span><strong id="lab-unit-id">VULCAN-HGX-003</strong></div><div><span>Tester ID</span><strong id="lab-tester-id">SXM-TEST-03</strong></div><div><span>Current stage</span><strong id="lab-current-stage">INIT — HMC BIST</strong></div><div><span>Session</span><strong id="lab-session-duration">00:28:17</strong></div></div>
+<div class="lab-unit-visual" id="lab-unit-visual">
+<img alt="Selected RepairIQ demonstration build; illustrative image, not a CAD model" id="lab-unit-image" src="assets/vulcan-hgx-demo.png"/>
+<span id="lab-unit-build-label">VULCAN · H200 · DEMO VISUAL</span>
+</div>
+<div class="lab-unit-meta">
+<div><span>Unit</span><strong id="lab-unit-id">VULCAN-HGX-003</strong></div>
+<div><span>Build</span><strong id="lab-build-name">VULCAN · H200</strong></div>
+<div><span>Tester ID</span><strong id="lab-tester-id">SXM-TEST-03</strong></div>
+<div><span>Identity</span><strong id="lab-identity-state">MATCHED · DEMO</strong></div>
+<div><span>Current stage</span><strong id="lab-current-stage">INIT — HMC BIST</strong></div>
+<div><span>Session</span><strong id="lab-session-duration">00:28:17</strong></div>
+</div>
 <div class="lab-progress-block"><div><span>Test progress</span><strong id="lab-progress-label">47%</strong></div><div class="lab-progress-track"><i id="lab-progress-bar" style="width:47%"></i></div></div>
 <div class="lab-telemetry-cards"><div class="lab-telemetry-card danger"><span>GPU temp · avg</span><strong id="lab-gpu-temp">82°C</strong><div class="lab-sparkline red"><i></i></div></div><div class="lab-telemetry-card"><span>Fan speed</span><strong id="lab-fan-speed">78%</strong><div class="lab-sparkline cyan"><i></i></div></div><div class="lab-telemetry-card"><span>Power draw</span><strong id="lab-power-draw">5.6 kW</strong><div class="lab-sparkline blue"><i></i></div></div><div class="lab-telemetry-card"><span>Board temp</span><strong id="lab-board-temp">46°C</strong><div class="lab-sparkline green"><i></i></div></div></div>
 <div class="lab-alert-box"><div class="lab-alert-heading"><strong>Active alerts</strong><span id="lab-alert-count">2</span></div><div id="lab-selected-alerts"></div></div>

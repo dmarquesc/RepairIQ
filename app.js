@@ -8,7 +8,7 @@
 
  
 
-  Version: 0.6 - Knowledge Engine, REX, Topology + Verification
+  Version: 1.0 - Multi-Build Repair Intelligence Prototype
 
  
 
@@ -841,6 +841,7 @@ function getViewTitle(viewName) {
     dashboard: "Repair Operations Dashboard",
 
     analyzer: "SXM Log Analyzer",
+    "repair-floor": "Repair Floor Digital Twin",
     "tester-lab": "Virtual Test Lab",
 
     cases: "Case History",
@@ -7728,25 +7729,111 @@ document.addEventListener("DOMContentLoaded", rexInitializeV08);
    are synthetic UI data. The local animation never polls hardware,
    BMC/HMC, test systems, firmware services or backend APIs.
    ================================================================ */
+const REPAIRIQ_BUILD_LIBRARY = Object.freeze({
+  vulcan: {
+    key: "vulcan",
+    build: "VULCAN",
+    platform: "H200",
+    label: "VULCAN · H200",
+    image: "assets/vulcan-hgx-demo.png",
+    module: "VULCAN-H200"
+  },
+  b200: {
+    key: "b200",
+    build: "UMBRIEL",
+    platform: "B200",
+    label: "UMBRIEL · B200",
+    image: "assets/Umbriel-B200-demo.png",
+    module: "UMBRIEL-B200"
+  },
+  b300: {
+    key: "b300",
+    build: "UMBRIEL",
+    platform: "B300",
+    label: "UMBRIEL · B300",
+    image: "assets/Umbriel-B300-demo.png",
+    module: "UMBRIEL-B300"
+  }
+});
+
+/*
+  Floor-status language mirrors the existing physical cone workflow.
+  RepairIQ does not physically place a cone or autonomously authorize
+  replacement. The prototype mirrors the technician-confirmed state.
+*/
+const REPAIRIQ_FLOOR_STATUS = Object.freeze({
+  ready:     { cone:"orange", icon:"🟠", label:"ORANGE CONE · READY FOR TEST / RETEST", next:"Build or repair complete — waiting for SWAP testing." },
+  passed:    { cone:"green", icon:"🟢", label:"GREEN CONE · PASS / READY FOR LABEL", next:"Verification passed — send unit to Label Station." },
+  failed:    { cone:"red", icon:"🔴", label:"RED CONE · SWAP TROUBLESHOOTING", next:"Test failed — SWAP troubleshooting required." },
+  partSwap:  { cone:"blue", icon:"🔵", label:"BLUE CONE · COMPONENT SWAP / REPLACEMENT", next:"Technician-confirmed component action required; retest after repair." },
+  baseboard: { cone:"baseboard", icon:"🔴🔵", label:"RED CONE + BLUE DISK · BASEBOARD SWAP", next:"Technician-confirmed baseboard workflow required; retest after repair." },
+  testing:   { cone:"none", icon:"⚙", label:"TEST IN PROGRESS", next:"No disposition cone while the simulated test session is running." }
+});
+
+/*
+  v1.0 architecture mount points for the larger diagnostic mission:
+  traveler identity -> FRU/IPMI evidence -> log/test evidence -> product
+  knowledge module -> technician-controlled repair path -> retest.
+  These are prototype schemas, not production repair instructions.
+*/
+const REPAIRIQ_PRODUCT_KNOWLEDGE_MODULES = Object.freeze({
+  "VULCAN-H200": { build:"VULCAN", platform:"H200", evidenceFamilies:["TEST_LOG","PCIE","GPU_ENUM","HMC","BMC","NVLINK","NVSWITCH","THERMAL","POWER","FIRMWARE","IDENTITY_FRU"] },
+  "UMBRIEL-B200": { build:"UMBRIEL", platform:"B200", evidenceFamilies:["TEST_LOG","PCIE","GPU_ENUM","BMC","NVLINK","NVSWITCH","THERMAL","POWER","FIRMWARE","IDENTITY_FRU"] },
+  "UMBRIEL-B300": { build:"UMBRIEL", platform:"B300", evidenceFamilies:["TEST_LOG","PCIE","GPU_ENUM","BMC","NVLINK","NVSWITCH","THERMAL","POWER","FIRMWARE","IDENTITY_FRU"] }
+});
+
+const REPAIRIQ_IDENTITY_RULES = Object.freeze({
+  fields:["unitSerial","systemSerial","baseboardSerial","baseboardPartNumber","assemblyPartNumber","boardRevision"],
+  classifications:{
+    MATCH:"Identity evidence matches the expected traveler record.",
+    MISMATCH:"One or more identity fields differ from the expected traveler record.",
+    INCOMPLETE:"Identity evidence is incomplete; hardware failure is not established by identity alone."
+  },
+  evidenceSources:["Traveler / barcode record","Approved FRU / BMC / IPMI evidence","Tester-provided unit identity"]
+});
+
+function evaluateRepairIQIdentity(expected = {}, detected = {}) {
+  const comparisons = REPAIRIQ_IDENTITY_RULES.fields.map(field => {
+    const expectedValue = normalizeText(expected[field]);
+    const detectedValue = normalizeText(detected[field]);
+    if (!expectedValue || !detectedValue) return {field, state:"INCOMPLETE", expected:expectedValue, detected:detectedValue};
+    return {field, state:expectedValue === detectedValue ? "MATCH" : "MISMATCH", expected:expectedValue, detected:detectedValue};
+  });
+  const stateValue = comparisons.some(item => item.state === "MISMATCH")
+    ? "MISMATCH"
+    : comparisons.some(item => item.state === "INCOMPLETE")
+      ? "INCOMPLETE"
+      : "MATCH";
+  return { state:stateValue, comparisons, message:REPAIRIQ_IDENTITY_RULES.classifications[stateValue] };
+}
+
 const VIRTUAL_LAB_STATIONS = [
-  { id:"01", unit:"VULCAN-HGX-001", status:"testing", stage:"FCT", progress:61, duration:"00:37:42", temp:68, fan:64, power:5.2, board:43, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"02", unit:"VULCAN-HGX-002", status:"testing", stage:"FLB", progress:84, duration:"01:12:05", temp:64, fan:59, power:4.9, board:42, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"03", unit:"VULCAN-HGX-003", status:"attention", stage:"INIT — HMC BIST", progress:47, duration:"00:28:17", temp:82, fan:78, power:5.6, board:46, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[{level:"warning",text:"GPU2 temperature threshold exceeded",time:"10:26:14"},{level:"error",text:"HMC BIST failure detected",time:"10:25:03"}], result:"REVIEW" },
-  { id:"04", unit:"VULCAN-HGX-004", status:"failed", stage:"INIT — HMC BIST", progress:100, duration:"01:04:33", temp:71, fan:72, power:5.1, board:45, script:"v3.8.14 · Stopped", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[{level:"error",text:"Initialization stage failed",time:"10:20:18"}], result:"FAILED" },
-  { id:"05", unit:"VULCAN-HGX-005", status:"testing", stage:"MEM", progress:29, duration:"00:19:21", temp:66, fan:62, power:4.8, board:43, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"06", unit:"—", status:"available", stage:"Ready for next unit", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"AVAILABLE" },
-  { id:"07", unit:"VULCAN-HGX-007", status:"testing", stage:"FLT", progress:53, duration:"00:42:08", temp:67, fan:66, power:5.0, board:44, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"08", unit:"VULCAN-HGX-008", status:"testing", stage:"FCT", progress:76, duration:"01:08:41", temp:69, fan:68, power:5.3, board:45, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"09", unit:"VULCAN-HGX-009", status:"testing", stage:"DCC", progress:91, duration:"01:31:06", temp:65, fan:61, power:4.7, board:42, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"10", unit:"VULCAN-HGX-010", status:"testing", stage:"INIT", progress:18, duration:"00:08:54", temp:61, fan:54, power:4.4, board:40, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" },
-  { id:"11", unit:"—", status:"available", stage:"Ready for next unit", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"AVAILABLE" },
-  { id:"12", unit:"VULCAN-HGX-012", status:"testing", stage:"RIN", progress:38, duration:"00:22:49", temp:63, fan:58, power:4.6, board:41, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", alerts:[], result:"RUNNING" }
+  { id:"01", build:"vulcan", unit:"VULCAN-H200-001", status:"testing", floor:"testing", stage:"FCT", progress:61, duration:"00:37:42", temp:68, fan:64, power:5.2, board:43, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" },
+  { id:"02", build:"b200", unit:"UMBRIEL-B200-002", status:"testing", floor:"testing", stage:"FLB", progress:84, duration:"01:12:05", temp:64, fan:59, power:4.9, board:42, script:"v3.8.14 · Running", firmware:"B200 demo · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" },
+  { id:"03", build:"vulcan", unit:"VULCAN-H200-003", status:"attention", floor:"failed", stage:"INIT — HMC BIST", progress:47, duration:"00:28:17", temp:82, fan:78, power:5.6, board:46, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[{level:"warning",text:"GPU2 temperature threshold exceeded",time:"10:26:14"},{level:"error",text:"HMC BIST failure detected",time:"10:25:03"}], result:"REVIEW" },
+  { id:"04", build:"b300", unit:"UMBRIEL-B300-004", status:"failed", floor:"baseboard", stage:"INIT — IDENTITY / BASEBOARD", progress:100, duration:"01:04:33", temp:71, fan:72, power:5.1, board:45, script:"v3.8.14 · Stopped", firmware:"B300 demo · Active", health:"Online", environment:"Normal", identity:"MISMATCH · DEMO", alerts:[{level:"error",text:"Demonstration baseboard identity mismatch requires technician review",time:"10:20:18"}], result:"FAILED" },
+  { id:"05", build:"b200", unit:"UMBRIEL-B200-005", status:"testing", floor:"testing", stage:"MEM", progress:29, duration:"00:19:21", temp:66, fan:62, power:4.8, board:43, script:"v3.8.14 · Running", firmware:"B200 demo · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" },
+  { id:"06", build:"b300", unit:"UMBRIEL-B300-006", status:"available", floor:"ready", stage:"Ready for test", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"B300 demo · Ready", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"READY" },
+  { id:"07", build:"vulcan", unit:"VULCAN-H200-007", status:"attention", floor:"partSwap", stage:"FLT — GPU ISOLATION", progress:100, duration:"00:42:08", temp:67, fan:66, power:5.0, board:44, script:"v3.8.14 · Paused", firmware:"v2.17 · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[{level:"warning",text:"Demonstration case awaiting technician-confirmed component swap",time:"10:18:02"}], result:"REPAIR" },
+  { id:"08", build:"b200", unit:"UMBRIEL-B200-008", status:"available", floor:"passed", stage:"Verification complete", progress:100, duration:"01:08:41", temp:0, fan:0, power:0, board:0, script:"Complete", firmware:"B200 demo · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"PASSED" },
+  { id:"09", build:"b300", unit:"UMBRIEL-B300-009", status:"testing", floor:"testing", stage:"DCC", progress:91, duration:"01:31:06", temp:65, fan:61, power:4.7, board:42, script:"v3.8.14 · Running", firmware:"B300 demo · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" },
+  { id:"10", build:"vulcan", unit:"VULCAN-H200-010", status:"testing", floor:"testing", stage:"INIT", progress:18, duration:"00:08:54", temp:61, fan:54, power:4.4, board:40, script:"v3.8.14 · Running", firmware:"v2.17 · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" },
+  { id:"11", build:"b200", unit:"UMBRIEL-B200-011", status:"available", floor:"ready", stage:"Ready for retest", progress:0, duration:"—", temp:0, fan:0, power:0, board:0, script:"Idle", firmware:"B200 demo · Ready", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RETEST READY" },
+  { id:"12", build:"b300", unit:"UMBRIEL-B300-012", status:"testing", floor:"testing", stage:"RIN", progress:38, duration:"00:22:49", temp:63, fan:58, power:4.6, board:41, script:"v3.8.14 · Running", firmware:"B300 demo · Active", health:"Online", environment:"Normal", identity:"MATCHED · DEMO", alerts:[], result:"RUNNING" }
 ];
+
 let virtualLabSelectedId = "03";
 let virtualLabMode = "room";
 let virtualLabTimer = null;
 let virtualLabTick = 0;
 const labStatusLabels = { testing:"TESTING", available:"AVAILABLE", attention:"ATTENTION", failed:"FAILED" };
+
+function getRepairIQBuild(station) {
+  return REPAIRIQ_BUILD_LIBRARY[station?.build] || REPAIRIQ_BUILD_LIBRARY.vulcan;
+}
+function getRepairIQFloorStatus(station) {
+  return REPAIRIQ_FLOOR_STATUS[station?.floor] || REPAIRIQ_FLOOR_STATUS.testing;
+}
 
 function initializeVirtualTestLab() {
   const root = $("#tester-lab-view");
@@ -7775,39 +7862,67 @@ function renderVirtualLab() {
   const grid = $("#lab-tester-grid");
   const list = $("#lab-tester-list");
   if (!room || !grid || !list) return;
-  const getStationMarkup = station => ({
-    selected: station.id === virtualLabSelectedId,
-    stateLabel: labStatusLabels[station.status] || "UNKNOWN",
-    temp: station.temp ? `${station.temp}°C` : "—",
-    progress: station.progress || 0,
-    unit: station.unit === "—" ? "NO UNIT" : station.unit
-  });
+
+  const getStationMarkup = station => {
+    const build = getRepairIQBuild(station);
+    const floor = getRepairIQFloorStatus(station);
+    return {
+      selected: station.id === virtualLabSelectedId,
+      stateLabel: labStatusLabels[station.status] || "UNKNOWN",
+      temp: station.temp ? `${station.temp}°C` : "—",
+      progress: station.progress || 0,
+      unit: station.unit === "—" ? "NO UNIT" : station.unit,
+      build,
+      floor
+    };
+  };
+
   room.innerHTML = VIRTUAL_LAB_STATIONS.map(station => {
     const v = getStationMarkup(station);
-    return `<button class="lab-rack ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}" aria-label="Tester ${station.id}, ${v.stateLabel}, ${escapeHtml(station.unit)}">
-      <span class="lab-rack-name">TESTER ${station.id}</span><span class="lab-rack-state">${v.stateLabel}</span>
-      <span class="lab-rack-unit">${station.unit === "—" ? `<span class="lab-rack-placeholder">READY</span>` : `<img src="assets/vulcan-hgx-demo.png" alt="" loading="lazy">`}<span>${escapeHtml(v.unit)}</span></span>
+    return `<button class="lab-rack ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}" aria-label="Tester ${station.id}, ${v.build.label}, ${v.stateLabel}, ${escapeHtml(station.unit)}">
+      <span class="lab-rack-name">TESTER ${station.id}</span>
+      <span class="lab-rack-build">${escapeHtml(v.build.label)}</span>
+      <span class="lab-rack-state">${v.stateLabel}</span>
+      <span class="lab-rack-unit"><img src="${v.build.image}" alt="" loading="lazy"><span>${escapeHtml(v.unit)}</span></span>
       <span class="lab-rack-progress"><i style="width:${v.progress}%"></i></span>
       <span class="lab-rack-meta"><span>${escapeHtml(station.stage)}</span><b>${v.temp}</b></span>
+      <span class="lab-rack-cone" title="${escapeHtml(v.floor.label)}">${v.floor.icon}</span>
     </button>`;
   }).join("");
+
   grid.innerHTML = VIRTUAL_LAB_STATIONS.map(station => {
     const v = getStationMarkup(station);
-    return `<button class="lab-grid-card ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}"><strong>TESTER ${station.id}</strong><span>${escapeHtml(station.unit)} · ${escapeHtml(station.stage)}</span><b>${v.stateLabel} · ${v.progress}% · ${v.temp}</b></button>`;
+    return `<button class="lab-grid-card ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}">
+      <strong>TESTER ${station.id} · ${escapeHtml(v.build.label)}</strong>
+      <span>${escapeHtml(station.unit)} · ${escapeHtml(station.stage)}</span>
+      <b>${v.floor.icon} ${escapeHtml(v.floor.label)} · ${v.progress}% · ${v.temp}</b>
+    </button>`;
   }).join("");
-  list.innerHTML = VIRTUAL_LAB_STATIONS.map(station => `<tr data-lab-station="${station.id}" tabindex="0" role="button" aria-label="View tester ${station.id}"><td>TESTER ${station.id}</td><td>${escapeHtml(station.unit)}</td><td><span class="lab-state-pill ${station.status}">${labStatusLabels[station.status]}</span></td><td>${escapeHtml(station.stage)}</td><td>${station.progress}%</td><td>${station.temp ? `${station.temp}°C` : "—"}</td></tr>`).join("");
+
+  list.innerHTML = VIRTUAL_LAB_STATIONS.map(station => {
+    const build = getRepairIQBuild(station);
+    const floor = getRepairIQFloorStatus(station);
+    return `<tr data-lab-station="${station.id}" tabindex="0" role="button" aria-label="View tester ${station.id}">
+      <td>TESTER ${station.id}</td><td>${escapeHtml(station.unit)} · ${escapeHtml(build.label)}</td>
+      <td><span class="lab-state-pill ${station.status}">${labStatusLabels[station.status]}</span></td>
+      <td>${floor.icon} ${escapeHtml(station.stage)}</td><td>${station.progress}%</td><td>${station.temp ? `${station.temp}°C` : "—"}</td>
+    </tr>`;
+  }).join("");
+
   const totals = VIRTUAL_LAB_STATIONS.reduce((acc, station) => { acc[station.status] = (acc[station.status] || 0) + 1; return acc; }, {});
   setText("#lab-total-testers", String(VIRTUAL_LAB_STATIONS.length));
   setText("#lab-testing-count", String(totals.testing || 0));
   setText("#lab-available-count", String(totals.available || 0));
   setText("#lab-attention-count", String(totals.attention || 0));
   setText("#lab-failed-count", String(totals.failed || 0));
+
   const selected = VIRTUAL_LAB_STATIONS.find(station => station.id === virtualLabSelectedId) || VIRTUAL_LAB_STATIONS[0];
   renderVirtualLabDetail(selected);
   renderVirtualLabEvents();
+
   const now = new Date();
   setText("#lab-last-update", `DEMO DATA · LOCAL REFRESH ${now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}`);
-  const insight = state.knowledgeOutput?.pattern?.summary || "Run a case analysis to have R.E.X. summarize structured prototype evidence here.";
+  const insight = state.knowledgeOutput?.pattern?.summary || "Select a station or run a case analysis. R.E.X. remains evidence-led and technician-controlled.";
   setText("#lab-rex-insight-text", insight);
   setVirtualLabMode(virtualLabMode);
 }
@@ -7816,12 +7931,12 @@ function renderVirtualLabEvents() {
   const list = $("#lab-event-list");
   if (!list) return;
   const events = [
-    {time:"10:26:14",kind:"warning",station:"TESTER 03",text:"GPU2 temperature crossed the illustrative review threshold during INIT."},
-    {time:"10:25:03",kind:"error",station:"TESTER 03",text:"HMC BIST failure signal recorded in the synthetic session log."},
-    {time:"10:20:18",kind:"error",station:"TESTER 04",text:"INIT stage marked failed; simulated run stopped for technician review."},
-    {time:"10:16:47",kind:"good",station:"TESTER 08",text:"Firmware compatibility check completed in demo data."},
-    {time:"10:14:32",kind:"good",station:"TESTER 12",text:"Test script v3.8.14 started for the illustrative RIN stage."},
-    {time:"10:03:00",kind:"good",station:"TESTER 03",text:"Demo session started; pre-test environment marked normal."}
+    {time:"10:26:14",kind:"warning",station:"TESTER 03",text:"Vulcan H200 GPU2 review signal recorded; red-cone SWAP state demonstrated."},
+    {time:"10:20:18",kind:"error",station:"TESTER 04",text:"Umbriel B300 identity/baseboard mismatch demo moved to baseboard-review state."},
+    {time:"10:18:02",kind:"warning",station:"TESTER 07",text:"Vulcan H200 component isolation demo awaiting technician-confirmed swap."},
+    {time:"10:16:47",kind:"good",station:"TESTER 08",text:"Umbriel B200 verification completed; green-cone / Label state demonstrated."},
+    {time:"10:14:32",kind:"good",station:"TESTER 11",text:"Umbriel B200 repair cycle returned to orange-cone retest-ready state."},
+    {time:"10:03:00",kind:"good",station:"TESTER 09",text:"Umbriel B300 demo session started; pre-test environment marked normal."}
   ];
   list.innerHTML = events.map(event => `<div class="lab-event-item ${event.kind}"><time class="lab-event-time">${event.time}</time><i class="lab-event-marker" aria-hidden="true"></i><span><strong>${event.station}</strong> · ${escapeHtml(event.text)}</span><span class="lab-event-source">SYNTHETIC</span></div>`).join("");
 }
@@ -7829,15 +7944,34 @@ function renderVirtualLabEvents() {
 function renderVirtualLabDetail(station) {
   if (!station) return;
   const statusLabel = labStatusLabels[station.status] || "UNKNOWN";
+  const build = getRepairIQBuild(station);
+  const floor = getRepairIQFloorStatus(station);
+
   setText("#lab-detail-title", `TESTER ${station.id}`);
   const pill = $("#lab-detail-state");
   if (pill) { pill.textContent = statusLabel; pill.className = `lab-state-pill ${station.status}`; }
+
+  const unitImage = $("#lab-unit-image");
+  if (unitImage) {
+    unitImage.src = build.image;
+    unitImage.alt = `${build.label} demonstration unit visual; illustrative image, not a CAD model`;
+  }
+  setText("#lab-unit-build-label", `${build.label} · DEMO VISUAL`);
+  setText("#lab-build-name", build.label);
+  setText("#lab-identity-state", station.identity || "UNVERIFIED · DEMO");
+
+  const floorCard = $("#lab-floor-status");
+  if (floorCard) floorCard.dataset.cone = floor.cone;
+  setText("#lab-cone-label", floor.label);
+  setText("#lab-cone-next", floor.next);
+
   setText("#lab-unit-id", station.unit);
   setText("#lab-tester-id", `SXM-TEST-${station.id}`);
   setText("#lab-current-stage", station.stage);
   setText("#lab-session-duration", station.duration);
   setText("#lab-progress-label", `${station.progress}%`);
   const progress = $("#lab-progress-bar"); if (progress) progress.style.width = `${station.progress}%`;
+
   setText("#lab-gpu-temp", station.temp ? `${station.temp}°C` : "—");
   setText("#lab-fan-speed", station.fan ? `${station.fan}%` : "—");
   setText("#lab-power-draw", station.power ? `${station.power.toFixed(1)} kW` : "—");
@@ -7845,20 +7979,40 @@ function renderVirtualLabDetail(station) {
   setText("#lab-telemetry-temp", station.temp ? `${station.temp}°C` : "—");
   setText("#lab-telemetry-power", station.power ? `${station.power.toFixed(1)} kW` : "—");
   setText("#lab-telemetry-fan", station.fan ? `${station.fan}%` : "—");
+
   setText("#lab-script-version", station.script);
   setText("#lab-firmware-version", station.firmware);
   setText("#lab-tester-health", station.health);
   setText("#lab-tester-environment", station.environment);
   setText("#lab-alert-count", String(station.alerts.length));
+
   const alerts = $("#lab-selected-alerts");
-  if (alerts) alerts.innerHTML = station.alerts.length ? station.alerts.map(alert => `<div class="lab-alert-item ${alert.level === "warning" ? "warning" : ""}"><i aria-hidden="true"></i><span>${escapeHtml(alert.text)}</span><time>${escapeHtml(alert.time)}</time></div>`).join("") : `<div class="lab-alert-item warning"><i aria-hidden="true"></i><span>No active alerts in this demo session.</span></div>`;
+  if (alerts) alerts.innerHTML = station.alerts.length
+    ? station.alerts.map(alert => `<div class="lab-alert-item ${alert.level === "warning" ? "warning" : ""}"><i aria-hidden="true"></i><span>${escapeHtml(alert.text)}</span><time>${escapeHtml(alert.time)}</time></div>`).join("")
+    : `<div class="lab-alert-item warning"><i aria-hidden="true"></i><span>No active alerts in this demo session.</span></div>`;
+
   const logs = $("#lab-selected-log");
   if (logs) {
-    const entries = station.alerts.length ? station.alerts : [{level:"good",time:"10:12:08",text:"Tester heartbeat nominal · demo event"},{level:"good",time:"10:12:11",text:`${station.stage} test stage ${station.result.toLowerCase()} · demo event`},{level:"warning",time:"10:12:15",text:"Script and firmware labels are synthetic interface values."}];
+    const entries = station.alerts.length ? station.alerts : [
+      {level:"good",time:"10:12:08",text:`${build.label} tester heartbeat nominal · demo event`},
+      {level:"good",time:"10:12:11",text:`${station.stage} test stage ${station.result.toLowerCase()} · demo event`},
+      {level:"warning",time:"10:12:15",text:"Script, firmware, identity, cone and telemetry values are synthetic interface data."}
+    ];
     logs.innerHTML = entries.map(item => `<div class="lab-log-line ${item.level === "warning" ? "warning" : item.level === "error" ? "error" : ""}"><time>${escapeHtml(item.time)} · DEMO SOURCE</time>${escapeHtml(item.text)}</div>`).join("");
   }
+
   const environment = $("#lab-environment-detail");
-  if (environment) environment.innerHTML = [["Tester health",station.health],["Room condition",station.environment],["Script",station.script],["Firmware",station.firmware],["Data source","Synthetic demonstration values"]].map(([name,value])=>`<div><span>${escapeHtml(name)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
+  if (environment) environment.innerHTML = [
+    ["Build",build.label],
+    ["Knowledge module",build.module],
+    ["Identity state",station.identity || "UNVERIFIED · DEMO"],
+    ["Floor status",floor.label],
+    ["Tester health",station.health],
+    ["Room condition",station.environment],
+    ["Script",station.script],
+    ["Firmware",station.firmware],
+    ["Data source","Synthetic demonstration values"]
+  ].map(([name,value])=>`<div><span>${escapeHtml(name)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
 }
 
 function selectVirtualLabStation(id) {
@@ -7899,6 +8053,7 @@ function toggleVirtualLabMonitoring() {
   const root = $("#tester-lab-view");
   const button = $("#lab-monitor-toggle");
   if (!root || !button) return;
+
   if (virtualLabTimer) {
     clearInterval(virtualLabTimer);
     virtualLabTimer = null;
@@ -7907,9 +8062,11 @@ function toggleVirtualLabMonitoring() {
     showToast("Demo monitoring paused. No hardware connection was active.");
     return;
   }
+
   root.dataset.monitoring = "on";
   button.textContent = "Pause Demo Monitoring";
-  showToast("Local demo monitoring started. All values remain simulated.");
+  showToast("Local multi-build demo monitoring started. All values remain simulated.");
+
   virtualLabTimer = window.setInterval(() => {
     virtualLabTick += 1;
     for (const station of VIRTUAL_LAB_STATIONS) {
@@ -7922,6 +8079,7 @@ function toggleVirtualLabMonitoring() {
     renderVirtualLab();
   }, 2200);
 }
+
 
 
 /* ================================================================
@@ -8119,3 +8277,97 @@ function initializeAnalyzerWorkstation() {
    authentication/authorization, security review, data governance,
    observability, testing, and operational approval.
 ================================================================ */
+
+/* ================================================================
+   54. REPAIR FLOOR DIGITAL TWIN — OFFLINE DEMONSTRATION
+   ---------------------------------------------------------------
+   Independent from the Virtual Test Lab. This module never rewrites
+   VIRTUAL_LAB_STATIONS or renderVirtualLab(). Floor records, traveler
+   scans, positions and cone states are synthetic demonstration data.
+   ================================================================ */
+const REPAIR_FLOOR_SEED_UNITS = [
+  {id:"RF-01",bay:"A01",build:"vulcan",unit:"VULCAN-H200-021",traveler:"TRV-2026-0927-001",system:"SYS-H200-021",board:"BB-H200-021",status:"ready",tester:"—",caseId:"—",history:[["07:42","Build complete"],["07:48","Orange cone · ready for test"]]},
+  {id:"RF-02",bay:"A05",build:"b300",unit:"UMBRIEL-B300-012",traveler:"TRV-2026-0927-002",system:"SYS-B300-012",board:"BB-B300-012",status:"failed",tester:"TESTER 03",caseId:"CASE-0927-012",history:[["08:11","Returned from TESTER 03"],["08:13","Red cone · SWAP troubleshooting"]]},
+  {id:"RF-03",bay:"A11",build:"b200",unit:"UMBRIEL-B200-008",traveler:"TRV-2026-0927-003",system:"SYS-B200-008",board:"BB-B200-008",status:"swap",tester:"TESTER 07",caseId:"CASE-0927-008",history:[["08:22","Failure isolated"],["08:31","Blue cone · component swap required"]]},
+  {id:"RF-04",bay:"A16",build:"vulcan",unit:"VULCAN-H200-017",traveler:"TRV-2026-0927-004",system:"SYS-H200-017",board:"BB-H200-017",status:"baseboard",tester:"TESTER 10",caseId:"CASE-0927-017",history:[["08:36","SWAP isolation completed"],["08:44","Baseboard swap disposition confirmed"]]},
+  {id:"RF-05",bay:"A21",build:"b300",unit:"UMBRIEL-B300-006",traveler:"TRV-2026-0927-005",system:"SYS-B300-006",board:"BB-B300-006",status:"passed",tester:"TESTER 02",caseId:"CASE-0927-006",history:[["09:04","Retest passed"],["09:07","Green cone · ready for Label"]]},
+  {id:"RF-06",bay:"A26",build:"b200",unit:"UMBRIEL-B200-014",traveler:"TRV-2026-0927-006",system:"SYS-B200-014",board:"BB-B200-014",status:"ready",tester:"TESTER 06",caseId:"CASE-0927-014",history:[["09:16","GPU swap completed"],["09:20","Orange cone · ready for retest"]]},
+  {id:"RF-07",bay:"A31",build:"vulcan",unit:"VULCAN-H200-025",traveler:"TRV-2026-0927-007",system:"SYS-H200-025",board:"BB-H200-025",status:"failed",tester:"TESTER 11",caseId:"CASE-0927-025",history:[["09:27","Test failed"],["09:29","Red cone · awaiting SWAP"]]},
+  {id:"RF-08",bay:"A35",build:"b300",unit:"UMBRIEL-B300-019",traveler:"TRV-2026-0927-008",system:"SYS-B300-019",board:"BB-B300-019",status:"passed",tester:"TESTER 05",caseId:"CASE-0927-019",history:[["09:42","Verification passed"],["09:44","Green cone · ready for Label"]]}
+];
+let REPAIR_FLOOR_UNITS = REPAIR_FLOOR_SEED_UNITS.map(unit=>({...unit,history:unit.history.map(event=>[...event])}));
+const REPAIR_FLOOR_STATUS = Object.freeze({
+  ready:{cone:"orange",label:"ORANGE · READY FOR TEST / RETEST",next:"Move the unit to the Test Room when the tester is ready."},
+  failed:{cone:"red",label:"RED · SWAP TROUBLESHOOTING",next:"SWAP troubleshooting is required before a replacement disposition."},
+  swap:{cone:"blue",label:"BLUE · COMPONENT SWAP REQUIRED",next:"Technician-confirmed component replacement is required; return to orange after repair."},
+  baseboard:{cone:"baseboard",label:"RED + BLUE DISK · BASEBOARD SWAP",next:"Baseboard replacement disposition is recorded; return to orange after repair."},
+  passed:{cone:"green",label:"GREEN · PASS / READY FOR LABEL",next:"Final floor stage: send the verified unit to Label."}
+});
+const REPAIR_FLOOR_CAPACITY = 36;
+let repairFloorSelectedId = "RF-02";
+let repairFloorScannedId = null;
+let repairFloorPendingRecord = null;
+function repairFloorUnit(id){return REPAIR_FLOOR_UNITS.find(unit=>unit.id===id)||REPAIR_FLOOR_UNITS[0]||null;}
+function repairFloorBuild(unit){return REPAIRIQ_BUILD_LIBRARY[unit?.build]||REPAIRIQ_BUILD_LIBRARY.vulcan;}
+function repairFloorStatus(unit){return REPAIR_FLOOR_STATUS[unit?.status]||REPAIR_FLOOR_STATUS.ready;}
+function repairFloorSlotLabel(n){return `A${String(n).padStart(2,"0")}`;}
+function repairFloorRackMeta(n){const rack=Math.floor((n-1)/9)+1,row=Math.floor(((n-1)%9)/3),position=((n-1)%3)+1;return {rack,row:["TOP","MIDDLE","BOTTOM"][row],position};}
+function renderRepairFloorSlot(n){
+  const bay=repairFloorSlotLabel(n),unit=REPAIR_FLOOR_UNITS.find(item=>item.bay===bay),meta=repairFloorRackMeta(n);
+  if(!unit)return `<button class="floor-slot empty" type="button" data-floor-empty="${bay}" aria-label="${bay}, empty rack position"><span class="floor-slot-id">${bay}</span><span class="floor-slot-empty">OPEN</span></button>`;
+  const build=repairFloorBuild(unit),status=repairFloorStatus(unit);
+  return `<button class="floor-slot occupied ${unit.id===repairFloorSelectedId?"selected":""}" type="button" data-floor-unit="${unit.id}" data-cone="${status.cone}" aria-label="${bay}, ${build.label}, ${status.label}"><span class="floor-slot-id">${bay}</span><span class="floor-slot-hardware"><img src="${build.image}" alt="" aria-hidden="true"><i class="floor-mini-cone"></i><i class="floor-mini-disk"></i></span><span class="floor-slot-unit">${escapeHtml(unit.unit)}</span><span class="floor-slot-build">${build.platform}</span></button>`;
+}
+function renderRepairFloor(){
+  const layer=$("#floor-unit-layer");if(!layer)return;
+  let html="";
+  for(let rack=1;rack<=4;rack++){
+    const start=(rack-1)*9+1,end=start+8,side=rack<=2?"FRONT":"BACK";
+    html+=`<section class="floor-rack-block" data-rack="${rack}"><header><span>${side}</span><strong>RACK A${rack}</strong><small>${repairFloorSlotLabel(start)}–${repairFloorSlotLabel(end)} · 9 UNITS</small></header><div class="floor-rack-slots">`;
+    for(let n=start;n<=end;n++)html+=renderRepairFloorSlot(n);
+    html+=`</div></section>`;
+  }
+  layer.innerHTML=html;
+  const counts={ready:0,failed:0,swap:0,baseboard:0,passed:0};REPAIR_FLOOR_UNITS.forEach(u=>counts[u.status]++);
+  setText("#floor-total-count",REPAIR_FLOOR_UNITS.length);setText("#floor-capacity-count",`${REPAIR_FLOOR_UNITS.length} / ${REPAIR_FLOOR_CAPACITY}`);setText("#floor-orange-count",counts.ready);setText("#floor-red-count",counts.failed);setText("#floor-blue-count",counts.swap);setText("#floor-baseboard-count",counts.baseboard);setText("#floor-green-count",counts.passed);
+  renderRepairFloorDetail();
+}
+function renderRepairFloorDetail(){
+  const unit=repairFloorUnit(repairFloorSelectedId);if(!unit)return;const build=repairFloorBuild(unit),status=repairFloorStatus(unit);
+  setText("#floor-detail-title",`${unit.bay} · ${unit.unit}`);setText("#floor-detail-status",status.label);setText("#floor-detail-bay",unit.bay);setText("#floor-detail-build",build.label);setText("#floor-detail-unit",unit.unit);setText("#floor-detail-traveler",unit.traveler);setText("#floor-detail-tester",unit.tester);setText("#floor-detail-case",unit.caseId);setText("#floor-detail-status-label",status.label);setText("#floor-detail-next",status.next);
+  const img=$("#floor-detail-image");if(img){img.src=build.image;img.alt=`${build.label} demonstration unit`;}const cone=$("#floor-selected-cone");if(cone)cone.dataset.cone=status.cone;
+  const history=$("#floor-history-list");if(history)history.innerHTML=unit.history.map(([time,event])=>`<div class="floor-history-item"><time>${time}</time><span>${escapeHtml(event)}</span></div>`).join("");setText("#floor-history-count",`${unit.history.length} events`);
+}
+function selectRepairFloorUnit(id,scroll=false){repairFloorSelectedId=id;renderRepairFloor();if(scroll)$("#repair-floor-view")?.scrollIntoView({behavior:"smooth",block:"start"});}
+function openRepairFloorScan(){const modal=$("#floor-scan-modal");if(!modal)return;modal.hidden=false;$("#floor-traveler-input")?.focus();}
+function closeRepairFloorScan(){const modal=$("#floor-scan-modal");if(modal)modal.hidden=true;}
+function loadRepairFloorTraveler(value){
+  const key=String(value||$("#floor-traveler-input")?.value||"").trim().toUpperCase();let unit=REPAIR_FLOOR_UNITS.find(u=>u.traveler.toUpperCase()===key||u.unit.toUpperCase()===key);
+  if(!unit){const demo=REPAIR_FLOOR_SEED_UNITS.find(u=>u.traveler.toUpperCase()===key||u.unit.toUpperCase()===key);if(demo)unit=demo;}
+  const result=$("#floor-scan-result");if(!unit){if(result)result.hidden=true;showToast?.("Demo traveler not found.","warning");return;}
+  repairFloorScannedId=REPAIR_FLOOR_UNITS.find(u=>u.id===unit.id)?.id||null;repairFloorPendingRecord={...unit,history:(unit.history||[]).map(e=>[...e])};const build=repairFloorBuild(unit),status=repairFloorStatus(unit);if(result)result.hidden=false;
+  setText("#floor-scan-result-unit",unit.unit);setText("#floor-scan-result-build",build.label);setText("#floor-scan-result-bay",repairFloorScannedId?unit.bay:"NOT STAGED");setText("#floor-scan-result-system",unit.system);setText("#floor-scan-result-board",unit.board);setText("#floor-scan-result-status",repairFloorScannedId?status.label:"INTAKE READY");setText("#floor-scan-result-identity","DEMO RECORD · MATCHED");
+}
+function stageScannedUnit(){
+  if(!repairFloorPendingRecord)return showToast?.("Load a traveler first.","warning");
+  let existing=REPAIR_FLOOR_UNITS.find(u=>u.id===repairFloorPendingRecord.id||u.traveler===repairFloorPendingRecord.traveler);if(existing){repairFloorScannedId=existing.id;closeRepairFloorScan();selectRepairFloorUnit(existing.id,true);return;}
+  const open=Array.from({length:REPAIR_FLOOR_CAPACITY},(_,i)=>repairFloorSlotLabel(i+1)).find(bay=>!REPAIR_FLOOR_UNITS.some(u=>u.bay===bay));if(!open)return showToast?.("Section A is full. No open rack positions.","warning");
+  const now=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});const record={...repairFloorPendingRecord,bay:open,status:"ready",tester:"—",caseId:"—",history:[...(repairFloorPendingRecord.history||[]),[now,`Traveler scanned · staged at ${open}`],[now,"Orange cone · ready for test"]]};
+  REPAIR_FLOOR_UNITS.push(record);repairFloorScannedId=record.id;repairFloorSelectedId=record.id;renderRepairFloor();closeRepairFloorScan();showToast?.(`${record.unit} staged at ${open}.`,"success");
+}
+function sendScannedUnitToTester(){
+  if(!repairFloorPendingRecord)return showToast?.("Load a traveler first.","warning");
+  const existingIndex=REPAIR_FLOOR_UNITS.findIndex(u=>u.id===repairFloorPendingRecord.id||u.traveler===repairFloorPendingRecord.traveler);if(existingIndex>=0)REPAIR_FLOOR_UNITS.splice(existingIndex,1);
+  renderRepairFloor();closeRepairFloorScan();setActiveView("tester-lab");showToast?.(`${repairFloorPendingRecord.unit} routed to Virtual Test Lab intake.`,"success");
+}
+function initializeRepairFloor(){
+  const root=$("#repair-floor-view");if(!root)return;
+  root.addEventListener("click",event=>{const unit=event.target.closest("[data-floor-unit]");if(unit){selectRepairFloorUnit(unit.dataset.floorUnit);return;}const empty=event.target.closest("[data-floor-empty]");if(empty)showToast?.(`${empty.dataset.floorEmpty} is available for staging.`,"info");});
+  addListener("#floor-scan-traveler","click",openRepairFloorScan);addListener("#floor-reset-demo","click",()=>{REPAIR_FLOOR_UNITS=REPAIR_FLOOR_SEED_UNITS.map(unit=>({...unit,history:unit.history.map(e=>[...e])}));repairFloorSelectedId="RF-02";renderRepairFloor();});
+  document.querySelectorAll("[data-floor-scan-close]").forEach(el=>el.addEventListener("click",closeRepairFloorScan));addListener("#floor-load-traveler","click",()=>loadRepairFloorTraveler());$("#floor-traveler-input")?.addEventListener("keydown",event=>{if(event.key==="Enter")loadRepairFloorTraveler();});
+  addListener("#floor-stage-unit","click",stageScannedUnit);addListener("#floor-send-tester","click",sendScannedUnitToTester);addListener("#floor-go-to-unit","click",()=>{if(repairFloorScannedId){closeRepairFloorScan();selectRepairFloorUnit(repairFloorScannedId,true);}else showToast?.("This traveler is not currently staged on the floor.","info");});
+  addListener("#floor-open-passport","click",()=>{setActiveView("analyzer");window.setTimeout(()=>document.querySelector('[data-analyzer-tab="case"]')?.click(),50);});addListener("#floor-open-analyzer","click",()=>setActiveView("analyzer"));
+  const demos=$("#floor-demo-traveler-buttons");if(demos){demos.innerHTML=REPAIR_FLOOR_SEED_UNITS.slice(0,5).map(u=>`<button type="button" data-demo-traveler="${u.traveler}">${u.traveler}</button>`).join("");demos.addEventListener("click",e=>{const b=e.target.closest("[data-demo-traveler]");if(!b)return;const input=$("#floor-traveler-input");if(input)input.value=b.dataset.demoTraveler;loadRepairFloorTraveler(b.dataset.demoTraveler);});}
+  renderRepairFloor();
+}
+document.addEventListener("DOMContentLoaded",initializeRepairFloor);
