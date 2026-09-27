@@ -7886,7 +7886,6 @@ function renderVirtualLab() {
       <span class="lab-rack-unit"><img src="${v.build.image}" alt="" loading="lazy"><span>${escapeHtml(v.unit)}</span></span>
       <span class="lab-rack-progress"><i style="width:${v.progress}%"></i></span>
       <span class="lab-rack-meta"><span>${escapeHtml(station.stage)}</span><b>${v.temp}</b></span>
-      <span class="lab-rack-cone" title="${escapeHtml(v.floor.label)}">${v.floor.icon}</span>
     </button>`;
   }).join("");
 
@@ -7895,7 +7894,7 @@ function renderVirtualLab() {
     return `<button class="lab-grid-card ${v.selected ? "selected" : ""}" type="button" data-lab-station="${station.id}" data-status="${station.status}" aria-pressed="${v.selected}">
       <strong>TESTER ${station.id} · ${escapeHtml(v.build.label)}</strong>
       <span>${escapeHtml(station.unit)} · ${escapeHtml(station.stage)}</span>
-      <b>${v.floor.icon} ${escapeHtml(v.floor.label)} · ${v.progress}% · ${v.temp}</b>
+      <b>${v.stateLabel} · ${v.progress}% · ${v.temp}</b>
     </button>`;
   }).join("");
 
@@ -7905,7 +7904,7 @@ function renderVirtualLab() {
     return `<tr data-lab-station="${station.id}" tabindex="0" role="button" aria-label="View tester ${station.id}">
       <td>TESTER ${station.id}</td><td>${escapeHtml(station.unit)} · ${escapeHtml(build.label)}</td>
       <td><span class="lab-state-pill ${station.status}">${labStatusLabels[station.status]}</span></td>
-      <td>${floor.icon} ${escapeHtml(station.stage)}</td><td>${station.progress}%</td><td>${station.temp ? `${station.temp}°C` : "—"}</td>
+      <td>${escapeHtml(station.stage)}</td><td>${station.progress}%</td><td>${station.temp ? `${station.temp}°C` : "—"}</td>
     </tr>`;
   }).join("");
 
@@ -7931,14 +7930,63 @@ function renderVirtualLabEvents() {
   const list = $("#lab-event-list");
   if (!list) return;
   const events = [
-    {time:"10:26:14",kind:"warning",station:"TESTER 03",text:"Vulcan H200 GPU2 review signal recorded; red-cone SWAP state demonstrated."},
+    {time:"10:26:14",kind:"warning",station:"TESTER 03",text:"Vulcan H200 GPU2 review signal recorded; post-test disposition remains pending evidence review."},
     {time:"10:20:18",kind:"error",station:"TESTER 04",text:"Umbriel B300 identity/baseboard mismatch demo moved to baseboard-review state."},
     {time:"10:18:02",kind:"warning",station:"TESTER 07",text:"Vulcan H200 component isolation demo awaiting technician-confirmed swap."},
-    {time:"10:16:47",kind:"good",station:"TESTER 08",text:"Umbriel B200 verification completed; green-cone / Label state demonstrated."},
-    {time:"10:14:32",kind:"good",station:"TESTER 11",text:"Umbriel B200 repair cycle returned to orange-cone retest-ready state."},
+    {time:"10:16:47",kind:"good",station:"TESTER 08",text:"Umbriel B200 verification completed; post-test PASS disposition available for technician confirmation."},
+    {time:"10:14:32",kind:"good",station:"TESTER 11",text:"Umbriel B200 repair cycle returned to retest-ready state."},
     {time:"10:03:00",kind:"good",station:"TESTER 09",text:"Umbriel B300 demo session started; pre-test environment marked normal."}
   ];
   list.innerHTML = events.map(event => `<div class="lab-event-item ${event.kind}"><time class="lab-event-time">${event.time}</time><i class="lab-event-marker" aria-hidden="true"></i><span><strong>${event.station}</strong> · ${escapeHtml(event.text)}</span><span class="lab-event-source">SYNTHETIC</span></div>`).join("");
+}
+
+function getVirtualLabDispositionRecommendation(station) {
+  if (!station) return {state:"pending",title:"Awaiting station evidence",confidence:"PENDING",reason:"Select a tester to review its current evidence.",cone:null};
+
+  /*
+    Cone recommendations are deliberately POST-TEST intelligence.
+    Active tester cards never display physical cone colors. RepairIQ only
+    recommends a cone when the synthetic result/evidence supports a clear
+    floor disposition, and the technician must still confirm it.
+  */
+  if (station.status === "testing" || (station.progress < 100 && station.status === "attention")) {
+    return {state:"pending",title:"No cone recommendation during active testing",confidence:"PENDING",reason:"Testing or evidence review is still in progress. RepairIQ will not predict a physical floor status early.",cone:null};
+  }
+  if (station.status === "available" && station.result === "READY") {
+    return {state:"pending",title:"Unit is waiting for a test session",confidence:"N/A",reason:"This unit has no completed post-test result requiring a new cone recommendation.",cone:null};
+  }
+  if (station.status === "available" && station.result === "RETEST READY") {
+    return {state:"ready",title:"Repair complete · retest required",confidence:"CONFIRMED WORKFLOW",reason:"The repair cycle is complete and the unit is ready to return to testing.",cone:{icon:"🟠",label:"ORANGE CONE · READY FOR RETEST"}};
+  }
+  if (station.status === "available" && station.result === "PASSED") {
+    return {state:"passed",title:"Verification passed",confidence:"HIGH",reason:"The completed demonstration result supports release from testing to the Label workflow.",cone:{icon:"🟢",label:"GREEN CONE · PASS / READY FOR LABEL"}};
+  }
+  if (station.result === "REPAIR" && station.floor === "partSwap") {
+    return {state:"swap",title:"Component isolation supports a swap action",confidence:"HIGH",reason:"The demonstration isolation path identifies a component-level repair action. Technician confirmation is required before the physical disposition changes.",cone:{icon:"🔵",label:"BLUE CONE · COMPONENT SWAP REQUIRED"}};
+  }
+  if (station.status === "failed" && station.floor === "baseboard") {
+    return {state:"review",title:"Identity/configuration evidence requires review",confidence:"REVIEW",reason:"The tester failed, but the demonstrated identity mismatch does not by itself prove a defective baseboard. Return for SWAP review before any baseboard replacement disposition.",cone:{icon:"🔴",label:"RED CONE · SWAP TROUBLESHOOTING"}};
+  }
+  if (station.status === "failed") {
+    return {state:"failed",title:"Test failed · SWAP troubleshooting required",confidence:"HIGH",reason:"The completed test result supports returning the unit to the Repair Floor for technician troubleshooting.",cone:{icon:"🔴",label:"RED CONE · SWAP TROUBLESHOOTING"}};
+  }
+  return {state:"pending",title:"Cone disposition not yet determined",confidence:"PENDING",reason:"Additional evidence or technician isolation is required before RepairIQ can recommend a physical cone.",cone:null};
+}
+
+function renderVirtualLabDisposition(station) {
+  const panel = $("#lab-disposition-panel");
+  if (!panel) return;
+  const recommendation = getVirtualLabDispositionRecommendation(station);
+  panel.dataset.state = recommendation.state;
+  setText("#lab-disposition-title", recommendation.title);
+  setText("#lab-disposition-confidence", recommendation.confidence);
+  setText("#lab-disposition-reason", recommendation.reason);
+  const cone = $("#lab-disposition-cone");
+  if (cone) cone.hidden = !recommendation.cone;
+  if (recommendation.cone) {
+    setText("#lab-disposition-cone-icon", recommendation.cone.icon);
+    setText("#lab-disposition-cone-label", recommendation.cone.label);
+  }
 }
 
 function renderVirtualLabDetail(station) {
@@ -7946,6 +7994,7 @@ function renderVirtualLabDetail(station) {
   const statusLabel = labStatusLabels[station.status] || "UNKNOWN";
   const build = getRepairIQBuild(station);
   const floor = getRepairIQFloorStatus(station);
+  renderVirtualLabDisposition(station);
 
   setText("#lab-detail-title", `TESTER ${station.id}`);
   const pill = $("#lab-detail-state");
@@ -7959,11 +8008,6 @@ function renderVirtualLabDetail(station) {
   setText("#lab-unit-build-label", `${build.label} · DEMO VISUAL`);
   setText("#lab-build-name", build.label);
   setText("#lab-identity-state", station.identity || "UNVERIFIED · DEMO");
-
-  const floorCard = $("#lab-floor-status");
-  if (floorCard) floorCard.dataset.cone = floor.cone;
-  setText("#lab-cone-label", floor.label);
-  setText("#lab-cone-next", floor.next);
 
   setText("#lab-unit-id", station.unit);
   setText("#lab-tester-id", `SXM-TEST-${station.id}`);
@@ -7996,7 +8040,7 @@ function renderVirtualLabDetail(station) {
     const entries = station.alerts.length ? station.alerts : [
       {level:"good",time:"10:12:08",text:`${build.label} tester heartbeat nominal · demo event`},
       {level:"good",time:"10:12:11",text:`${station.stage} test stage ${station.result.toLowerCase()} · demo event`},
-      {level:"warning",time:"10:12:15",text:"Script, firmware, identity, cone and telemetry values are synthetic interface data."}
+      {level:"warning",time:"10:12:15",text:"Script, firmware, identity and telemetry values are synthetic interface data."}
     ];
     logs.innerHTML = entries.map(item => `<div class="lab-log-line ${item.level === "warning" ? "warning" : item.level === "error" ? "error" : ""}"><time>${escapeHtml(item.time)} · DEMO SOURCE</time>${escapeHtml(item.text)}</div>`).join("");
   }
@@ -8006,7 +8050,6 @@ function renderVirtualLabDetail(station) {
     ["Build",build.label],
     ["Knowledge module",build.module],
     ["Identity state",station.identity || "UNVERIFIED · DEMO"],
-    ["Floor status",floor.label],
     ["Tester health",station.health],
     ["Room condition",station.environment],
     ["Script",station.script],

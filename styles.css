@@ -12247,3 +12247,16 @@ pre {
 .floor-intake-choice{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0 7px}.floor-intake-choice+.secondary-button{width:100%}
 @media(max-width:980px){.floor-scene{min-height:820px}.floor-section-stage{left:3%;right:3%;top:14%}.floor-rack-grid{gap:10px}.floor-rack-slots{grid-template-rows:repeat(3,52px)}}
 @media(max-width:680px){.floor-scene{min-height:930px;background-size:auto 100%;background-position:center top}.floor-section-stage{top:15%;bottom:4%}.floor-rack-grid{grid-template-columns:1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:7px}.floor-rack-block:nth-child(n){transform:none}.floor-rack-slots{grid-template-rows:repeat(3,43px)}.floor-slot-hardware img{height:25px}.floor-section-title{flex-wrap:wrap;justify-content:center}.floor-intake-choice{grid-template-columns:1fr}}
+
+
+/* =========================================================
+   REPAIRIQ v1.0 — POST-TEST CONE DISPOSITION INTELLIGENCE
+   Physical cone colors are not shown on active tester cards.
+   A cone is recommended only after evidence supports a post-test
+   floor disposition, with technician confirmation required.
+========================================================= */
+#tester-lab-view .lab-rack-cone,
+#tester-lab-view .lab-cone-legend,
+#tester-lab-view .lab-floor-status { display:none !important; }
+.lab-disposition-panel{margin:12px 0;padding:12px;border:1px solid rgba(99,232,255,.18);border-radius:10px;background:linear-gradient(180deg,rgba(7,25,36,.92),rgba(3,14,22,.96));box-shadow:inset 0 0 24px rgba(99,232,255,.025)}
+.lab-disposition-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.lab-disposition-heading div>span,.lab-disposition-cone div>span{display:block;color:var(--cyan);font:800 7px var(--font-mono);letter-spacing:.1em}.lab-disposition-heading strong{display:block;margin-top:3px;color:var(--text);font-size:10px;line-height:1.35}.lab-disposition-confidence{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(99,232,255,.22);border-radius:999px;color:var(--cyan);font:800 7px var(--font-mono);letter-spacing:.06em}.lab-disposition-panel>p{margin:8px 0 0;color:var(--text-muted);font-size:8px;line-height:1.5}.lab-disposition-cone{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;margin-top:10px;padding:9px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.18)}.lab-disposition-cone[hidden]{display:none}.lab-disposition-cone-icon{font-size:22px;line-height:1;text-align:center}.lab-disposition-cone strong{display:block;margin-top:2px;color:var(--text);font:800 8px var(--font-mono);letter-spacing:.03em}.lab-disposition-panel>small{display:block;margin-top:8px;color:var(--text-dim);font-size:7px;line-height:1.45}.lab-disposition-panel[data-state="failed"],.lab-disposition-panel[data-state="review"]{border-color:rgba(255,95,117,.28)}.lab-disposition-panel[data-state="swap"]{border-color:rgba(77,157,255,.34)}.lab-disposition-panel[data-state="passed"]{border-color:rgba(79,226,162,.3)}.lab-disposition-panel[data-state="ready"]{border-color:rgba(255,180,92,.3)}
