@@ -12313,44 +12313,34 @@ pre {
 @media (prefers-reduced-motion:reduce) { #rexAvatarStage .rex-avatar-image,.rex-core-reactor span{animation:none!important} .rex-interactive-light{display:none} }
 
 /* =========================================================
-   REPAIRIQ v1.0 FINAL — VIRTUAL TEST LAB MOBILE ROOM FIX
-   2026-09-28
-
-   Purpose:
-   - Preserve the real Test Lab photograph on iPhone/iOS Safari.
-   - Keep the 3-column mobile tester layout.
-   - Prevent older mobile background-size rules from hiding/cropping
-     the room into an effectively dark backdrop.
-   - Leave Repair Floor behavior unchanged.
+   REPAIRIQ v1.0 FINAL — VIRTUAL TEST LAB ROOM BACKGROUND
+   FINAL AUTHORITY — DESKTOP + MOBILE
 
    Canonical asset:
    assets/testlab/repairiq-test-room.PNG
+
+   Architecture:
+   - #lab-main-stage owns the room photograph.
+   - .lab-room-scene is transparent and owns layout only.
+   - ::before supplies a restrained readability overlay/title.
+   - Tester cards remain above the room layer.
+   - No background-attachment: fixed.
+   - No mobile auto 100% background sizing.
+   - Repair Floor is intentionally untouched.
 ========================================================= */
 
 #tester-lab-view #lab-main-stage[data-view="room"] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background-color: #061018;
-  background-image: url("assets/testlab/repairiq-test-room.PNG");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  -webkit-background-size: cover;
-}
 
-#tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
-  position: relative;
-  z-index: 1;
-  isolation: isolate;
-
-  background-color: transparent !important;
+  background-color: #061018 !important;
   background-image:
     linear-gradient(
       180deg,
-      rgba(2, 10, 17, 0.06) 0%,
-      rgba(2, 10, 17, 0.12) 45%,
-      rgba(2, 10, 17, 0.46) 100%
+      rgba(2, 10, 17, 0.05) 0%,
+      rgba(2, 10, 17, 0.10) 48%,
+      rgba(2, 10, 17, 0.34) 100%
     ),
     url("assets/testlab/repairiq-test-room.PNG") !important;
 
@@ -12361,43 +12351,88 @@ pre {
   background-attachment: scroll, scroll !important;
 }
 
-/* Keep the cinematic header treatment readable without masking the room. */
+#tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  min-height: 520px;
+  padding: 82px 22px 28px;
+  overflow: hidden;
+
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  border: 1px solid rgba(99, 232, 255, 0.18);
+  border-radius: 10px;
+
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.16),
+    inset 0 -70px 80px rgba(1, 8, 13, 0.24),
+    0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
 #tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: auto;
+  padding: 16px 18px;
+
+  content: "TEST OPERATIONS ROOM · 12 DEMO STATIONS";
+
+  color: rgba(183, 239, 250, 0.88);
+  font-family: var(--mono, "SFMono-Regular", Consolas, "Liberation Mono", monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+
   background:
     linear-gradient(
       180deg,
-      rgba(2, 10, 17, 0.62) 0,
-      rgba(2, 10, 17, 0.18) 58px,
+      rgba(2, 10, 17, 0.52) 0,
+      rgba(2, 10, 17, 0.12) 58px,
       transparent 126px
     ),
     linear-gradient(
       90deg,
-      rgba(2, 10, 17, 0.16),
-      transparent 22%,
-      transparent 78%,
-      rgba(2, 10, 17, 0.16)
+      rgba(2, 10, 17, 0.10),
+      transparent 20%,
+      transparent 80%,
+      rgba(2, 10, 17, 0.10)
     ) !important;
 }
 
-/* Tester cards remain readable while allowing the room to show through. */
+#tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene > * {
+  position: relative;
+  z-index: 1;
+}
+
 #tester-lab-view #lab-main-stage[data-view="room"] .lab-rack {
   position: relative;
   z-index: 2;
+
   background:
     linear-gradient(
       155deg,
-      rgba(8, 30, 43, 0.68),
-      rgba(2, 12, 20, 0.76) 66%
+      rgba(8, 30, 43, 0.62),
+      rgba(2, 12, 20, 0.72) 66%
     ) !important;
+
+  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(1.5px);
 }
 
-/* iPhone / mobile authority.
-   This intentionally overrides the older "auto 100%" rule. */
+/* Tablet / phone:
+   preserve the existing 3-column room layout while keeping
+   the same single background owner used on desktop. */
 @media (max-width: 760px) {
   #tester-lab-view #lab-main-stage[data-view="room"] {
-    background-position: center top !important;
-    background-size: cover !important;
-    -webkit-background-size: cover !important;
+    background-position: center top, center top !important;
+    background-size: cover, cover !important;
+    -webkit-background-size: cover, cover !important;
+    background-attachment: scroll, scroll !important;
   }
 
   #tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
@@ -12406,33 +12441,35 @@ pre {
     gap: 8px;
     padding: 72px 8px 24px;
 
-    background-position: center top, center top !important;
-    background-size: cover, cover !important;
-    -webkit-background-size: cover, cover !important;
+    background: transparent !important;
+    background-image: none !important;
   }
 
   #tester-lab-view #lab-main-stage[data-view="room"] .lab-rack {
     background:
       linear-gradient(
         155deg,
-        rgba(8, 30, 43, 0.58),
-        rgba(2, 12, 20, 0.68) 66%
+        rgba(8, 30, 43, 0.54),
+        rgba(2, 12, 20, 0.64) 66%
       ) !important;
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
 }
 
 @media (max-width: 430px) {
+  #tester-lab-view #lab-main-stage[data-view="room"] {
+    background-position: center top, center top !important;
+    background-size: cover, cover !important;
+    -webkit-background-size: cover, cover !important;
+  }
+
   #tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
     min-height: 660px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    padding-left: 6px;
-    padding-right: 6px;
-    background-position: center top, center top !important;
-    background-size: cover, cover !important;
-    -webkit-background-size: cover, cover !important;
+    padding: 68px 6px 22px;
+
+    background: transparent !important;
+    background-image: none !important;
   }
 }
 
