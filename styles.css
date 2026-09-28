@@ -12311,3 +12311,128 @@ pre {
 #rexAvatarStage[data-rex-state="success"] .rex-core-reactor { box-shadow:0 0 24px rgba(80,235,160,.72), inset 0 0 10px rgba(80,235,160,.4); }
 @media (pointer:coarse) { .rex-interaction-hint{display:none} #rexAvatarStage{cursor:default} }
 @media (prefers-reduced-motion:reduce) { #rexAvatarStage .rex-avatar-image,.rex-core-reactor span{animation:none!important} .rex-interactive-light{display:none} }
+
+/* =========================================================
+   REPAIRIQ v1.0 FINAL — VIRTUAL TEST LAB MOBILE ROOM FIX
+   2026-09-28
+
+   Purpose:
+   - Preserve the real Test Lab photograph on iPhone/iOS Safari.
+   - Keep the 3-column mobile tester layout.
+   - Prevent older mobile background-size rules from hiding/cropping
+     the room into an effectively dark backdrop.
+   - Leave Repair Floor behavior unchanged.
+
+   Canonical asset:
+   assets/testlab/repairiq-test-room.PNG
+========================================================= */
+
+#tester-lab-view #lab-main-stage[data-view="room"] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #061018;
+  background-image: url("assets/testlab/repairiq-test-room.PNG");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  -webkit-background-size: cover;
+}
+
+#tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(2, 10, 17, 0.06) 0%,
+      rgba(2, 10, 17, 0.12) 45%,
+      rgba(2, 10, 17, 0.46) 100%
+    ),
+    url("assets/testlab/repairiq-test-room.PNG") !important;
+
+  background-repeat: no-repeat, no-repeat !important;
+  background-position: center center, center center !important;
+  background-size: cover, cover !important;
+  -webkit-background-size: cover, cover !important;
+  background-attachment: scroll, scroll !important;
+}
+
+/* Keep the cinematic header treatment readable without masking the room. */
+#tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene::before {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2, 10, 17, 0.62) 0,
+      rgba(2, 10, 17, 0.18) 58px,
+      transparent 126px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(2, 10, 17, 0.16),
+      transparent 22%,
+      transparent 78%,
+      rgba(2, 10, 17, 0.16)
+    ) !important;
+}
+
+/* Tester cards remain readable while allowing the room to show through. */
+#tester-lab-view #lab-main-stage[data-view="room"] .lab-rack {
+  position: relative;
+  z-index: 2;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(8, 30, 43, 0.68),
+      rgba(2, 12, 20, 0.76) 66%
+    ) !important;
+}
+
+/* iPhone / mobile authority.
+   This intentionally overrides the older "auto 100%" rule. */
+@media (max-width: 760px) {
+  #tester-lab-view #lab-main-stage[data-view="room"] {
+    background-position: center top !important;
+    background-size: cover !important;
+    -webkit-background-size: cover !important;
+  }
+
+  #tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
+    min-height: 690px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 72px 8px 24px;
+
+    background-position: center top, center top !important;
+    background-size: cover, cover !important;
+    -webkit-background-size: cover, cover !important;
+  }
+
+  #tester-lab-view #lab-main-stage[data-view="room"] .lab-rack {
+    background:
+      linear-gradient(
+        155deg,
+        rgba(8, 30, 43, 0.58),
+        rgba(2, 12, 20, 0.68) 66%
+      ) !important;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+}
+
+@media (max-width: 430px) {
+  #tester-lab-view #lab-main-stage[data-view="room"] .lab-room-scene {
+    min-height: 660px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+    background-position: center top, center top !important;
+    background-size: cover, cover !important;
+    -webkit-background-size: cover, cover !important;
+  }
+}
+
