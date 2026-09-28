@@ -11222,7 +11222,7 @@ pre {
    Realistic room background layer.
 
    Required asset:
-   assets/testlab/repairiq-test-room.PNG
+   assets/testlab/repairiq-test-room.
 
    This upgrade intentionally changes ROOM VIEW only.
    Grid View, List View, tester selection, telemetry,
@@ -11244,7 +11244,7 @@ pre {
       rgba(2, 10, 17, 0.18) 48%,
       rgba(2, 10, 17, 0.62) 100%
     ),
-    url("assets/testlab/repairiq-test-room.PNG");
+    url("assets/testlab/repairiq-test-room.png");
 
   background-size: cover;
   background-position: center center;
@@ -12094,7 +12094,7 @@ pre {
 #lab-main-stage[data-view="room"] .lab-room-scene {
   background:
     linear-gradient(180deg,rgba(2,10,17,.08),rgba(2,10,17,.18) 48%,rgba(2,10,17,.52)),
-    url("assets/testlab/repairiq-test-room.PNG") center center / cover no-repeat !important;
+    url("assets/testlab/repairiq-test-room.png") center center / cover no-repeat !important;
 }
 #lab-main-stage[data-view="room"] .lab-rack {
   background:linear-gradient(155deg,rgba(8,30,43,.66),rgba(2,12,20,.72) 66%);
@@ -12163,7 +12163,7 @@ pre {
 .floor-metric.orange{--metric:var(--orange)}.floor-metric.red{--metric:var(--red)}.floor-metric.blue{--metric:#4d9dff}.floor-metric.baseboard{--metric:#a77bff}.floor-metric.green{--metric:var(--green)}
 .floor-workspace{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,.62fr);gap:16px;align-items:start}
 .floor-scene-panel{padding:0;overflow:hidden}.floor-panel-header{padding:18px 18px 14px;border-bottom:1px solid var(--border-soft)}.floor-panel-header h3{margin:3px 0 2px}.floor-panel-header p{margin:0;font-size:10px}
-.floor-scene{position:relative;min-height:660px;overflow:hidden;background:url("assets/RepairIQ-Repair-Floor.png") center center/cover no-repeat;background-color:#061018;isolation:isolate}
+.floor-scene{position:relative;min-height:660px;overflow:hidden;background:url("assets/RepairIQ-ESD-Floor.png") center center/cover no-repeat;background-color:#061018;isolation:isolate}
 .floor-scene-shade{position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(1,8,13,.08),rgba(1,8,13,.05) 48%,rgba(1,8,13,.40)),linear-gradient(90deg,rgba(3,13,20,.16),transparent 30%,transparent 70%,rgba(3,13,20,.12))}
 .floor-unit-layer{position:absolute;inset:0;z-index:2}
 .floor-direction{position:absolute;z-index:3;top:18px;padding:7px 10px;border:1px solid rgba(99,232,255,.22);border-radius:6px;background:rgba(2,11,18,.82);color:var(--cyan-bright);font:800 8px var(--font-mono);letter-spacing:.08em;pointer-events:none}
@@ -12317,7 +12317,7 @@ pre {
    FINAL AUTHORITY — DESKTOP + MOBILE
 
    Canonical asset:
-   assets/testlab/repairiq-test-room.PNG
+   assets/testlab/repairiq-test-room.png
 
    Architecture:
    - #lab-main-stage owns the room photograph.
@@ -12342,7 +12342,7 @@ pre {
       rgba(2, 10, 17, 0.10) 48%,
       rgba(2, 10, 17, 0.34) 100%
     ),
-    url("assets/testlab/repairiq-test-room.PNG") !important;
+    url("assets/testlab/repairiq-test-room.png") !important;
 
   background-repeat: no-repeat, no-repeat !important;
   background-position: center center, center center !important;
