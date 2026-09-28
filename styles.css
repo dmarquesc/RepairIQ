@@ -12260,3 +12260,54 @@ pre {
 #tester-lab-view .lab-floor-status { display:none !important; }
 .lab-disposition-panel{margin:12px 0;padding:12px;border:1px solid rgba(99,232,255,.18);border-radius:10px;background:linear-gradient(180deg,rgba(7,25,36,.92),rgba(3,14,22,.96));box-shadow:inset 0 0 24px rgba(99,232,255,.025)}
 .lab-disposition-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.lab-disposition-heading div>span,.lab-disposition-cone div>span{display:block;color:var(--cyan);font:800 7px var(--font-mono);letter-spacing:.1em}.lab-disposition-heading strong{display:block;margin-top:3px;color:var(--text);font-size:10px;line-height:1.35}.lab-disposition-confidence{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(99,232,255,.22);border-radius:999px;color:var(--cyan);font:800 7px var(--font-mono);letter-spacing:.06em}.lab-disposition-panel>p{margin:8px 0 0;color:var(--text-muted);font-size:8px;line-height:1.5}.lab-disposition-cone{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;margin-top:10px;padding:9px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.18)}.lab-disposition-cone[hidden]{display:none}.lab-disposition-cone-icon{font-size:22px;line-height:1;text-align:center}.lab-disposition-cone strong{display:block;margin-top:2px;color:var(--text);font:800 8px var(--font-mono);letter-spacing:.03em}.lab-disposition-panel>small{display:block;margin-top:8px;color:var(--text-dim);font-size:7px;line-height:1.45}.lab-disposition-panel[data-state="failed"],.lab-disposition-panel[data-state="review"]{border-color:rgba(255,95,117,.28)}.lab-disposition-panel[data-state="swap"]{border-color:rgba(77,157,255,.34)}.lab-disposition-panel[data-state="passed"]{border-color:rgba(79,226,162,.3)}.lab-disposition-panel[data-state="ready"]{border-color:rgba(255,180,92,.3)}
+\n\n/* =========================================================
+   REPAIRIQ v1.0 — R.E.X. INTERACTIVE 2.5D AVATAR
+   Pointer parallax, reactive lighting, idle motion, core states,
+   click reactions and diagnostic-state behavior.
+   ========================================================= */
+#rexAvatarStage {
+  --rex-rx: 0deg; --rex-ry: 0deg; --rex-tx: 0px; --rex-ty: 0px;
+  --rex-light-x: 50%; --rex-light-y: 42%;
+  perspective: 900px; cursor: crosshair; touch-action: pan-y;
+}
+#rexAvatarStage .rex-avatar-image {
+  transform-origin: 50% 62%;
+  will-change: transform, filter;
+  animation: rex-interactive-idle 5.4s ease-in-out infinite;
+  transition: filter .22s ease;
+  pointer-events: none; user-select: none;
+}
+@keyframes rex-interactive-idle {
+  0%,100% { transform: translate3d(var(--rex-tx), calc(var(--rex-ty) + 1px), 0) rotateX(var(--rex-rx)) rotateY(var(--rex-ry)) scale(1); }
+  50% { transform: translate3d(var(--rex-tx), calc(var(--rex-ty) - 6px), 18px) rotateX(var(--rex-rx)) rotateY(var(--rex-ry)) scale(1.012); }
+}
+.rex-interactive-light {
+  position:absolute; z-index:2; inset:0; pointer-events:none; opacity:.42;
+  background: radial-gradient(circle 125px at var(--rex-light-x) var(--rex-light-y), rgba(116,231,255,.22), transparent 70%);
+  mix-blend-mode:screen; transition:opacity .25s ease;
+}
+.rex-core-reactor {
+  position:absolute; z-index:5; left:50%; top:58%; width:22px; height:34px; transform:translate(-50%,-50%);
+  border:1px solid rgba(101,226,255,.46); border-radius:7px; pointer-events:none; opacity:.72;
+  box-shadow:0 0 10px rgba(70,211,255,.35), inset 0 0 8px rgba(70,211,255,.28);
+}
+.rex-core-reactor span { position:absolute; inset:5px; border-radius:4px; background:rgba(93,224,255,.52); box-shadow:0 0 13px rgba(93,224,255,.75); animation:rex-core-pulse 2.2s ease-in-out infinite; }
+@keyframes rex-core-pulse { 50% { opacity:.55; transform:scale(.84); } }
+.rex-interaction-hint { position:absolute; z-index:6; left:50%; top:12px; transform:translateX(-50%); color:rgba(161,205,219,.5); font:700 7px var(--font-mono); letter-spacing:.12em; pointer-events:none; opacity:0; transition:opacity .25s ease; }
+#rexAvatarStage:hover .rex-interaction-hint { opacity:1; }
+#rexAvatarStage.rex-pointer-active .rex-interactive-light { opacity:.85; }
+#rexAvatarStage.rex-react-head .rex-avatar-image { animation:rex-head-ack .65s ease; }
+#rexAvatarStage.rex-react-hand .rex-avatar-image { animation:rex-hand-ack .7s ease; }
+#rexAvatarStage.rex-react-core .rex-core-reactor { animation:rex-core-ack .7s ease; }
+#rexAvatarStage.rex-react-easter .rex-avatar-image { animation:rex-easter 1.05s cubic-bezier(.2,.8,.2,1); }
+@keyframes rex-head-ack { 0%,100%{transform:rotateY(var(--rex-ry)) rotateX(var(--rex-rx))} 35%{transform:rotateY(calc(var(--rex-ry) - 7deg)) rotateX(calc(var(--rex-rx) + 4deg)) translateY(-4px)} 70%{transform:rotateY(calc(var(--rex-ry) + 5deg)) rotateX(var(--rex-rx))} }
+@keyframes rex-hand-ack { 0%,100%{transform:translateX(0) rotateY(var(--rex-ry))} 40%{transform:translateX(5px) rotateY(calc(var(--rex-ry) + 4deg)) scale(1.015)} }
+@keyframes rex-core-ack { 50%{filter:brightness(1.8); transform:translate(-50%,-50%) scale(1.35); box-shadow:0 0 30px rgba(93,224,255,.95)} }
+@keyframes rex-easter { 0%,100%{transform:rotateY(0) translateY(0)} 25%{transform:rotateY(-9deg) translateY(-8px)} 50%{transform:rotateY(9deg) translateY(-10px)} 75%{transform:rotateY(-4deg) translateY(-4px)} }
+#rexAvatarStage[data-rex-state="listening"] .rex-core-reactor span { animation-duration:1.05s; }
+#rexAvatarStage[data-rex-state="analyzing"] .rex-core-reactor, #rexAvatarStage[data-rex-state="remembering"] .rex-core-reactor { box-shadow:0 0 24px rgba(143,116,255,.7), inset 0 0 10px rgba(143,116,255,.45); }
+#rexAvatarStage[data-rex-state="speaking"] .rex-core-reactor span { animation-duration:.48s; }
+#rexAvatarStage[data-rex-state="attention"] .rex-avatar-image { filter:drop-shadow(0 0 24px rgba(255,184,70,.45)) drop-shadow(0 18px 24px rgba(0,0,0,.4)); }
+#rexAvatarStage[data-rex-state="success"] .rex-core-reactor { box-shadow:0 0 24px rgba(80,235,160,.72), inset 0 0 10px rgba(80,235,160,.4); }
+@media (pointer:coarse) { .rex-interaction-hint{display:none} #rexAvatarStage{cursor:default} }
+@media (prefers-reduced-motion:reduce) { #rexAvatarStage .rex-avatar-image,.rex-core-reactor span{animation:none!important} .rex-interactive-light{display:none} }

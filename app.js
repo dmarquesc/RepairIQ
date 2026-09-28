@@ -7723,6 +7723,61 @@ document.addEventListener("DOMContentLoaded", rexInitializeV08);
 
 
 /* ================================================================
+   52A. R.E.X. INTERACTIVE 2.5D AVATAR CONTROLLER
+   ---------------------------------------------------------------
+   Presentation-only interaction. It never changes diagnostic state,
+   evidence, approvals, repair decisions, or hardware controls.
+   ================================================================ */
+let rexInteractiveTimerV10 = null;
+function rexInteractiveReactionV10(kind, status) {
+  const stage = $("#rexAvatarStage");
+  if (!stage) return;
+  ["rex-react-head","rex-react-hand","rex-react-core","rex-react-easter"].forEach(c => stage.classList.remove(c));
+  void stage.offsetWidth;
+  stage.classList.add(`rex-react-${kind}`);
+  if (rexInteractiveTimerV10) clearTimeout(rexInteractiveTimerV10);
+  if (status) setText("#rex-live-status", status);
+  rexInteractiveTimerV10 = setTimeout(() => {
+    stage.classList.remove(`rex-react-${kind}`);
+    if (!rexReplyTimerV09) setText("#rex-live-status", "R.E.X. is ready");
+  }, kind === "easter" ? 1150 : 760);
+}
+function initializeRexInteractiveV10() {
+  const stage = $("#rexAvatarStage");
+  if (!stage || stage.dataset.interactiveBound === "true") return;
+  stage.dataset.interactiveBound = "true";
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const reset = () => {
+    stage.classList.remove("rex-pointer-active");
+    stage.style.setProperty("--rex-rx", "0deg"); stage.style.setProperty("--rex-ry", "0deg");
+    stage.style.setProperty("--rex-tx", "0px"); stage.style.setProperty("--rex-ty", "0px");
+    stage.style.setProperty("--rex-light-x", "50%"); stage.style.setProperty("--rex-light-y", "42%");
+  };
+  stage.addEventListener("pointermove", event => {
+    if (reduced || event.pointerType === "touch") return;
+    const r = stage.getBoundingClientRect();
+    const nx = Math.max(-1, Math.min(1, ((event.clientX-r.left)/r.width-.5)*2));
+    const ny = Math.max(-1, Math.min(1, ((event.clientY-r.top)/r.height-.5)*2));
+    stage.classList.add("rex-pointer-active");
+    stage.style.setProperty("--rex-ry", `${(nx*7.5).toFixed(2)}deg`);
+    stage.style.setProperty("--rex-rx", `${(-ny*5).toFixed(2)}deg`);
+    stage.style.setProperty("--rex-tx", `${(nx*4).toFixed(1)}px`);
+    stage.style.setProperty("--rex-ty", `${(ny*2).toFixed(1)}px`);
+    stage.style.setProperty("--rex-light-x", `${((nx+1)*50).toFixed(1)}%`);
+    stage.style.setProperty("--rex-light-y", `${((ny+1)*50).toFixed(1)}%`);
+  });
+  stage.addEventListener("pointerleave", reset);
+  stage.addEventListener("click", event => {
+    const r = stage.getBoundingClientRect(), x=(event.clientX-r.left)/r.width, y=(event.clientY-r.top)/r.height;
+    if (y < .43) rexInteractiveReactionV10("head", "R.E.X. acknowledges you");
+    else if (y > .46 && y < .72 && x > .38 && x < .62) rexInteractiveReactionV10("core", "Core interaction acknowledged");
+    else rexInteractiveReactionV10("hand", "R.E.X. is standing by");
+  });
+  stage.addEventListener("dblclick", event => { event.preventDefault(); rexInteractiveReactionV10("easter", "R.E.X. says: still online. Still watching the evidence."); });
+}
+document.addEventListener("DOMContentLoaded", initializeRexInteractiveV10);
+
+/* ================================================================
    53. VIRTUAL TEST LAB — OFFLINE DEMONSTRATION
    ---------------------------------------------------------------
    These stations, temperatures, alerts, sessions and event times
