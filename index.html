@@ -1363,6 +1363,32 @@
 </section>
 <!-- /metric-grid -->
 <!-- GPU Topology panel -->
+
+<section class="production-command-center" aria-labelledby="production-snapshot-title">
+  <div class="production-section-heading"><div><div class="eyebrow">PRODUCTION OPERATIONS</div><h2 id="production-snapshot-title">Live production snapshot</h2><p>At-a-glance unit flow, floor disposition, tester utilization, and repair workload.</p></div><span class="production-demo-badge"><span></span> PROTOTYPE DATA</span></div>
+  <div class="production-kpi-grid">
+    <article class="production-kpi-card"><span class="production-kpi-icon">▦</span><div><span>Units on Repair Floor</span><strong id="ops-floor-count">0</strong><small>Physically staged</small></div></article>
+    <article class="production-kpi-card"><span class="production-kpi-icon">◉</span><div><span>Units Testing</span><strong id="ops-testing-count">0</strong><small>Active test sessions</small></div></article>
+    <article class="production-kpi-card orange"><span class="production-kpi-icon">●</span><div><span>Ready for Test / Retest</span><strong id="ops-ready-count">0</strong><small>Orange disposition</small></div></article>
+    <article class="production-kpi-card red"><span class="production-kpi-icon">●</span><div><span>Needs Troubleshooting</span><strong id="ops-troubleshoot-count">0</strong><small>Red · SWAP</small></div></article>
+    <article class="production-kpi-card blue"><span class="production-kpi-icon">●</span><div><span>Part Swap Required</span><strong id="ops-swap-count">0</strong><small>Blue · component</small></div></article>
+    <article class="production-kpi-card baseboard"><span class="production-kpi-icon">◉</span><div><span>Baseboard Swap</span><strong id="ops-baseboard-count">0</strong><small>Red + blue disk</small></div></article>
+    <article class="production-kpi-card green"><span class="production-kpi-icon">●</span><div><span>Passed / Ready for Label</span><strong id="ops-label-count">0</strong><small>Green disposition</small></div></article>
+    <article class="production-kpi-card"><span class="production-kpi-icon">✓</span><div><span>Tester Availability</span><strong id="ops-tester-availability">0 / 12</strong><small id="ops-tester-detail">Available testers</small></div></article>
+  </div>
+  <div class="production-flow-panel"><div class="production-flow-heading"><div><span>UNIT FLOW</span><strong>Production pathway</strong></div><small id="ops-flow-status">Monitoring prototype workflow</small></div>
+    <div class="production-flow" id="production-flow">
+      <div class="production-flow-stage" data-flow="build"><span>BUILD</span><strong id="flow-build-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="floor"><span>FLOOR</span><strong id="flow-floor-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="test"><span>TEST</span><strong id="flow-test-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="troubleshoot"><span>TROUBLESHOOT</span><strong id="flow-troubleshoot-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="swap"><span>PART SWAP</span><strong id="flow-swap-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="retest"><span>RETEST</span><strong id="flow-retest-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="pass"><span>PASS</span><strong id="flow-pass-count">0</strong></div><i>→</i>
+      <div class="production-flow-stage" data-flow="label"><span>LABEL</span><strong id="flow-label-count">0</strong></div>
+    </div>
+  </div>
+</section>
 <section aria-label="GPU topology" class="topology-heading section-heading">
 <div>
 <div class="eyebrow">GPU TOPOLOGY</div>

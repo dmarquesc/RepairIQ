@@ -8749,6 +8749,7 @@ function simulationSetFloorEmpty() {
   repairFloorScannedId = null;
   repairFloorPendingRecord = null;
   if (typeof renderRepairFloor === "function") renderRepairFloor();
+  if (typeof updateProductionOperationsSnapshot === "function") updateProductionOperationsSnapshot();
 }
 
 function simulationSetFloorUnit(status, history) {
@@ -8905,6 +8906,8 @@ function simulationRender() {
   if (!step) return;
 
   simulationApplyVisualState(step);
+  const simulationFlowMap={empty:"build",scan:"build","lab-empty":"test",testing:"test",failed:"troubleshoot",diagnose:"troubleshoot",blue:"swap",orange:"floor",retest:"retest",green:"pass",closed:"label"};
+  updateProductionOperationsSnapshot(simulationFlowMap[step.apply]||null);
   simulationSwitchView(step.view);
   simulationRenderTimeline();
 
@@ -9062,3 +9065,18 @@ function initializeRepairIQSimulation() {
 
 document.addEventListener("DOMContentLoaded", initializeRepairIQSimulation);
 
+
+/* REPAIRIQ v1.0 — DASHBOARD PRODUCTION OPERATIONS SNAPSHOT */
+function repairIQProductionCounts(){
+ const floor=Array.isArray(REPAIR_FLOOR_UNITS)?REPAIR_FLOOR_UNITS:[]; const lab=Array.isArray(VIRTUAL_LAB_STATIONS)?VIRTUAL_LAB_STATIONS:[];
+ const occupied=lab.filter(s=>s.unit&&s.unit!=="—");
+ return {floorCount:floor.length,ready:floor.filter(u=>u.status==="ready").length,troubleshoot:floor.filter(u=>u.status==="failed").length,swap:floor.filter(u=>u.status==="swap").length,baseboard:floor.filter(u=>u.status==="baseboard").length,label:floor.filter(u=>u.status==="passed").length,testing:occupied.filter(s=>["testing","attention"].includes(String(s.status).toLowerCase())||/running|retest/i.test(String(s.result||""))).length,available:lab.filter(s=>!s.unit||s.unit==="—"||s.status==="available").length,totalTesters:lab.length};
+}
+function updateProductionOperationsSnapshot(activeFlow=null){
+ if(!document.querySelector("#production-snapshot-title"))return; const c=repairIQProductionCounts();
+ setText("#ops-floor-count",String(c.floorCount));setText("#ops-testing-count",String(c.testing));setText("#ops-ready-count",String(c.ready));setText("#ops-troubleshoot-count",String(c.troubleshoot));setText("#ops-swap-count",String(c.swap));setText("#ops-baseboard-count",String(c.baseboard));setText("#ops-label-count",String(c.label));setText("#ops-tester-availability",`${c.available} / ${c.totalTesters||12}`);setText("#ops-tester-detail",`${(c.totalTesters||12)-c.available} occupied · ${c.available} available`);
+ setText("#flow-build-count",activeFlow==="build"?"1":"0");setText("#flow-floor-count",String(c.floorCount));setText("#flow-test-count",String(c.testing));setText("#flow-troubleshoot-count",String(c.troubleshoot));setText("#flow-swap-count",String(c.swap+c.baseboard));setText("#flow-retest-count",activeFlow==="retest"?String(Math.max(1,c.testing)):"0");setText("#flow-pass-count",String(c.label));setText("#flow-label-count",activeFlow==="label"?"1":"0");
+ document.querySelectorAll(".production-flow-stage").forEach(x=>x.classList.toggle("active",!!activeFlow&&x.dataset.flow===activeFlow));
+ const labels={build:"Build complete · awaiting traveler",floor:"Unit staged on Repair Floor",test:"Unit actively testing",troubleshoot:"Failed unit in SWAP troubleshooting",swap:"Validated component replacement",retest:"Verification retest in progress",pass:"Verified pass",label:"Ready for Label"};setText("#ops-flow-status",labels[activeFlow]||"Monitoring prototype workflow");
+}
+document.addEventListener("DOMContentLoaded",()=>updateProductionOperationsSnapshot());
