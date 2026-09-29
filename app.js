@@ -7938,7 +7938,7 @@ function renderVirtualLab() {
       <span class="lab-rack-name">TESTER ${station.id}</span>
       <span class="lab-rack-build">${escapeHtml(v.build.label)}</span>
       <span class="lab-rack-state">${v.stateLabel}</span>
-      <span class="lab-rack-unit"><img src="${v.build.image}" alt="" loading="lazy"><span>${escapeHtml(v.unit)}</span></span>
+      <span class="lab-rack-unit">${station.unit === "—" ? "" : `<img src="${v.build.image}" alt="" loading="lazy">`}<span>${escapeHtml(v.unit)}</span></span>
       <span class="lab-rack-progress"><i style="width:${v.progress}%"></i></span>
       <span class="lab-rack-meta"><span>${escapeHtml(station.stage)}</span><b>${v.temp}</b></span>
     </button>`;
@@ -8469,3 +8469,596 @@ function initializeRepairFloor(){
   renderRepairFloor();
 }
 document.addEventListener("DOMContentLoaded",initializeRepairFloor);
+
+
+/* ================================================================
+   REPAIRIQ v1.0 — LIVE SIMULATION / WORKFLOW DEMO
+   ---------------------------------------------------------------
+   This mode animates the existing RepairIQ screens and data models.
+   It starts with an empty Repair Floor and empty Virtual Test Lab,
+   then moves one synthetic unit through the complete workflow.
+
+   DEMO FLOW
+   Builder complete
+   → Traveler scanned
+   → Route to tester
+   → Empty tester room
+   → Unit appears in Tester 03
+   → Test fails
+   → RepairIQ + R.E.X. evidence/diagnosis
+   → Red floor disposition for SWAP troubleshooting
+   → GPU2 isolated / Blue cone component replacement
+   → Technician records GPU2 replacement
+   → Orange ready for retest
+   → Tester 03 retest
+   → PASS
+   → Green cone / ready for Label
+   → Case History
+
+   RepairIQ recommends. The technician decides.
+   ================================================================ */
+
+const repairIQSimulation = {
+  active: false,
+  index: 0,
+  auto: false,
+  timer: null,
+  previousView: "dashboard",
+  floorSnapshot: null,
+  labSnapshot: null,
+  floorSelectedSnapshot: null,
+  labSelectedSnapshot: null
+};
+
+const SIM_UNIT = {
+  id: "SIM-RF-001",
+  bay: "A01",
+  build: "vulcan",
+  unit: "VULCAN-H200-SIM-001",
+  traveler: "TRV-SIM-2026-001",
+  system: "SYS-H200-SIM-001",
+  board: "BB-H200-SIM-001",
+  status: "ready",
+  tester: "—",
+  caseId: "SIM-CASE-001",
+  history: []
+};
+
+const REPAIRIQ_SIMULATION_STEPS = [
+  {
+    label: "Empty Floor",
+    view: "repair-floor",
+    kicker: "01 · WORKFLOW RESET",
+    title: "Repair Floor starts empty",
+    copy: "The workflow demo begins with no units staged. This gives management a clean view of the process from the moment a builder presents a completed unit.",
+    evidence: "Section A · 0 staged units",
+    decision: "Await builder and traveler scan.",
+    callout: "Watch the actual Repair Floor screen behind this panel. The racks are now empty.",
+    apply: "empty"
+  },
+  {
+    label: "Traveler Scan",
+    view: "repair-floor",
+    kicker: "02 · BUILDER INTAKE",
+    title: "Builder brings the unit · traveler scanned",
+    copy: "RepairIQ creates the working unit identity from the traveler and Digital Passport context. The unit has not been placed on the floor because the technician chooses the next destination.",
+    evidence: "TRV-SIM-2026-001 · VULCAN H200 · identity matched",
+    decision: "Route selected: Virtual Test Lab.",
+    callout: "The floor remains empty because this unit is being sent directly to a tester.",
+    apply: "scan"
+  },
+  {
+    label: "Empty Test Lab",
+    view: "tester-lab",
+    kicker: "03 · ROUTE TO TESTER",
+    title: "Virtual Test Lab starts empty",
+    copy: "The screen transitions into the Test Lab before the unit arrives. All twelve tester positions are available with no units assigned.",
+    evidence: "12 testers · 0 units · Tester 03 selected for intake",
+    decision: "Assign the scanned unit to Tester 03.",
+    callout: "This is the visual handoff from traveler intake to test operations.",
+    apply: "lab-empty"
+  },
+  {
+    label: "Unit Loaded",
+    view: "tester-lab",
+    kicker: "04 · TESTER 03",
+    title: "The unit appears in Tester 03",
+    copy: "The selected Vulcan H200 is now physically represented in the tester room. RepairIQ carries the same traveler identity into the active test session.",
+    evidence: "Tester 03 · VULCAN-H200-SIM-001 · INIT · test running",
+    decision: "Monitor the test. No physical cone is assigned while testing.",
+    callout: "The tester is now loaded and the unit is visible in the existing Test Lab interface.",
+    apply: "testing"
+  },
+  {
+    label: "Test Failure",
+    view: "tester-lab",
+    kicker: "05 · TEST RESULT",
+    title: "Tester 03 reports a failure",
+    copy: "The unit fails during HMC initialization. RepairIQ captures the failure state and preserves the test evidence for diagnosis.",
+    evidence: "HMC_BIST_FAIL · GPU2 heartbeat missing · initialization timeout · HMC retry",
+    decision: "Return failed unit for controlled troubleshooting after evidence review.",
+    callout: "The failure is visible at the tester before the workflow moves into diagnostic intelligence.",
+    apply: "failed"
+  },
+  {
+    label: "RepairIQ + R.E.X.",
+    view: "analyzer",
+    kicker: "06 · DIAGNOSTIC INTELLIGENCE",
+    title: "RepairIQ analyzes the evidence",
+    copy: "The Analyzer loads the same synthetic failure case. RepairIQ structures the evidence and the Knowledge Engine produces the controlled repair path. R.E.X. explains the reasoning without bypassing technician authority.",
+    evidence: "GPU2 / HMC path identified · NVSwitch PASS · BMC PASS · evidence retained",
+    decision: "Initial floor disposition: Red cone for SWAP troubleshooting. Replacement is not yet authorized.",
+    callout: "This is where raw test failure becomes evidence-based repair intelligence.",
+    apply: "diagnose"
+  },
+  {
+    label: "Red → Blue",
+    view: "repair-floor",
+    kicker: "07 · SWAP TROUBLESHOOTING",
+    title: "Unit returns to the Repair Floor",
+    copy: "The failed unit first returns Red for SWAP troubleshooting. After isolation confirms GPU2 as the replacement path, the disposition changes to Blue for component replacement.",
+    evidence: "Red · failed / SWAP troubleshooting → GPU2 isolated → Blue · component swap required",
+    decision: "Technician-confirmed GPU2 replacement required.",
+    callout: "The same unit now appears on the Repair Floor with its post-test disposition and history.",
+    apply: "blue"
+  },
+  {
+    label: "GPU Replaced",
+    view: "repair-floor",
+    kicker: "08 · TECHNICIAN ACTION",
+    title: "Technician replaces GPU2",
+    copy: "The physical repair is performed by the technician, not RepairIQ. Once the action is recorded, the unit changes to Orange because it is ready to return to testing.",
+    evidence: "GPU2 replacement recorded · technician action captured",
+    decision: "Orange cone · ready for retest.",
+    callout: "Repair complete does not close the case. Verification still requires a retest.",
+    apply: "orange"
+  },
+  {
+    label: "Retest",
+    view: "tester-lab",
+    kicker: "09 · VERIFICATION RETEST",
+    title: "Unit returns to Tester 03",
+    copy: "The repaired unit leaves the Repair Floor and reappears in Tester 03. The retest runs against the same Digital Passport and case history.",
+    evidence: "Tester 03 · RETEST · VULCAN-H200-SIM-001 · verification running",
+    decision: "Await verified retest result.",
+    callout: "The Repair Floor is empty again while the unit is physically in the tester room.",
+    apply: "retest"
+  },
+  {
+    label: "Pass → Label",
+    view: "repair-floor",
+    kicker: "10 · VERIFIED PASS",
+    title: "PASS · Green cone · send to Label",
+    copy: "The retest passes. The unit returns to the Repair Floor with Green disposition, meaning verified pass and ready for the Label station.",
+    evidence: "Retest PASS · verification complete · case eligible for closure",
+    decision: "Green cone · PASS / READY FOR LABEL.",
+    callout: "The full loop is now visible: intake, test, failure, evidence, repair, retest, pass, Label.",
+    apply: "green"
+  },
+  {
+    label: "Case Closed",
+    view: "cases",
+    kicker: "11 · CLOSED LOOP",
+    title: "Verified repair becomes reusable knowledge",
+    copy: "The workflow finishes in Case History. RepairIQ retains the evidence, technician action, retest result, and verified outcome so the repair does not have to be rediscovered from scratch.",
+    evidence: "Traveler → Tester → Failure → Diagnosis → GPU2 replacement → Retest PASS → Label",
+    decision: "Demonstration case closed. Production deployment remains subject to controlled pilot approval.",
+    callout: "Workflow Demo complete.",
+    apply: "closed"
+  }
+];
+
+function simulationElement(id) {
+  return document.getElementById(id);
+}
+
+function simulationClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function simulationSwitchView(viewName) {
+  if (typeof switchView === "function") {
+    switchView(viewName);
+    return;
+  }
+  if (typeof setActiveView === "function") {
+    setActiveView(viewName);
+    return;
+  }
+  const target = document.getElementById(`${viewName}-view`);
+  if (!target) return;
+  document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view === target));
+}
+
+function simulationEmptyStation(id) {
+  return {
+    id,
+    build: "vulcan",
+    unit: "—",
+    status: "available",
+    floor: "testing",
+    stage: "Ready",
+    progress: 0,
+    duration: "—",
+    temp: 0,
+    fan: 0,
+    power: 0,
+    board: 0,
+    script: "Idle",
+    firmware: "Demo · Ready",
+    health: "Online",
+    environment: "Normal",
+    identity: "NO UNIT ASSIGNED",
+    alerts: [],
+    result: "READY"
+  };
+}
+
+function simulationStation03(overrides = {}) {
+  return Object.assign(simulationEmptyStation("03"), {
+    build: "vulcan",
+    unit: SIM_UNIT.unit,
+    status: "testing",
+    floor: "testing",
+    stage: "INIT",
+    progress: 24,
+    duration: "00:04:12",
+    temp: 58,
+    fan: 51,
+    power: 4.2,
+    board: 39,
+    script: "v3.8.14 · Running",
+    firmware: "v2.17 · Active",
+    health: "Online",
+    environment: "Normal",
+    identity: "MATCHED · DEMO",
+    alerts: [],
+    result: "RUNNING"
+  }, overrides);
+}
+
+function simulationSetLabEmpty() {
+  if (!Array.isArray(VIRTUAL_LAB_STATIONS)) return;
+  VIRTUAL_LAB_STATIONS.splice(0, VIRTUAL_LAB_STATIONS.length,
+    ...Array.from({length:12}, (_, index) => simulationEmptyStation(String(index + 1).padStart(2, "0")))
+  );
+  virtualLabSelectedId = "03";
+  if (typeof renderVirtualLab === "function") renderVirtualLab();
+}
+
+function simulationSetLabStation03(overrides = {}) {
+  simulationSetLabEmpty();
+  const index = VIRTUAL_LAB_STATIONS.findIndex(station => station.id === "03");
+  if (index >= 0) VIRTUAL_LAB_STATIONS[index] = simulationStation03(overrides);
+  virtualLabSelectedId = "03";
+  if (typeof renderVirtualLab === "function") renderVirtualLab();
+}
+
+function simulationFloorRecord(status, history) {
+  return Object.assign({}, SIM_UNIT, {
+    status,
+    tester: "TESTER 03",
+    history: history.map(item => [...item])
+  });
+}
+
+function simulationSetFloorEmpty() {
+  if (!Array.isArray(REPAIR_FLOOR_UNITS)) return;
+  REPAIR_FLOOR_UNITS.splice(0, REPAIR_FLOOR_UNITS.length);
+  repairFloorSelectedId = null;
+  repairFloorScannedId = null;
+  repairFloorPendingRecord = null;
+  if (typeof renderRepairFloor === "function") renderRepairFloor();
+}
+
+function simulationSetFloorUnit(status, history) {
+  simulationSetFloorEmpty();
+  const record = simulationFloorRecord(status, history);
+  REPAIR_FLOOR_UNITS.push(record);
+  repairFloorSelectedId = record.id;
+  repairFloorScannedId = record.id;
+  repairFloorPendingRecord = simulationClone(record);
+  if (typeof renderRepairFloor === "function") renderRepairFloor();
+}
+
+function simulationApplyVisualState(step) {
+  switch (step.apply) {
+    case "empty":
+      simulationSetFloorEmpty();
+      simulationSetLabEmpty();
+      break;
+
+    case "scan":
+      simulationSetFloorEmpty();
+      repairFloorPendingRecord = simulationClone(SIM_UNIT);
+      break;
+
+    case "lab-empty":
+      simulationSetFloorEmpty();
+      simulationSetLabEmpty();
+      break;
+
+    case "testing":
+      simulationSetFloorEmpty();
+      simulationSetLabStation03({
+        stage: "INIT · HMC BIST",
+        progress: 38,
+        duration: "00:08:42"
+      });
+      break;
+
+    case "failed":
+      simulationSetFloorEmpty();
+      simulationSetLabStation03({
+        status: "failed",
+        stage: "INIT · HMC BIST",
+        progress: 62,
+        duration: "00:14:18",
+        temp: 61,
+        fan: 56,
+        power: 4.1,
+        script: "v3.8.14 · Failed",
+        alerts: [
+          {level:"critical", text:"GPU2 HMC_BIST_FAIL", time:"10:14:18"},
+          {level:"warning", text:"GPU2 heartbeat missing · HMC retry observed", time:"10:14:19"}
+        ],
+        result: "FAILED"
+      });
+      break;
+
+    case "diagnose":
+      simulationSetFloorEmpty();
+      simulationSetLabStation03({
+        status: "failed",
+        stage: "INIT · HMC BIST",
+        progress: 62,
+        script: "v3.8.14 · Failed",
+        alerts: [{level:"critical", text:"GPU2 HMC_BIST_FAIL", time:"10:14:18"}],
+        result: "FAILED"
+      });
+      try {
+        if (typeof loadDemoCase === "function") loadDemoCase();
+        if (typeof runAnalysis === "function") window.setTimeout(() => runAnalysis(), 120);
+      } catch (error) {
+        console.warn("Workflow Demo analysis step:", error);
+      }
+      break;
+
+    case "blue":
+      simulationSetLabEmpty();
+      simulationSetFloorUnit("swap", [
+        ["10:14", "Test failed · HMC_BIST_FAIL"],
+        ["10:16", "Red cone · SWAP troubleshooting"],
+        ["10:21", "GPU2 isolated from evidence path"],
+        ["10:24", "Blue cone · component swap required"]
+      ]);
+      break;
+
+    case "orange":
+      simulationSetLabEmpty();
+      simulationSetFloorUnit("ready", [
+        ["10:14", "Test failed · HMC_BIST_FAIL"],
+        ["10:16", "Red cone · SWAP troubleshooting"],
+        ["10:24", "Blue cone · GPU2 replacement required"],
+        ["10:41", "Technician replaced GPU2"],
+        ["10:44", "Orange cone · ready for retest"]
+      ]);
+      break;
+
+    case "retest":
+      simulationSetFloorEmpty();
+      simulationSetLabStation03({
+        stage: "RETEST · INIT / HMC",
+        progress: 71,
+        duration: "00:18:06",
+        temp: 60,
+        fan: 54,
+        power: 4.4,
+        script: "v3.8.14 · Retest Running",
+        alerts: [],
+        result: "RETEST RUNNING"
+      });
+      break;
+
+    case "green":
+      simulationSetLabEmpty();
+      simulationSetFloorUnit("passed", [
+        ["10:14", "Initial test failed"],
+        ["10:24", "GPU2 replacement disposition confirmed"],
+        ["10:41", "Technician replaced GPU2"],
+        ["10:44", "Orange cone · ready for retest"],
+        ["11:07", "Retest passed"],
+        ["11:09", "Green cone · ready for Label"]
+      ]);
+      break;
+
+    case "closed":
+      simulationSetFloorUnit("passed", [
+        ["10:14", "Initial test failed"],
+        ["10:24", "GPU2 replacement disposition confirmed"],
+        ["10:41", "Technician replaced GPU2"],
+        ["11:07", "Retest passed"],
+        ["11:09", "Green cone · ready for Label"],
+        ["11:12", "Verified demonstration case closed"]
+      ]);
+      break;
+  }
+}
+
+function simulationRenderTimeline() {
+  const timeline = simulationElement("simulation-timeline");
+  if (!timeline) return;
+
+  timeline.innerHTML = REPAIRIQ_SIMULATION_STEPS.map((step, index) => {
+    const stateClass = index < repairIQSimulation.index ? "complete" :
+      index === repairIQSimulation.index ? "active" : "";
+    const number = index < repairIQSimulation.index ? "✓" : String(index + 1).padStart(2, "0");
+    return `<div class="simulation-timeline-item ${stateClass}">
+      <span class="simulation-timeline-index">${number}</span>
+      <span>${escapeHtml(step.label)}</span>
+    </div>`;
+  }).join("");
+}
+
+function simulationRender() {
+  const step = REPAIRIQ_SIMULATION_STEPS[repairIQSimulation.index];
+  if (!step) return;
+
+  simulationApplyVisualState(step);
+  simulationSwitchView(step.view);
+  simulationRenderTimeline();
+
+  const total = REPAIRIQ_SIMULATION_STEPS.length;
+  const progressBar = simulationElement("simulation-progress-bar");
+  if (progressBar) progressBar.style.width = `${((repairIQSimulation.index + 1) / total) * 100}%`;
+
+  setText("#simulation-step-counter", `STEP ${repairIQSimulation.index + 1} OF ${total}`);
+  setText("#simulation-mode-label", repairIQSimulation.auto ? "AUTO PLAY" : "GUIDED MODE");
+  setText("#simulation-stage-kicker", step.kicker);
+  setText("#simulation-stage-title", step.title);
+  setText("#simulation-stage-copy", step.copy);
+  setText("#simulation-evidence", step.evidence);
+  setText("#simulation-decision", step.decision);
+  setText("#simulation-callout", step.callout);
+
+  const prev = simulationElement("simulation-prev");
+  const next = simulationElement("simulation-next");
+  const auto = simulationElement("simulation-auto");
+
+  if (prev) prev.disabled = repairIQSimulation.index === 0;
+  if (next) next.textContent =
+    repairIQSimulation.index === total - 1 ? "Finish Workflow Demo" : "Next Step →";
+  if (auto) auto.textContent = `Auto Play: ${repairIQSimulation.auto ? "On" : "Off"}`;
+
+  simulationScheduleAuto();
+}
+
+function simulationTakeSnapshot() {
+  repairIQSimulation.floorSnapshot =
+    typeof REPAIR_FLOOR_UNITS !== "undefined" ? simulationClone(REPAIR_FLOOR_UNITS) : null;
+  repairIQSimulation.labSnapshot =
+    typeof VIRTUAL_LAB_STATIONS !== "undefined" ? simulationClone(VIRTUAL_LAB_STATIONS) : null;
+  repairIQSimulation.floorSelectedSnapshot =
+    typeof repairFloorSelectedId !== "undefined" ? repairFloorSelectedId : null;
+  repairIQSimulation.labSelectedSnapshot =
+    typeof virtualLabSelectedId !== "undefined" ? virtualLabSelectedId : null;
+}
+
+function simulationRestoreSnapshot() {
+  if (repairIQSimulation.floorSnapshot && Array.isArray(REPAIR_FLOOR_UNITS)) {
+    REPAIR_FLOOR_UNITS.splice(0, REPAIR_FLOOR_UNITS.length, ...simulationClone(repairIQSimulation.floorSnapshot));
+    repairFloorSelectedId = repairIQSimulation.floorSelectedSnapshot;
+    if (typeof renderRepairFloor === "function") renderRepairFloor();
+  }
+
+  if (repairIQSimulation.labSnapshot && Array.isArray(VIRTUAL_LAB_STATIONS)) {
+    VIRTUAL_LAB_STATIONS.splice(0, VIRTUAL_LAB_STATIONS.length, ...simulationClone(repairIQSimulation.labSnapshot));
+    virtualLabSelectedId = repairIQSimulation.labSelectedSnapshot || "03";
+    if (typeof renderVirtualLab === "function") renderVirtualLab();
+  }
+}
+
+function startRepairIQSimulation() {
+  const shell = simulationElement("repairiq-simulation");
+  if (!shell) return;
+
+  repairIQSimulation.previousView =
+    typeof state === "object" && state?.activeView ? state.activeView : "dashboard";
+
+  simulationTakeSnapshot();
+  repairIQSimulation.active = true;
+  repairIQSimulation.index = 0;
+  repairIQSimulation.auto = false;
+
+  shell.hidden = false;
+  shell.setAttribute("aria-hidden", "false");
+  document.body.classList.add("simulation-active");
+  simulationRender();
+
+  if (typeof showToast === "function") showToast("RepairIQ Workflow Demo started.");
+}
+
+function exitRepairIQSimulation(restoreData = true) {
+  const shell = simulationElement("repairiq-simulation");
+  if (!shell) return;
+
+  window.clearTimeout(repairIQSimulation.timer);
+  repairIQSimulation.timer = null;
+  repairIQSimulation.active = false;
+  repairIQSimulation.auto = false;
+
+  shell.hidden = true;
+  shell.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("simulation-active");
+
+  if (restoreData) simulationRestoreSnapshot();
+  simulationSwitchView(repairIQSimulation.previousView || "dashboard");
+}
+
+function simulationNext() {
+  if (repairIQSimulation.index >= REPAIRIQ_SIMULATION_STEPS.length - 1) {
+    exitRepairIQSimulation(true);
+    if (typeof showToast === "function") showToast("RepairIQ Workflow Demo complete.");
+    return;
+  }
+  repairIQSimulation.index += 1;
+  simulationRender();
+}
+
+function simulationPrevious() {
+  if (repairIQSimulation.index <= 0) return;
+  repairIQSimulation.index -= 1;
+  simulationRender();
+}
+
+function simulationRestart() {
+  repairIQSimulation.index = 0;
+  simulationRender();
+}
+
+function simulationScheduleAuto() {
+  window.clearTimeout(repairIQSimulation.timer);
+  repairIQSimulation.timer = null;
+  if (!repairIQSimulation.active || !repairIQSimulation.auto) return;
+
+  repairIQSimulation.timer = window.setTimeout(() => {
+    if (!repairIQSimulation.active || !repairIQSimulation.auto) return;
+    if (repairIQSimulation.index >= REPAIRIQ_SIMULATION_STEPS.length - 1) {
+      repairIQSimulation.auto = false;
+      simulationRender();
+      return;
+    }
+    repairIQSimulation.index += 1;
+    simulationRender();
+  }, 5200);
+}
+
+function initializeRepairIQSimulation() {
+  addListener("#start-live-simulation-button", "click", startRepairIQSimulation);
+  addListener("#simulation-close", "click", () => exitRepairIQSimulation(true));
+  addListener("#simulation-prev", "click", simulationPrevious);
+  addListener("#simulation-next", "click", simulationNext);
+  addListener("#simulation-restart", "click", simulationRestart);
+
+  addListener("#simulation-auto", "click", () => {
+    repairIQSimulation.auto = !repairIQSimulation.auto;
+    simulationRender();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (!repairIQSimulation.active) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      exitRepairIQSimulation(true);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      simulationNext();
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      simulationPrevious();
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initializeRepairIQSimulation);
+

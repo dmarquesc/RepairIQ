@@ -12473,3 +12473,500 @@ pre {
   }
 }
 
+/* =========================================================
+   REPAIRIQ v1.0 — MANAGEMENT LIVE SIMULATION
+   Isolated presentation layer. Does not alter repair logic.
+========================================================= */
+
+.simulation-launch-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 1px solid rgba(99, 232, 255, 0.58);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(99, 232, 255, 0.18), rgba(77, 157, 255, 0.08));
+  color: var(--cyan-bright);
+  box-shadow: 0 0 0 1px rgba(99, 232, 255, 0.05), 0 12px 34px rgba(0, 0, 0, 0.22);
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.simulation-launch-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
+  box-shadow: 0 0 24px rgba(99, 232, 255, 0.14), 0 16px 38px rgba(0, 0, 0, 0.28);
+}
+
+.simulation-launch-button strong,
+.simulation-launch-button small {
+  display: block;
+}
+
+.simulation-launch-button strong {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.simulation-launch-button small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.simulation-launch-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: #041018;
+  font-size: 10px;
+  box-shadow: 0 0 18px rgba(99, 232, 255, 0.42);
+}
+
+.simulation-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.simulation-shell[hidden] {
+  display: none !important;
+}
+
+.simulation-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 8, 13, 0.72);
+  backdrop-filter: blur(9px);
+}
+
+.simulation-hud {
+  position: relative;
+  width: min(1040px, calc(100vw - 32px));
+  max-height: min(820px, calc(100vh - 32px));
+  overflow: hidden;
+  border: 1px solid rgba(99, 232, 255, 0.34);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(77, 157, 255, 0.12), transparent 26rem),
+    linear-gradient(180deg, rgba(9, 24, 34, 0.99), rgba(5, 13, 20, 0.99));
+  box-shadow: 0 30px 110px rgba(0, 0, 0, 0.66), 0 0 60px rgba(99, 232, 255, 0.08);
+}
+
+.simulation-hud::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99, 232, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 232, 255, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.simulation-hud-header,
+.simulation-progress-wrap,
+.simulation-body,
+.simulation-controls {
+  position: relative;
+  z-index: 1;
+}
+
+.simulation-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid rgba(143, 190, 211, 0.12);
+}
+
+.simulation-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.simulation-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 95, 117, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 95, 117, 0.08);
+  color: #ff9cab;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.simulation-live-badge span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 12px var(--red);
+  animation: simulation-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes simulation-live-pulse {
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+.simulation-hud-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(17px, 2vw, 23px);
+  letter-spacing: -0.025em;
+}
+
+.simulation-hud-header p {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.simulation-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.035);
+  color: var(--text-soft);
+  font-size: 22px;
+}
+
+.simulation-progress-wrap {
+  padding: 14px 24px 0;
+}
+
+.simulation-progress-track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(143, 190, 211, 0.12);
+}
+
+.simulation-progress-bar {
+  width: 10%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  box-shadow: 0 0 18px rgba(99, 232, 255, 0.4);
+  transition: width 320ms ease;
+}
+
+.simulation-progress-copy {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.simulation-body {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  min-height: 390px;
+  max-height: 530px;
+  overflow: auto;
+  padding: 20px 24px 22px;
+}
+
+.simulation-timeline {
+  padding-right: 22px;
+  border-right: 1px solid rgba(143, 190, 211, 0.12);
+}
+
+.simulation-timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.simulation-timeline-item::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 31px;
+  width: 1px;
+  height: 18px;
+  background: rgba(143, 190, 211, 0.14);
+}
+
+.simulation-timeline-item:last-child::after {
+  display: none;
+}
+
+.simulation-timeline-index {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid rgba(143, 190, 211, 0.18);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.025);
+  font-family: var(--font-mono);
+  font-size: 8px;
+}
+
+.simulation-timeline-item.complete {
+  color: var(--green);
+}
+
+.simulation-timeline-item.complete .simulation-timeline-index {
+  border-color: rgba(79, 226, 162, 0.34);
+  background: rgba(79, 226, 162, 0.08);
+}
+
+.simulation-timeline-item.active {
+  color: var(--cyan-bright);
+  font-weight: 800;
+}
+
+.simulation-timeline-item.active .simulation-timeline-index {
+  border-color: var(--cyan);
+  background: rgba(99, 232, 255, 0.12);
+  box-shadow: 0 0 16px rgba(99, 232, 255, 0.16);
+}
+
+.simulation-stage {
+  padding: 8px 0 0 28px;
+}
+
+.simulation-stage-kicker {
+  color: var(--cyan);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.simulation-stage h3 {
+  margin: 8px 0 10px;
+  color: var(--text);
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.04em;
+}
+
+.simulation-stage-copy {
+  max-width: 700px;
+  margin-bottom: 20px;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.simulation-evidence-card,
+.simulation-decision-card {
+  margin-top: 11px;
+  padding: 13px 14px;
+  border: 1px solid rgba(99, 232, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(99, 232, 255, 0.045);
+}
+
+.simulation-decision-card {
+  border-color: rgba(244, 210, 103, 0.18);
+  background: rgba(244, 210, 103, 0.045);
+}
+
+.simulation-evidence-card span,
+.simulation-decision-card span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-dim);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.simulation-evidence-card strong,
+.simulation-decision-card strong {
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.simulation-callout {
+  margin-top: 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--purple);
+  color: #cdbfff;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.simulation-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(143, 190, 211, 0.12);
+  background: rgba(4, 12, 18, 0.56);
+}
+
+.simulation-control-left,
+.simulation-control-right {
+  display: flex;
+  gap: 9px;
+}
+
+.simulation-control {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.simulation-control.primary {
+  border: 1px solid var(--cyan);
+  background: var(--cyan);
+  color: #041018;
+}
+
+.simulation-control.secondary {
+  border: 1px solid rgba(99, 232, 255, 0.26);
+  background: rgba(99, 232, 255, 0.07);
+  color: var(--cyan-bright);
+}
+
+.simulation-control.ghost {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.025);
+  color: var(--text-muted);
+}
+
+body.simulation-active {
+  overflow: hidden;
+}
+
+body.simulation-active .app-shell {
+  filter: saturate(0.88) brightness(0.72);
+  transition: filter 260ms ease;
+}
+
+@media (max-width: 760px) {
+  .simulation-shell {
+    padding: 8px;
+  }
+
+  .simulation-hud {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 14px;
+  }
+
+  .simulation-hud-header {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .simulation-brand-block {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .simulation-progress-wrap {
+    padding: 12px 16px 0;
+  }
+
+  .simulation-body {
+    grid-template-columns: 1fr;
+    max-height: calc(100vh - 285px);
+    padding: 15px 16px;
+  }
+
+  .simulation-timeline {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(143, 190, 211, 0.12);
+  }
+
+  .simulation-timeline-item {
+    grid-template-columns: 24px max-content;
+    min-width: max-content;
+    min-height: 30px;
+  }
+
+  .simulation-timeline-item::after {
+    display: none;
+  }
+
+  .simulation-timeline-index {
+    width: 23px;
+    height: 23px;
+  }
+
+  .simulation-stage {
+    padding: 18px 0 0;
+  }
+
+  .simulation-stage h3 {
+    font-size: 24px;
+  }
+
+  .simulation-controls {
+    flex-direction: column;
+    padding: 12px 16px 16px;
+  }
+
+  .simulation-control-left,
+  .simulation-control-right {
+    width: 100%;
+  }
+
+  .simulation-control {
+    flex: 1;
+  }
+
+  .simulation-launch-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+
+.simulation-mode-stack {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+}
+
+.simulation-workflow-label {
+  padding-left: 3px;
+  color: var(--cyan);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}

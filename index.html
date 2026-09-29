@@ -1186,6 +1186,13 @@
                 Open Analyzer
 
               </button>
+<button class="simulation-launch-button" id="start-live-simulation-button" type="button" aria-haspopup="dialog">
+<span class="simulation-launch-icon" aria-hidden="true">▶</span>
+<span>
+<strong>Run Live Simulation</strong>
+<small>Workflow Demo</small>
+</span>
+</button>
 </div>
 <div aria-label="System capabilities" class="hero-trust-row">
 <span>
@@ -4439,6 +4446,72 @@
 <span id="toast-message"></span>
 </div>
 <!-- /toast -->
+
+<!-- ============================================================
+     REPAIRIQ v1.0 — MANAGEMENT LIVE SIMULATION
+     Demonstration-only guided workflow. No live hardware control.
+     ============================================================ -->
+<div class="simulation-shell" id="repairiq-simulation" hidden aria-hidden="true">
+  <div class="simulation-backdrop"></div>
+
+  <section class="simulation-hud" role="dialog" aria-modal="true" aria-labelledby="simulation-title">
+    <header class="simulation-hud-header">
+      <div class="simulation-brand-block">
+        <div class="simulation-mode-stack"><div class="simulation-live-badge"><span></span> LIVE SIMULATION</div><div class="simulation-workflow-label">WORKFLOW DEMO</div></div>
+        <div>
+          <h2 id="simulation-title">RepairIQ v1.0 Workflow Demo</h2>
+          <p id="simulation-subtitle">End-to-end technician-controlled repair intelligence demonstration</p>
+        </div>
+      </div>
+      <button class="simulation-close" id="simulation-close" type="button" aria-label="Exit simulation">×</button>
+    </header>
+
+    <div class="simulation-progress-wrap" aria-label="Simulation progress">
+      <div class="simulation-progress-track">
+        <div class="simulation-progress-bar" id="simulation-progress-bar"></div>
+      </div>
+      <div class="simulation-progress-copy">
+        <span id="simulation-step-counter">STEP 1 OF 10</span>
+        <span id="simulation-mode-label">GUIDED MODE</span>
+      </div>
+    </div>
+
+    <div class="simulation-body">
+      <aside class="simulation-timeline" id="simulation-timeline" aria-label="Workflow stages"></aside>
+
+      <div class="simulation-stage">
+        <div class="simulation-stage-kicker" id="simulation-stage-kicker">01 · OPERATIONS</div>
+        <h3 id="simulation-stage-title">RepairIQ Command Center</h3>
+        <p class="simulation-stage-copy" id="simulation-stage-copy"></p>
+
+        <div class="simulation-evidence-card">
+          <span>EVIDENCE / SYSTEM EVENT</span>
+          <strong id="simulation-evidence"></strong>
+        </div>
+
+        <div class="simulation-decision-card" id="simulation-decision-card">
+          <span>TECHNICIAN CONTROL</span>
+          <strong id="simulation-decision"></strong>
+        </div>
+
+        <div class="simulation-callout" id="simulation-callout"></div>
+      </div>
+    </div>
+
+    <footer class="simulation-controls">
+      <div class="simulation-control-left">
+        <button class="simulation-control ghost" id="simulation-restart" type="button">↺ Restart</button>
+        <button class="simulation-control ghost" id="simulation-auto" type="button">Auto Play: Off</button>
+      </div>
+      <div class="simulation-control-right">
+        <button class="simulation-control secondary" id="simulation-prev" type="button">← Previous</button>
+        <button class="simulation-control primary" id="simulation-next" type="button">Next Step →</button>
+      </div>
+    </footer>
+  </section>
+</div>
+<!-- /RepairIQ live simulation -->
+
 <script src="app.js"></script>
 </body>
 </html>
