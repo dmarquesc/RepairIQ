@@ -9080,3 +9080,345 @@ function updateProductionOperationsSnapshot(activeFlow=null){
  const labels={build:"Build complete · awaiting traveler",floor:"Unit staged on Repair Floor",test:"Unit actively testing",troubleshoot:"Failed unit in SWAP troubleshooting",swap:"Validated component replacement",retest:"Verification retest in progress",pass:"Verified pass",label:"Ready for Label"};setText("#ops-flow-status",labels[activeFlow]||"Monitoring prototype workflow");
 }
 document.addEventListener("DOMContentLoaded",()=>updateProductionOperationsSnapshot());
+
+
+/* ================================================================
+   60. R.E.X. 3D WEBGL / THREE.JS CONTROLLER — v1.3 FULL BODY + HAND MOTION
+   ---------------------------------------------------------------
+   Loads assets/models/rex.glb and animates the exported deform
+   skeleton live in the browser. This is presentation-only and does
+   not modify RepairIQ evidence, recommendations, approvals, retest,
+   case state, or any hardware-facing behavior.
+   ================================================================ */
+const REX_3D_CONFIG = Object.freeze({
+  modelUrl: "assets/models/rex.glb",
+  modelYaw: 0,
+  modelScale: 1,
+  cameraPadding: 1.18
+});
+
+const rex3D = {
+  ready: false,
+  failed: false,
+  pointerX: 0,
+  pointerY: 0,
+  targetPointerX: 0,
+  targetPointerY: 0,
+  bones: Object.create(null),
+  base: Object.create(null),
+  THREE: null,
+  renderer: null,
+  scene: null,
+  camera: null,
+  model: null,
+  clock: null,
+  frame: 0
+};
+
+function rex3DClamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function rex3DFindBone(model, names) {
+  for (const name of names) {
+    const object = model.getObjectByName(name);
+    if (object?.isBone) return object;
+  }
+  return null;
+}
+
+function rex3DRegisterBones(model) {
+  /* Exact bone names mapped from the exported rex.glb skeleton.
+     DEF bones drive the skinned mesh directly in glTF. */
+  const map = {
+    root: ["root"],
+    hips: ["DEF-spine", "hips"],
+    torso: ["DEF-spine002", "torso"],
+    chest: ["DEF-spine003", "chest"],
+    neck: ["DEF-spine005", "neck"],
+    head: ["DEF-spine006", "head"],
+    jaw: ["DEF-jaw", "jaw_master", "jaw"],
+
+    shoulderL: ["DEF-shoulderL", "shoulderL"],
+    shoulderR: ["DEF-shoulderR", "shoulderR"],
+    upperArmL: ["DEF-upper_armL", "upper_arm_fkL"],
+    upperArmR: ["DEF-upper_armR", "upper_arm_fkR"],
+    forearmL: ["DEF-forearmL", "forearm_fkL"],
+    forearmR: ["DEF-forearmR", "forearm_fkR"],
+    handL: ["DEF-handL", "hand_fkL"],
+    handR: ["DEF-handR", "hand_fkR"],
+
+    thumb1L: ["DEF-thumb01L"], thumb2L: ["DEF-thumb02L"], thumb3L: ["DEF-thumb03L"],
+    index1L: ["DEF-f_index01L"], index2L: ["DEF-f_index02L"], index3L: ["DEF-f_index03L"],
+    middle1L: ["DEF-f_middle01L"], middle2L: ["DEF-f_middle02L"], middle3L: ["DEF-f_middle03L"],
+    ring1L: ["DEF-f_ring01L"], ring2L: ["DEF-f_ring02L"], ring3L: ["DEF-f_ring03L"],
+    pinky1L: ["DEF-f_pinky01L"], pinky2L: ["DEF-f_pinky02L"], pinky3L: ["DEF-f_pinky03L"],
+
+    thumb1R: ["DEF-thumb01R"], thumb2R: ["DEF-thumb02R"], thumb3R: ["DEF-thumb03R"],
+    index1R: ["DEF-f_index01R"], index2R: ["DEF-f_index02R"], index3R: ["DEF-f_index03R"],
+    middle1R: ["DEF-f_middle01R"], middle2R: ["DEF-f_middle02R"], middle3R: ["DEF-f_middle03R"],
+    ring1R: ["DEF-f_ring01R"], ring2R: ["DEF-f_ring02R"], ring3R: ["DEF-f_ring03R"],
+    pinky1R: ["DEF-f_pinky01R"], pinky2R: ["DEF-f_pinky02R"], pinky3R: ["DEF-f_pinky03R"],
+
+    thighL: ["DEF-thighL"], thighR: ["DEF-thighR"],
+    shinL: ["DEF-shinL"], shinR: ["DEF-shinR"],
+    footL: ["DEF-footL"], footR: ["DEF-footR"]
+  };
+
+  Object.entries(map).forEach(([key, names]) => {
+    const bone = rex3DFindBone(model, names);
+    if (!bone) return;
+    rex3D.bones[key] = bone;
+    rex3D.base[key] = bone.quaternion.clone();
+  });
+
+  console.info("R.E.X. 3D bones connected:", Object.keys(rex3D.bones));
+}
+function rex3DApplyLocalRotation(key, x = 0, y = 0, z = 0) {
+  const bone = rex3D.bones[key];
+  const base = rex3D.base[key];
+  const THREE = rex3D.THREE;
+  if (!bone || !base || !THREE) return;
+  const offset = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, "XYZ"));
+  bone.quaternion.copy(base).multiply(offset);
+}
+
+function rex3DAnimate() {
+  if (!rex3D.ready) return;
+
+  const stage = document.getElementById("rexAvatarStage");
+  const mode = stage?.dataset.rexState || "ready";
+  const t = rex3D.clock.getElapsedTime();
+
+  rex3D.pointerX += (rex3D.targetPointerX - rex3D.pointerX) * 0.075;
+  rex3D.pointerY += (rex3D.targetPointerY - rex3D.pointerY) * 0.075;
+
+  const px = rex3D.pointerX;
+  const py = rex3D.pointerY;
+  const breathe = Math.sin(t * 1.55);
+  const sway = Math.sin(t * 0.72);
+  const slow = Math.sin(t * 0.38);
+  const scan = Math.sin(t * 1.30);
+  const talk = Math.sin(t * 6.0);
+  const gesture = Math.sin(t * 2.15);
+
+  let headX = -py * 0.14 + breathe * 0.012;
+  let headY = px * 0.42 + sway * 0.04;
+  let headZ = sway * 0.018;
+  let neckX = -py * 0.05;
+  let neckY = px * 0.16 + sway * 0.018;
+  let chestX = breathe * 0.025 - py * 0.025;
+  let chestY = px * 0.11 + sway * 0.018;
+  let chestZ = sway * 0.022;
+  let torsoY = px * 0.065;
+  let torsoZ = slow * 0.018;
+  let hipsY = px * 0.018;
+  let hipsZ = -slow * 0.012;
+  let jawX = 0;
+
+  /* Arms start relaxed. Pointer movement produces only a small natural
+     counter-balance so the whole body does not swing like one rigid object. */
+  let shoulderLX = 0, shoulderLY = 0, shoulderLZ = 0;
+  let shoulderRX = 0, shoulderRY = 0, shoulderRZ = 0;
+  let upperLX = 0, upperLY = 0, upperLZ = breathe * 0.010;
+  let upperRX = 0, upperRY = 0, upperRZ = -breathe * 0.010;
+  let foreLX = 0, foreLY = 0, foreLZ = 0;
+  let foreRX = 0, foreRY = 0, foreRZ = 0;
+  let handLX = 0, handLY = 0, handLZ = sway * 0.015;
+  let handRX = 0, handRY = 0, handRZ = -sway * 0.015;
+  let fingerCurlL = 0.035 + (breathe + 1) * 0.012;
+  let fingerCurlR = 0.035 + (breathe + 1) * 0.012;
+
+  if (mode === "listening") {
+    headX -= 0.065;
+    headY += 0.055;
+    neckX -= 0.025;
+    chestX -= 0.030;
+    shoulderLZ += 0.025;
+    shoulderRZ -= 0.025;
+  } else if (mode === "analyzing" || mode === "remembering") {
+    headY += scan * 0.24;
+    neckY += scan * 0.10;
+    chestY += scan * 0.065;
+    torsoY += scan * 0.030;
+    /* Deliberate diagnostic posture: one arm comes forward while the
+       opposite hand remains lower, making ANALYZING visibly distinct. */
+    upperRX -= 0.24;
+    upperRZ -= 0.16;
+    foreRX -= 0.42;
+    foreRZ += 0.10;
+    handRY += 0.10 + scan * 0.05;
+    fingerCurlR = 0.16 + (scan + 1) * 0.035;
+    upperLZ += 0.055;
+  } else if (mode === "speaking") {
+    headY += Math.sin(t * 2.1) * 0.085;
+    headX += Math.sin(t * 2.8) * 0.035;
+    neckY += Math.sin(t * 2.1) * 0.035;
+    chestY += Math.sin(t * 1.65) * 0.040;
+    chestZ += Math.sin(t * 1.9) * 0.030;
+    torsoY += Math.sin(t * 1.3) * 0.025;
+    jawX = Math.max(0, talk) * 0.075;
+
+    /* Alternating conversational gestures. */
+    upperLX -= 0.16 + Math.max(0, gesture) * 0.10;
+    upperLZ += 0.12 + gesture * 0.06;
+    foreLX -= 0.30 + Math.max(0, gesture) * 0.20;
+    foreLZ -= 0.08;
+    handLY -= gesture * 0.10;
+
+    upperRX -= 0.12 + Math.max(0, -gesture) * 0.08;
+    upperRZ -= 0.10 + gesture * 0.05;
+    foreRX -= 0.22 + Math.max(0, -gesture) * 0.16;
+    foreRZ += 0.06;
+    handRY += gesture * 0.08;
+
+    fingerCurlL = 0.10 + (gesture + 1) * 0.055;
+    fingerCurlR = 0.10 + (1 - gesture) * 0.045;
+  } else {
+    chestX += breathe * 0.016;
+    /* Small asymmetric idle arm motion keeps R.E.X. alive without
+       looking like he is constantly gesturing. */
+    upperLZ += slow * 0.018;
+    upperRZ -= slow * 0.018;
+    foreLX += Math.sin(t * 0.55) * 0.010;
+    foreRX += Math.sin(t * 0.55 + 1.4) * 0.010;
+  }
+
+  rex3DApplyLocalRotation("hips", 0, hipsY, hipsZ);
+  rex3DApplyLocalRotation("torso", 0, torsoY, torsoZ);
+  rex3DApplyLocalRotation("chest", chestX, chestY, chestZ);
+  rex3DApplyLocalRotation("neck", neckX, neckY, 0);
+  rex3DApplyLocalRotation("head", headX, headY, headZ);
+  rex3DApplyLocalRotation("jaw", jawX, 0, 0);
+
+  rex3DApplyLocalRotation("shoulderL", shoulderLX, shoulderLY, shoulderLZ);
+  rex3DApplyLocalRotation("shoulderR", shoulderRX, shoulderRY, shoulderRZ);
+  rex3DApplyLocalRotation("upperArmL", upperLX, upperLY, upperLZ);
+  rex3DApplyLocalRotation("upperArmR", upperRX, upperRY, upperRZ);
+  rex3DApplyLocalRotation("forearmL", foreLX, foreLY, foreLZ);
+  rex3DApplyLocalRotation("forearmR", foreRX, foreRY, foreRZ);
+  rex3DApplyLocalRotation("handL", handLX, handLY, handLZ);
+  rex3DApplyLocalRotation("handR", handRX, handRY, handRZ);
+
+  /* Curl the three phalanges of each finger. The thumb gets a smaller
+     mixed-axis motion so the hand does not close like a flat hinge. */
+  for (const side of ["L", "R"]) {
+    const curl = side === "L" ? fingerCurlL : fingerCurlR;
+    for (const finger of ["index", "middle", "ring", "pinky"]) {
+      rex3DApplyLocalRotation(`${finger}1${side}`, curl * 0.55, 0, 0);
+      rex3DApplyLocalRotation(`${finger}2${side}`, curl * 0.80, 0, 0);
+      rex3DApplyLocalRotation(`${finger}3${side}`, curl * 0.65, 0, 0);
+    }
+    const thumbSign = side === "L" ? 1 : -1;
+    rex3DApplyLocalRotation(`thumb1${side}`, curl * 0.30, 0, thumbSign * curl * 0.18);
+    rex3DApplyLocalRotation(`thumb2${side}`, curl * 0.45, 0, 0);
+    rex3DApplyLocalRotation(`thumb3${side}`, curl * 0.35, 0, 0);
+  }
+
+  rex3D.renderer.render(rex3D.scene, rex3D.camera);
+  rex3D.frame = requestAnimationFrame(rex3DAnimate);
+}
+function rex3DFitCamera() {
+  const THREE = rex3D.THREE;
+  if (!THREE || !rex3D.model || !rex3D.camera) return;
+  const box = new THREE.Box3().setFromObject(rex3D.model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  rex3D.model.position.x -= center.x;
+  rex3D.model.position.y -= center.y;
+  rex3D.model.position.z -= center.z;
+
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  const fov = rex3D.camera.fov * Math.PI / 180;
+  const distance = (maxDim / (2 * Math.tan(fov / 2))) * REX_3D_CONFIG.cameraPadding;
+  rex3D.camera.position.set(0, size.y * 0.02, distance);
+  rex3D.camera.near = Math.max(distance / 100, 0.01);
+  rex3D.camera.far = distance * 100;
+  rex3D.camera.lookAt(0, 0, 0);
+  rex3D.camera.updateProjectionMatrix();
+}
+
+function rex3DResize() {
+  if (!rex3D.ready) return;
+  const canvas = document.getElementById("rex-3d-canvas");
+  const shell = document.getElementById("rex-3d-shell");
+  if (!canvas || !shell) return;
+  const width = Math.max(1, shell.clientWidth);
+  const height = Math.max(1, shell.clientHeight);
+  rex3D.camera.aspect = width / height;
+  rex3D.camera.updateProjectionMatrix();
+  rex3D.renderer.setSize(width, height, false);
+  rex3D.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+}
+
+async function initializeRex3DV11() {
+  const stage = document.getElementById("rexAvatarStage");
+  const shell = document.getElementById("rex-3d-shell");
+  const canvas = document.getElementById("rex-3d-canvas");
+  const loading = document.getElementById("rex-3d-loading");
+  if (!stage || !shell || !canvas || shell.dataset.initialized === "true") return;
+  shell.dataset.initialized = "true";
+
+  try {
+    const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.180.0/+esm");
+    const { GLTFLoader } = await import("https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js/+esm");
+    rex3D.THREE = THREE;
+    rex3D.scene = new THREE.Scene();
+    rex3D.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 1000);
+    rex3D.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
+    rex3D.renderer.setClearColor(0x000000, 0);
+    rex3D.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    rex3D.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    rex3D.renderer.toneMappingExposure = 1.08;
+
+    rex3D.scene.add(new THREE.HemisphereLight(0xbfefff, 0x071018, 2.0));
+    const key = new THREE.DirectionalLight(0xffffff, 2.7);
+    key.position.set(3, 5, 5);
+    rex3D.scene.add(key);
+    const rim = new THREE.DirectionalLight(0x63e8ff, 2.0);
+    rim.position.set(-4, 2, -3);
+    rex3D.scene.add(rim);
+
+    const loader = new GLTFLoader();
+    const gltf = await loader.loadAsync(REX_3D_CONFIG.modelUrl);
+    rex3D.model = gltf.scene;
+    rex3D.model.rotation.y = REX_3D_CONFIG.modelYaw;
+    rex3D.model.scale.setScalar(REX_3D_CONFIG.modelScale);
+    rex3D.scene.add(rex3D.model);
+
+    rex3DRegisterBones(rex3D.model);
+    rex3DFitCamera();
+    rex3D.clock = new THREE.Clock();
+    rex3D.ready = true;
+    shell.classList.add("is-ready");
+    if (loading) loading.textContent = "R.E.X. 3D ONLINE";
+    rex3DResize();
+    rex3DAnimate();
+
+    stage.addEventListener("pointermove", event => {
+      const r = stage.getBoundingClientRect();
+      rex3D.targetPointerX = rex3DClamp(((event.clientX - r.left) / r.width - 0.5) * 2, -1, 1);
+      rex3D.targetPointerY = rex3DClamp(((event.clientY - r.top) / r.height - 0.5) * 2, -1, 1);
+    });
+    stage.addEventListener("pointerleave", () => {
+      rex3D.targetPointerX = 0;
+      rex3D.targetPointerY = 0;
+    });
+
+    const resizeObserver = new ResizeObserver(rex3DResize);
+    resizeObserver.observe(shell);
+    window.addEventListener("resize", rex3DResize, { passive: true });
+    console.info("R.E.X. 3D core online", REX_3D_CONFIG.modelUrl);
+  } catch (error) {
+    rex3D.failed = true;
+    shell.classList.add("is-error");
+    const fallback = document.getElementById("rex-avatar-fallback");
+    if (fallback) {
+      fallback.hidden = false;
+      fallback.textContent = "R.E.X. 3D unavailable";
+    }
+    console.error("R.E.X. 3D failed to initialize:", error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initializeRex3DV11);

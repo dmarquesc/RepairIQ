@@ -4208,7 +4208,11 @@
 <div aria-hidden="true" class="rex-diagnostic-ring">
 <span></span><span></span><span></span>
 </div>
-<img alt="R.E.X., the Repair Engineer Xpert" class="rex-avatar-image" id="rex-avatar-image" src="assets/rex.png">
+<!-- R.E.X. 3D WebGL mount. assets/models/rex.glb is loaded by app.js. -->
+<div class="rex-3d-shell" id="rex-3d-shell" aria-label="Interactive 3D R.E.X. avatar">
+  <canvas class="rex-3d-canvas" id="rex-3d-canvas" aria-hidden="true"></canvas>
+  <div class="rex-3d-loading" id="rex-3d-loading" role="status">INITIALIZING R.E.X. 3D CORE…</div>
+</div>
 <div class="rex-interactive-light" aria-hidden="true"></div>
 <div class="rex-core-reactor" aria-hidden="true"><span></span></div>
 <div class="rex-interaction-hint" aria-hidden="true">MOVE · HOVER · CLICK · DOUBLE-CLICK</div>
@@ -4227,7 +4231,7 @@
 <span aria-hidden="true" class="status-dot"></span>
 <span id="rexStatusText">Online · ready to talk</span>
 </div>
-</img></div>
+</div>
 <div class="rex-introduction">
 <p>
                   I’m R.E.X., your Repair Engineer Xpert. Talk with me about your day, ideas, or a repair. When case evidence is available, I can explain the structured analysis.
