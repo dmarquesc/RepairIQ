@@ -9083,7 +9083,7 @@ document.addEventListener("DOMContentLoaded",()=>updateProductionOperationsSnaps
 
 
 /* ================================================================
-   60. R.E.X. 3D WEBGL / THREE.JS CONTROLLER — v1.3 FULL BODY + HAND MOTION
+   60. R.E.X. 3D WEBGL / THREE.JS CONTROLLER — v2.0 EXPRESSIVE MOTION SYSTEM
    ---------------------------------------------------------------
    Loads assets/models/rex.glb and animates the exported deform
    skeleton live in the browser. This is presentation-only and does
@@ -9112,7 +9112,16 @@ const rex3D = {
   camera: null,
   model: null,
   clock: null,
-  frame: 0
+  frame: 0,
+  gestureSeed: 0,
+  lastMode: "ready",
+  modeChangedAt: 0,
+  face: null,
+  faceMode: 0,
+  portalStart: -1,
+  portalDuration: 8.5,
+  droplets: [],
+  originalModelPosition: null
 };
 
 function rex3DClamp(value, min, max) {
@@ -9180,7 +9189,11 @@ function rex3DApplyLocalRotation(key, x = 0, y = 0, z = 0) {
   const THREE = rex3D.THREE;
   if (!bone || !base || !THREE) return;
   const offset = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, "XYZ"));
-  bone.quaternion.copy(base).multiply(offset);
+  // V14: blend toward the desired pose, avoiding a single-frame snap
+  // when speaking/analyzing/ready modes change.
+  const target = base.clone().multiply(offset);
+  const damping = key === "upperArmR" || key === "forearmR" || key === "shoulderR" ? 0.075 : 0.13;
+  bone.quaternion.slerp(target, damping);
 }
 
 function rex3DAnimate() {
@@ -9190,104 +9203,212 @@ function rex3DAnimate() {
   const mode = stage?.dataset.rexState || "ready";
   const t = rex3D.clock.getElapsedTime();
 
-  rex3D.pointerX += (rex3D.targetPointerX - rex3D.pointerX) * 0.075;
-  rex3D.pointerY += (rex3D.targetPointerY - rex3D.pointerY) * 0.075;
+  if (mode !== rex3D.lastMode) {
+    rex3D.lastMode = mode;
+    rex3D.modeChangedAt = t;
+    rex3D.gestureSeed += 1;
+  }
+  const stateAge = t - rex3D.modeChangedAt;
+  const enter = rex3DClamp(stateAge / 0.45, 0, 1);
+  const ease = enter * enter * (3 - 2 * enter);
+
+  rex3D.pointerX += (rex3D.targetPointerX - rex3D.pointerX) * 0.055;
+  rex3D.pointerY += (rex3D.targetPointerY - rex3D.pointerY) * 0.055;
 
   const px = rex3D.pointerX;
   const py = rex3D.pointerY;
-  const breathe = Math.sin(t * 1.55);
-  const sway = Math.sin(t * 0.72);
-  const slow = Math.sin(t * 0.38);
-  const scan = Math.sin(t * 1.30);
-  const talk = Math.sin(t * 6.0);
-  const gesture = Math.sin(t * 2.15);
+  const breathe = Math.sin(t * 1.45);
+  const breathe2 = Math.sin(t * 1.45 - 0.8);
+  const sway = Math.sin(t * 0.62);
+  const slow = Math.sin(t * 0.31);
+  const micro = Math.sin(t * 2.2) * 0.5 + Math.sin(t * 1.13) * 0.5;
+  const scan = Math.sin(t * 1.18);
+  const talk = Math.sin(t * 7.3) * 0.5 + Math.sin(t * 4.7) * 0.5;
+  const phrase = Math.sin(t * 1.72);
+  const phrase2 = Math.sin(t * 1.07 + 1.2);
+  const emphasis = Math.max(0, Math.sin(t * 0.86 + rex3D.gestureSeed));
 
-  let headX = -py * 0.14 + breathe * 0.012;
-  let headY = px * 0.42 + sway * 0.04;
-  let headZ = sway * 0.018;
-  let neckX = -py * 0.05;
-  let neckY = px * 0.16 + sway * 0.018;
-  let chestX = breathe * 0.025 - py * 0.025;
-  let chestY = px * 0.11 + sway * 0.018;
-  let chestZ = sway * 0.022;
-  let torsoY = px * 0.065;
-  let torsoZ = slow * 0.018;
-  let hipsY = px * 0.018;
-  let hipsZ = -slow * 0.012;
+  // Base posture. Pointer tracking is intentionally restrained so R.E.X.
+  // follows the operator without moving like a rigid puppet.
+  let headX = -py * 0.10 + breathe * 0.010;
+  let headY = px * 0.30 + sway * 0.025;
+  let headZ = sway * 0.012;
+  let neckX = -py * 0.035;
+  let neckY = px * 0.105 + sway * 0.010;
+  let neckZ = 0;
+  let chestX = breathe * 0.030 - py * 0.012;
+  let chestY = px * 0.055 + sway * 0.014;
+  let chestZ = sway * 0.014;
+  let torsoX = breathe2 * 0.008;
+  let torsoY = px * 0.025;
+  let torsoZ = slow * 0.012;
+  let hipsX = 0;
+  let hipsY = px * 0.008;
+  let hipsZ = -slow * 0.010;
   let jawX = 0;
 
-  /* Arms start relaxed. Pointer movement produces only a small natural
-     counter-balance so the whole body does not swing like one rigid object. */
-  let shoulderLX = 0, shoulderLY = 0, shoulderLZ = 0;
-  let shoulderRX = 0, shoulderRY = 0, shoulderRZ = 0;
-  let upperLX = 0, upperLY = 0, upperLZ = breathe * 0.010;
-  let upperRX = 0, upperRY = 0, upperRZ = -breathe * 0.010;
-  let foreLX = 0, foreLY = 0, foreLZ = 0;
-  let foreRX = 0, foreRY = 0, foreRZ = 0;
-  let handLX = 0, handLY = 0, handLZ = sway * 0.015;
-  let handRX = 0, handRY = 0, handRZ = -sway * 0.015;
-  let fingerCurlL = 0.035 + (breathe + 1) * 0.012;
-  let fingerCurlR = 0.035 + (breathe + 1) * 0.012;
+  let shoulderLX = breathe * 0.006, shoulderLY = 0, shoulderLZ = 0.012 + slow * 0.008;
+  let shoulderRX = breathe * 0.006, shoulderRY = 0, shoulderRZ = -0.012 - slow * 0.008;
+  let upperLX = 0, upperLY = 0, upperLZ = 0.012 + slow * 0.012;
+  let upperRX = 0, upperRY = 0, upperRZ = -0.012 - slow * 0.012;
+  let foreLX = Math.sin(t * 0.52) * 0.008, foreLY = 0, foreLZ = 0;
+  let foreRX = Math.sin(t * 0.52 + 1.7) * 0.008, foreRY = 0, foreRZ = 0;
+  let handLX = 0, handLY = slow * 0.010, handLZ = sway * 0.012;
+  let handRX = 0, handRY = -slow * 0.010, handRZ = -sway * 0.012;
+  let fingerCurlL = 0.045 + (breathe + 1) * 0.010;
+  let fingerCurlR = 0.045 + (breathe2 + 1) * 0.010;
+
+  // Lower body micro-weight shift. Small values keep the feet planted.
+  let thighLX = 0, thighLY = 0, thighLZ = slow * 0.008;
+  let thighRX = 0, thighRY = 0, thighRZ = -slow * 0.008;
+  let shinLX = 0, shinRX = 0;
+  let footLX = 0, footRX = 0;
 
   if (mode === "listening") {
-    headX -= 0.065;
-    headY += 0.055;
-    neckX -= 0.025;
-    chestX -= 0.030;
-    shoulderLZ += 0.025;
-    shoulderRZ -= 0.025;
+    // Attentive posture: slight forward lean, head cant, hands relaxed.
+    headX += -0.055 * ease;
+    headY += 0.045 * ease;
+    headZ += 0.025 * ease;
+    neckX += -0.020 * ease;
+    chestX += -0.035 * ease;
+    torsoX += -0.018 * ease;
+    shoulderLZ += 0.018 * ease;
+    shoulderRZ -= 0.018 * ease;
+    upperLX -= 0.025 * ease;
+    upperRX -= 0.025 * ease;
+    fingerCurlL += 0.025 * ease;
+    fingerCurlR += 0.025 * ease;
   } else if (mode === "analyzing" || mode === "remembering") {
-    headY += scan * 0.24;
-    neckY += scan * 0.10;
-    chestY += scan * 0.065;
-    torsoY += scan * 0.030;
-    /* Deliberate diagnostic posture: one arm comes forward while the
-       opposite hand remains lower, making ANALYZING visibly distinct. */
-    upperRX -= 0.24;
-    upperRZ -= 0.16;
-    foreRX -= 0.42;
-    foreRZ += 0.10;
-    handRY += 0.10 + scan * 0.05;
+    // Diagnostic scan plus a deliberate right-hand thinking gesture.
+    headY += scan * 0.20 * ease;
+    headX += (-0.035 + Math.sin(t * 0.74) * 0.025) * ease;
+    neckY += scan * 0.075 * ease;
+    chestY += scan * 0.045 * ease;
+    torsoY += scan * 0.020 * ease;
+    chestX -= 0.020 * ease;
+
+    shoulderRX -= 0.055 * ease;
+    shoulderRZ -= 0.055 * ease;
+    upperRX += 0.045 * ease;
+    upperRY += 0.05 * ease;
+    upperRZ -= 0.025 * ease;
+    foreRX += 0.075 * ease;
+    foreRY += 0.08 * ease;
+    foreRZ += 0.018 * ease;
+    handRX += 0.08 * ease;
+    handRY += (0.12 + scan * 0.06) * ease;
+    handRZ += 0.06 * ease;
     fingerCurlR = 0.16 + (scan + 1) * 0.035;
-    upperLZ += 0.055;
+
+    // Left hand stays open and lower as a counterbalance.
+    upperLZ += 0.045 * ease;
+    foreLX -= 0.045 * ease;
+    handLY -= 0.035 * ease;
+    fingerCurlL = 0.07;
   } else if (mode === "speaking") {
-    headY += Math.sin(t * 2.1) * 0.085;
-    headX += Math.sin(t * 2.8) * 0.035;
-    neckY += Math.sin(t * 2.1) * 0.035;
-    chestY += Math.sin(t * 1.65) * 0.040;
-    chestZ += Math.sin(t * 1.9) * 0.030;
-    torsoY += Math.sin(t * 1.3) * 0.025;
-    jawX = Math.max(0, talk) * 0.075;
+    // Layered conversational motion. The left and right sides alternate,
+    // preventing the same gesture from looping continuously.
+    headY += Math.sin(t * 1.95) * 0.065 * ease;
+    headX += Math.sin(t * 2.55) * 0.025 * ease;
+    headZ += Math.sin(t * 1.35) * 0.018 * ease;
+    neckY += Math.sin(t * 1.95) * 0.028 * ease;
+    chestY += Math.sin(t * 1.42) * 0.032 * ease;
+    chestZ += Math.sin(t * 1.66) * 0.024 * ease;
+    torsoY += Math.sin(t * 1.12) * 0.018 * ease;
+    hipsZ += Math.sin(t * 0.70) * 0.010 * ease;
+    jawX = Math.max(0, talk) * 0.085 * ease;
 
-    /* Alternating conversational gestures. */
-    upperLX -= 0.16 + Math.max(0, gesture) * 0.10;
-    upperLZ += 0.12 + gesture * 0.06;
-    foreLX -= 0.30 + Math.max(0, gesture) * 0.20;
-    foreLZ -= 0.08;
-    handLY -= gesture * 0.10;
+    const leftLead = (Math.sin(t * 0.54 + rex3D.gestureSeed) + 1) * 0.5;
+    const rightLead = 1 - leftLead;
 
-    upperRX -= 0.12 + Math.max(0, -gesture) * 0.08;
-    upperRZ -= 0.10 + gesture * 0.05;
-    foreRX -= 0.22 + Math.max(0, -gesture) * 0.16;
-    foreRZ += 0.06;
-    handRY += gesture * 0.08;
+    // V13: forward-facing, restrained presentation gesture.
+    // Positive local X corrects the backward swing observed on the exported rig.
+    shoulderLX += (0.010 + emphasis * 0.012) * leftLead * ease;
+    upperLX += (0.10 + Math.max(0, phrase) * 0.08 + emphasis * 0.035) * leftLead * ease;
+    upperLY += phrase2 * 0.045 * leftLead * ease;
+    upperLZ += (0.045 + phrase * 0.025) * leftLead * ease;
+    foreLX += (0.20 + Math.max(0, phrase) * 0.12) * leftLead * ease;
+    foreLY += phrase2 * 0.06 * leftLead * ease;
+    foreLZ -= 0.025 * leftLead * ease;
+    handLX += phrase2 * 0.035 * leftLead * ease;
+    handLY -= phrase * 0.12 * leftLead * ease;
+    handLZ += emphasis * 0.05 * leftLead * ease;
 
-    fingerCurlL = 0.10 + (gesture + 1) * 0.055;
-    fingerCurlR = 0.10 + (1 - gesture) * 0.045;
+    shoulderRX += (0.010 + emphasis * 0.012) * rightLead * ease;
+    upperRX += (0.055 + Math.max(0, -phrase) * 0.025) * rightLead * ease;
+    upperRY -= phrase2 * 0.012 * rightLead * ease;
+    upperRZ -= 0.018 * rightLead * ease;
+    foreRX += (0.085 + Math.max(0, -phrase) * 0.04) * rightLead * ease;
+    foreRY -= phrase2 * 0.015 * rightLead * ease;
+    foreRZ += 0.025 * rightLead * ease;
+    handRX -= phrase2 * 0.035 * rightLead * ease;
+    handRY += phrase * 0.12 * rightLead * ease;
+    handRZ -= emphasis * 0.05 * rightLead * ease;
+
+    // Hands open during emphasis, then relax between phrases.
+    fingerCurlL = 0.055 + (1 - emphasis) * 0.065 + Math.max(0, -phrase) * 0.035;
+    fingerCurlR = 0.055 + (1 - emphasis) * 0.065 + Math.max(0, phrase) * 0.035;
   } else {
-    chestX += breathe * 0.016;
-    /* Small asymmetric idle arm motion keeps R.E.X. alive without
-       looking like he is constantly gesturing. */
-    upperLZ += slow * 0.018;
-    upperRZ -= slow * 0.018;
-    foreLX += Math.sin(t * 0.55) * 0.010;
-    foreRX += Math.sin(t * 0.55 + 1.4) * 0.010;
+    // READY: alive but calm. Occasional tiny nod/cant and weight transfer.
+    headX += Math.sin(t * 0.37) * 0.012;
+    headZ += Math.sin(t * 0.29 + 0.8) * 0.010;
+    chestX += breathe * 0.014;
+    torsoX += breathe2 * 0.006;
+    hipsZ += slow * 0.006;
+    thighLZ += slow * 0.004;
+    thighRZ -= slow * 0.004;
+    handLY += micro * 0.006;
+    handRY -= micro * 0.006;
   }
 
-  rex3DApplyLocalRotation("hips", 0, hipsY, hipsZ);
-  rex3DApplyLocalRotation("torso", 0, torsoY, torsoZ);
+  // V15 staged portal performance: reach, hold the rim, step forward, settle.
+  // This is a preview choreography, not an IK contact solver.
+  if (rex3D.portalStart >= 0) {
+    const p = rex3DClamp((t - rex3D.portalStart) / rex3D.portalDuration, 0, 1);
+    const sequence = rex3D.portalStep || "full";
+    const smooth = v => { v = rex3DClamp(v,0,1); return v*v*(3-2*v); };
+    const grab = sequence === "grab" ? smooth(p/.23)*(1-smooth((p-.80)/.18)) : sequence === "reach" ? 0 : smooth(p / .22) * (1 - smooth((p-.48)/.18));
+    const walk = sequence === "step" ? smooth(p/.25)*(1-smooth((p-.78)/.20)) : sequence === "reach" || sequence === "grab" ? 0 : smooth((p-.33)/.18) * (1 - smooth((p-.79)/.13));
+    const release = smooth((p-.80)/.20);
+    // Reach toward the viewer, pause at full extension, then withdraw.
+    const outreach = sequence === "reach" ? smooth(p/.2)*(1-smooth((p-.80)/.17)) : sequence === "grab" ? grab*.48 : sequence === "step" ? walk*.30 : smooth((p-.15)/.18) * (1 - smooth((p-.64)/.17));
+    chestX -= grab * .09;
+    torsoX -= grab * .07;
+    shoulderLZ += grab * .20; shoulderRZ -= grab * .20;
+    upperLX += grab * .16 + outreach * .40;
+    upperRX += grab * .16 + outreach * .40;
+    foreLX += grab * .26 + outreach * .43;
+    foreRX += grab * .26 + outreach * .43;
+    upperLZ += outreach * .10; upperRZ -= outreach * .10;
+    handLX += outreach * .11; handRX += outreach * .11;
+    handLZ += grab * .08; handRZ -= grab * .08;
+    fingerCurlL += grab * .24 - outreach * .06;
+    fingerCurlR += grab * .24 - outreach * .06;
+    thighLX += Math.sin((p-.35)*22) * walk * .23;
+    thighRX -= Math.sin((p-.35)*22) * walk * .23;
+    shinLX += Math.max(0,Math.sin((p-.35)*22)) * walk * .17;
+    shinRX += Math.max(0,-Math.sin((p-.35)*22)) * walk * .17;
+    if (rex3D.model && rex3D.originalModelPosition) {
+      rex3D.model.position.copy(rex3D.originalModelPosition);
+      rex3D.model.position.z += (sequence === "reach" ? .13*outreach : sequence === "grab" ? .08*grab : .24 * smooth((p-.30)/.45) * (1-release));
+      rex3D.model.position.y += .025 * Math.abs(Math.sin((p-.35)*22)) * walk;
+    }
+    if (p >= 1) {
+      rex3D.portalStart = -1;
+      rex3D.portalStep = "full";
+      rex3D.portalDuration = 8.5;
+      document.getElementById('rexAvatarStage')?.classList.remove('rex-v15-portal-active');
+      const label = document.getElementById('rex-v15-portal-label');
+      if (label) label.textContent = 'PORTAL · STANDBY';
+    }
+  } else if (rex3D.model && rex3D.originalModelPosition) {
+    rex3D.model.position.lerp(rex3D.originalModelPosition,.10);
+  }
+
+  rex3DApplyLocalRotation("hips", hipsX, hipsY, hipsZ);
+  rex3DApplyLocalRotation("torso", torsoX, torsoY, torsoZ);
   rex3DApplyLocalRotation("chest", chestX, chestY, chestZ);
-  rex3DApplyLocalRotation("neck", neckX, neckY, 0);
+  rex3DApplyLocalRotation("neck", neckX, neckY, neckZ);
   rex3DApplyLocalRotation("head", headX, headY, headZ);
   rex3DApplyLocalRotation("jaw", jawX, 0, 0);
 
@@ -9300,21 +9421,36 @@ function rex3DAnimate() {
   rex3DApplyLocalRotation("handL", handLX, handLY, handLZ);
   rex3DApplyLocalRotation("handR", handRX, handRY, handRZ);
 
-  /* Curl the three phalanges of each finger. The thumb gets a smaller
-     mixed-axis motion so the hand does not close like a flat hinge. */
+  rex3DApplyLocalRotation("thighL", thighLX, thighLY, thighLZ);
+  rex3DApplyLocalRotation("thighR", thighRX, thighRY, thighRZ);
+  rex3DApplyLocalRotation("shinL", shinLX, 0, 0);
+  rex3DApplyLocalRotation("shinR", shinRX, 0, 0);
+  rex3DApplyLocalRotation("footL", footLX, 0, 0);
+  rex3DApplyLocalRotation("footR", footRX, 0, 0);
+
+  // Independent finger articulation. Each finger receives a slightly
+  // different multiplier so the hand does not close as one flat block.
+  const fingerFactors = {
+    index: [0.48, 0.76, 0.60],
+    middle: [0.56, 0.84, 0.68],
+    ring: [0.61, 0.88, 0.72],
+    pinky: [0.66, 0.92, 0.76]
+  };
   for (const side of ["L", "R"]) {
     const curl = side === "L" ? fingerCurlL : fingerCurlR;
-    for (const finger of ["index", "middle", "ring", "pinky"]) {
-      rex3DApplyLocalRotation(`${finger}1${side}`, curl * 0.55, 0, 0);
-      rex3DApplyLocalRotation(`${finger}2${side}`, curl * 0.80, 0, 0);
-      rex3DApplyLocalRotation(`${finger}3${side}`, curl * 0.65, 0, 0);
+    const flutter = mode === "speaking" ? Math.sin(t * 3.1 + (side === "L" ? 0 : 1.1)) * 0.012 : 0;
+    for (const [finger, factors] of Object.entries(fingerFactors)) {
+      rex3DApplyLocalRotation(`${finger}1${side}`, curl * factors[0] + flutter, 0, 0);
+      rex3DApplyLocalRotation(`${finger}2${side}`, curl * factors[1] + flutter, 0, 0);
+      rex3DApplyLocalRotation(`${finger}3${side}`, curl * factors[2], 0, 0);
     }
-    const thumbSign = side === "L" ? 1 : -1;
-    rex3DApplyLocalRotation(`thumb1${side}`, curl * 0.30, 0, thumbSign * curl * 0.18);
-    rex3DApplyLocalRotation(`thumb2${side}`, curl * 0.45, 0, 0);
-    rex3DApplyLocalRotation(`thumb3${side}`, curl * 0.35, 0, 0);
+    const sign = side === "L" ? 1 : -1;
+    rex3DApplyLocalRotation(`thumb1${side}`, curl * 0.28, sign * curl * 0.06, sign * curl * 0.20);
+    rex3DApplyLocalRotation(`thumb2${side}`, curl * 0.44, 0, sign * curl * 0.05);
+    rex3DApplyLocalRotation(`thumb3${side}`, curl * 0.34, 0, 0);
   }
 
+  rexV15UpdateFace(t, mode);
   rex3D.renderer.render(rex3D.scene, rex3D.camera);
   rex3D.frame = requestAnimationFrame(rex3DAnimate);
 }
@@ -9388,6 +9524,8 @@ async function initializeRex3DV11() {
 
     rex3DRegisterBones(rex3D.model);
     rex3DFitCamera();
+    rex3D.originalModelPosition = rex3D.model.position.clone();
+    rexV15InitializeFace();
     rex3D.clock = new THREE.Clock();
     rex3D.ready = true;
     shell.classList.add("is-ready");
@@ -9422,3 +9560,253 @@ async function initializeRex3DV11() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeRex3DV11);
+
+/* ================================================================
+   R.E.X. V15: HEAD-BOUND DIGITAL FACE, DISPLAY MODES, METAL DROPS
+   and a reversible portal-exit animation preview.
+   Media modes are UI placeholders: no external feeds are fetched.
+   ================================================================ */
+/* V16: calibrated to the uploaded rex.glb (model height 1.0).
+   Face shell is head-bone bound, curved, 16:9 and physically layered.
+   A future video stream can replace the CanvasTexture on the display mesh.
+*/
+function rexV15InitializeFace() {
+  const THREE = rex3D.THREE;
+  const head = rex3D.bones.head;
+  if (!THREE || !head || !rex3D.model) return;
+
+  // Remove any previously installed face when reinitializing.
+  if (rex3D.face?.group) rex3D.face.group.parent?.remove(rex3D.face.group);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 1920;
+  canvas.height = 1080;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) return;
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = Math.min(8, rex3D.renderer.capabilities.getMaxAnisotropy());
+
+  // Measured from the uploaded GLB: model height 1, head x ~[-.11,.10],
+  // head front +Z ~.11. Wide display fits INSIDE the head silhouette.
+  const width = 0.169; // V20: contained inside the skull, not a projecting monitor
+  const height = width * 9 / 16;
+  const group = new THREE.Group();
+  group.name = "REX_V20_IntegratedSkullFace_HeadAttached";
+
+  // V20: Rounded, subtly curved faceplate. The earlier square plane
+  // extended past the spherical skull and looked like a floating monitor.
+  function curvedPanel(w, h, z, curve) {
+    const radius = Math.min(w, h) * 0.19;
+    const shape = new THREE.Shape();
+    shape.moveTo(-w / 2 + radius, -h / 2);
+    shape.lineTo(w / 2 - radius, -h / 2);
+    shape.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + radius);
+    shape.lineTo(w / 2, h / 2 - radius);
+    shape.quadraticCurveTo(w / 2, h / 2, w / 2 - radius, h / 2);
+    shape.lineTo(-w / 2 + radius, h / 2);
+    shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - radius);
+    shape.lineTo(-w / 2, -h / 2 + radius);
+    shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + radius, -h / 2);
+    const geo = new THREE.ShapeGeometry(shape, 12);
+    const p = geo.attributes.position;
+    const uv = geo.attributes.uv;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i);
+      const nx = x / (w / 2), ny = y / (h / 2);
+      p.setZ(i, z - curve * nx * nx - curve * .12 * ny * ny);
+      uv.setXY(i, x / w + .5, y / h + .5);
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  // Embossed metal body behind the display; no detached floating rectangle.
+  const shell = new THREE.Mesh(
+    curvedPanel(width * 1.045, height * 1.08, -0.002, .007),
+    new THREE.MeshPhysicalMaterial({
+      color: 0x899da9, metalness: .94, roughness: .19,
+      clearcoat: 1, clearcoatRoughness: .12, side: THREE.DoubleSide
+    })
+  );
+  shell.name = "REX_V16_EmbossedMetalShell";
+  group.add(shell);
+
+  const bezel = new THREE.Mesh(
+    curvedPanel(width * 1.025, height * 1.045, -0.0006, .006),
+    new THREE.MeshPhysicalMaterial({
+      color: 0x071521, metalness: .79, roughness: .23,
+      clearcoat: 1, side: THREE.DoubleSide
+    })
+  );
+  bezel.name = "REX_V16_DarkGlassBezel";
+  group.add(bezel);
+
+  const display = new THREE.Mesh(
+    curvedPanel(width, height, .0008, .005),
+    new THREE.MeshBasicMaterial({map: tex, toneMapped: false, side: THREE.DoubleSide, depthTest: false, depthWrite: false})
+  );
+  display.name = "REX_V16_1920x1080_CinematicDisplay";
+  display.renderOrder = 10000;
+  group.add(display);
+
+  // Head bone follows neck/torso motion. This transform makes the screen
+  // stationary relative to the skull in the rest pose (no CSS overlay).
+  rex3D.model.updateMatrixWorld(true);
+  // V19: Fit from the ACTUAL RECENTERED model bounds. Earlier versions used
+  // world Y=.913, but rex3DFitCamera() moves the head near Y=.4, so the
+  // display was above the visible character. Position at the skull front.
+  const bounds = new THREE.Box3().setFromObject(rex3D.model);
+  const dimensions = bounds.getSize(new THREE.Vector3());
+  const skullFrontWorld = new THREE.Vector3(
+    (bounds.min.x + bounds.max.x) * 0.5,
+    bounds.max.y - dimensions.y * 0.102,
+    Math.max(0.070 * dimensions.y, bounds.getCenter(new THREE.Vector3()).z + dimensions.y * 0.070)
+  );
+  // Align the screen toward the CAMERA in bind pose; then the head bone
+  // naturally carries it when R.E.X. looks around.
+  rex3D.model.updateMatrixWorld(true);
+  head.updateWorldMatrix(true, false);
+  group.position.copy(head.worldToLocal(skullFrontWorld.clone()));
+  const headWorldRotation = new THREE.Quaternion();
+  head.getWorldQuaternion(headWorldRotation);
+  group.quaternion.copy(headWorldRotation.invert());
+  // The GLB skull is opaque. Keep the entire embedded face visible rather than
+  // letting its head geometry hide the screen when the model turns.
+  shell.material.depthTest = false;
+  shell.material.depthWrite = false;
+  bezel.material.depthTest = false;
+  bezel.material.depthWrite = false;
+  shell.renderOrder = 9998;
+  bezel.renderOrder = 9999;
+  head.add(group);
+
+  rex3D.face = {
+    canvas, ctx, tex, group, display, shell, bezel,
+    baseWidth: width, baseHeight: height, lastDrawAt: -1,
+    sourceVideo: null
+  };
+  rexV15UpdateFace(0, "ready");
+  tex.needsUpdate = true;
+  console.info("R.E.X. V20 integrated rounded face attached to head bone", {width, height, resolution:"1920x1080"});
+}
+
+function rexV15UpdateFace(t, mode) {
+  const f = rex3D.face;
+  if (!f) return;
+  if (t - f.lastDrawAt < 1 / 30) return;
+  f.lastDrawAt = t;
+  const {ctx,canvas,tex} = f;
+  const w=canvas.width,h=canvas.height, fm=rex3D.faceMode||0;
+  ctx.clearRect(0,0,w,h);
+  const glass=ctx.createLinearGradient(0,0,w,h);
+  glass.addColorStop(0,'#01050b');glass.addColorStop(.42,'#04131f');glass.addColorStop(.78,'#020b16');glass.addColorStop(1,'#000309');
+  ctx.fillStyle=glass;ctx.fillRect(0,0,w,h);
+  // Subtle glass reflections, contained within the embedded screen.
+  const glint=ctx.createLinearGradient(0,0,w*.7,h);
+  glint.addColorStop(0,'rgba(95,216,255,.13)');glint.addColorStop(.35,'rgba(255,255,255,.015)');glint.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glint;ctx.fillRect(0,0,w,h);
+  if(fm===0){
+    // Realistic digital eyes: iris, layered luminous radial fibers, pupils,
+    // specular highlights and expressive blinking. Deliberately NO MOUTH.
+    const lookingX=(rex3D.pointerX||0)*38, lookingY=(rex3D.pointerY||0)*22;
+    const blinkPulse=Math.pow(Math.max(0,Math.sin(t*1.09+0.3)),44);
+    const blink=Math.max(.055,1-blinkPulse*.98);
+    const mood=mode==='analyzing'||mode==='remembering'?'analytical':mode==='speaking'?'engaged':'calm';
+    const centers=[{x:545,y:532},{x:1375,y:532}];
+    for(let side=0;side<2;side++){
+      const x=centers[side].x,y=centers[side].y;
+      ctx.save();ctx.translate(x,y);ctx.scale(1,blink);
+      // Faint orbital telemetry rings.
+      for(let r=0;r<3;r++){
+        ctx.beginPath();ctx.ellipse(0,0,260+r*17,214+r*11,0,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(45,189,244,${.18-r*.04})`;ctx.lineWidth=3;ctx.stroke();
+      }
+      const eyeGlow=ctx.createRadialGradient(0,0,12,0,0,245);
+      eyeGlow.addColorStop(0,'rgba(12,121,205,.40)');eyeGlow.addColorStop(.5,'rgba(8,92,166,.18)');eyeGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=eyeGlow;ctx.beginPath();ctx.ellipse(0,0,280,232,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,242,174,0,0,Math.PI*2);
+      ctx.fillStyle='#010912';ctx.fill();ctx.strokeStyle='#42cfff';ctx.lineWidth=11;ctx.shadowColor='#23caff';ctx.shadowBlur=27;ctx.stroke();ctx.shadowBlur=0;
+      ctx.save();ctx.clip();
+      const gx=lookingX,gy=lookingY;
+      const iris=ctx.createRadialGradient(gx-30,gy-34,12,gx,gy,166);
+      iris.addColorStop(0,'#000a15');iris.addColorStop(.20,'#012b53');iris.addColorStop(.43,'#007bc2');iris.addColorStop(.70,'#35caff');iris.addColorStop(.83,'#0364a6');iris.addColorStop(1,'#010e21');
+      ctx.fillStyle=iris;ctx.beginPath();ctx.arc(gx,gy,162,0,Math.PI*2);ctx.fill();
+      for(let i=0;i<104;i++){
+        const a=i*Math.PI*2/104+Math.sin(t*.12)*.015;
+        const inner=65+9*Math.sin(i*7.1),outer=150-10*Math.sin(i*3.3);
+        ctx.beginPath();ctx.moveTo(gx+Math.cos(a)*inner,gy+Math.sin(a)*inner);ctx.lineTo(gx+Math.cos(a)*outer,gy+Math.sin(a)*outer);
+        ctx.strokeStyle=i%3===0?'rgba(155,246,255,.75)':'rgba(0,43,110,.65)';ctx.lineWidth=i%4===0?3:1.4;ctx.stroke();
+      }
+      ctx.fillStyle='#00050b';ctx.beginPath();ctx.arc(gx,gy,69+(mode==='analyzing'?-9:0),0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(138,244,255,.85)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,79,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='rgba(240,254,255,.95)';ctx.beginPath();ctx.ellipse(gx-58,gy-61,35,20,-.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(150,240,255,.5)';ctx.beginPath();ctx.arc(gx+54,gy+48,12,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+      // Expressive upper eyelid and eyebrow, no lower-face waveform.
+      ctx.beginPath();ctx.moveTo(-236,-123);
+      ctx.quadraticCurveTo(0,mood==='analytical'?-224:-202,236,-123);
+      ctx.strokeStyle=mood==='analytical'?'rgba(80,231,255,.95)':'rgba(46,162,219,.67)';ctx.lineWidth=10;ctx.stroke();
+      ctx.restore();
+    }
+    // Tiny micro-telemetry near outer rim only.
+    ctx.fillStyle='rgba(55,198,235,.43)';ctx.font='24px monospace';ctx.fillText('REX // OPTICAL ARRAY',65,1008);
+    ctx.fillText(mode.toUpperCase(),w-235,1008);
+  }else{
+    const titles=['','CINEMA // 16:9','SOCIAL // LIVE','NEWS // DATA'];
+    ctx.fillStyle='#9eefff';ctx.font='bold 76px sans-serif';ctx.fillText(titles[fm],110,170);
+    ctx.strokeStyle='rgba(70,210,250,.55)';ctx.lineWidth=8;ctx.strokeRect(110,220,1700,655);
+    if(fm===1){
+      const scene=ctx.createLinearGradient(0,220,0,875);
+      scene.addColorStop(0,'#011529');scene.addColorStop(.48,'#075681');scene.addColorStop(1,'#060c1c');
+      ctx.fillStyle=scene;ctx.fillRect(115,225,1690,645);
+      ctx.fillStyle='#b7f4ff';ctx.beginPath();ctx.arc(1400,445,140,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#021523';ctx.beginPath();ctx.arc(1360,405,140,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#d8faff';ctx.beginPath();ctx.moveTo(840,410);ctx.lineTo(840,680);ctx.lineTo(1110,545);ctx.closePath();ctx.fill();
+    }else{
+      for(let i=0;i<4;i++){
+        const y=285+i*132;ctx.fillStyle='rgba(63,191,240,.18)';ctx.fillRect(165,y,1580,104);
+        ctx.fillStyle='rgba(80,222,255,.73)';ctx.fillRect(190,y+22,400+i*120,14);
+        ctx.fillStyle='rgba(96,165,198,.5)';ctx.fillRect(190,y+56,1230-i*150,10);
+      }
+    }
+    ctx.fillStyle='rgba(174,226,242,.82)';ctx.font='34px monospace';ctx.fillText('DEMO DISPLAY · NO LIVE MEDIA CONNECTION',115,1010);
+  }
+  tex.needsUpdate=true;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const face=document.getElementById('rex-v15-face-cycle');
+  const portal=document.getElementById('rex-v15-portal-trigger');
+  face?.addEventListener('click',event=>{
+    event.stopPropagation();
+    rex3D.faceMode=(rex3D.faceMode+1)%4;
+    face.textContent=['FACE: EYES','FACE: VIDEO','FACE: SOCIAL','FACE: NEWS'][rex3D.faceMode];
+  });
+  portal?.addEventListener('click',event=>{
+    event.stopPropagation();
+    if(!rex3D.ready)return;
+    rex3D.portalStart=rex3D.clock.getElapsedTime();
+    document.getElementById('rexAvatarStage')?.classList.add('rex-v15-portal-active');
+    const label=document.getElementById('rex-v15-portal-label');
+    if(label)label.textContent='PORTAL · EXIT PREVIEW';
+  });
+});
+
+/* V21: individual portal performances (full sequence remains available). */
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-rex-portal-step]").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      if (!rex3D.ready || !rex3D.clock) return;
+      rex3D.portalStep = button.dataset.rexPortalStep;
+      rex3D.portalDuration = rex3D.portalStep === "step" ? 6.2 : 4.4;
+      rex3D.portalStart = rex3D.clock.getElapsedTime();
+      document.getElementById("rexAvatarStage")?.classList.add("rex-v15-portal-active");
+      const label = document.getElementById("rex-v15-portal-label");
+      if (label) label.textContent = "PORTAL · " + rex3D.portalStep.toUpperCase();
+    });
+  });
+  document.getElementById("rex-v15-portal-trigger")?.addEventListener("click", () => {
+    rex3D.portalStep = "full"; rex3D.portalDuration = 8.5;
+  }, {capture:true});
+});

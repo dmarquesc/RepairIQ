@@ -13042,3 +13042,70 @@ body.simulation-active .app-shell {
 @media (max-width: 900px) {
   .rex-avatar-stage { min-height: 460px; }
 }
+
+/* V12: keep the visual core indicator away from R.E.X.'s body. */
+#rexAvatarStage .rex-core-reactor {
+  left: auto;
+  right: 18px;
+  top: 76px;
+  width: 13px;
+  height: 13px;
+  transform: none;
+  border-radius: 50%;
+  opacity: .68;
+}
+#rexAvatarStage .rex-core-reactor span {
+  inset: 3px;
+  border-radius: 50%;
+}
+
+/* R.E.X. V14: holographic screen-face overlay and liquid-metal falloff.
+   These are HUD effects, not modifications to the GLB mesh. */
+#rexAvatarStage .rex-v14-face-screen {position:absolute;z-index:6;left:50%;top:13%;transform:translateX(-50%);width:76px;height:58px;pointer-events:none;border:1px solid rgba(75,231,255,.48);border-radius:14px 14px 19px 19px;background:linear-gradient(145deg,rgba(1,13,27,.80),rgba(0,84,113,.38));box-shadow:0 0 19px rgba(22,221,255,.27),inset 0 0 17px rgba(18,179,234,.21);opacity:.80;animation:rex-v14-screen-breathe 4s ease-in-out infinite;}
+#rexAvatarStage .rex-v14-eyes {display:flex;gap:16px;justify-content:center;margin-top:17px;}
+#rexAvatarStage .rex-v14-eyes i {width:15px;height:5px;border-radius:6px;background:#6ff5ff;box-shadow:0 0 11px #00dfff;animation:rex-v14-eye 5s infinite;}
+#rexAvatarStage .rex-v14-wave {position:absolute;left:21px;right:21px;top:34px;height:3px;background:linear-gradient(90deg,transparent,#4eeaff,transparent);animation:rex-v14-wave 1.6s ease-in-out infinite;}
+#rexAvatarStage .rex-v14-face-caption {position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font:8px monospace;letter-spacing:1px;white-space:nowrap;color:#8befff;}
+#rexAvatarStage .rex-v14-liquid-fall {position:absolute;z-index:5;left:50%;top:45%;width:145px;height:49%;transform:translateX(-50%);pointer-events:none;overflow:hidden;opacity:.70;}
+#rexAvatarStage .rex-v14-liquid-fall i {position:absolute;top:-12px;left:calc(12% + var(--drop-x));width:var(--drop-size);height:calc(var(--drop-size) * 1.8);border-radius:55% 55% 60% 60%;background:linear-gradient(90deg,#3d5968,#e3fcff 45%,#4385a2 80%,#0b3448);box-shadow:0 0 9px rgba(64,226,255,.38);animation:rex-v14-drop var(--drop-time) linear infinite;animation-delay:var(--drop-delay);}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(1){--drop-x:0%;--drop-size:4px;--drop-time:4.2s;--drop-delay:-1s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(2){--drop-x:18%;--drop-size:3px;--drop-time:5.4s;--drop-delay:-3s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(3){--drop-x:35%;--drop-size:5px;--drop-time:4.8s;--drop-delay:-2s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(4){--drop-x:55%;--drop-size:3px;--drop-time:6.1s;--drop-delay:-4s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(5){--drop-x:70%;--drop-size:4px;--drop-time:5.1s;--drop-delay:-.7s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(6){--drop-x:5%;--drop-size:3px;--drop-time:6.4s;--drop-delay:-3.4s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(7){--drop-x:43%;--drop-size:3px;--drop-time:5.7s;--drop-delay:-2.7s}
+#rexAvatarStage .rex-v14-liquid-fall i:nth-child(8){--drop-x:78%;--drop-size:4px;--drop-time:6.8s;--drop-delay:-5s}
+@keyframes rex-v14-drop {0%{transform:translateY(-15px) scale(.55);opacity:0}12%{opacity:.8}82%{opacity:.75}100%{transform:translateY(250px) scale(.75);opacity:0}}
+@keyframes rex-v14-eye {0%,42%,47%,100%{transform:scaleY(1)}44%{transform:scaleY(.12)}}
+@keyframes rex-v14-wave {0%,100%{opacity:.45;transform:scaleX(.55)}50%{opacity:1;transform:scaleX(1)}}
+@keyframes rex-v14-screen-breathe {0%,100%{opacity:.68}50%{opacity:.90}}
+@media (prefers-reduced-motion:reduce){#rexAvatarStage .rex-v14-face-screen,#rexAvatarStage .rex-v14-eyes i,#rexAvatarStage .rex-v14-wave,#rexAvatarStage .rex-v14-liquid-fall i{animation:none!important}}
+
+/* V15: face is now a WebGL mesh parented to the head bone, not a CSS sticker. */
+#rexAvatarStage .rex-v14-face-screen,#rexAvatarStage .rex-v14-liquid-fall{display:none!important}
+#rexAvatarStage .rex-v15-controls{position:absolute;z-index:11;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;white-space:nowrap}
+#rexAvatarStage .rex-v15-controls button{background:rgba(2,21,36,.90);border:1px solid rgba(83,224,255,.5);color:#b9f5ff;border-radius:8px;padding:6px 8px;font:600 9px/1.2 monospace;cursor:pointer;letter-spacing:.5px}
+#rexAvatarStage .rex-v15-controls button:hover{background:rgba(7,78,107,.92)}
+#rexAvatarStage .rex-v15-portal{position:absolute;z-index:4;pointer-events:none;inset:12% 9% 10%;opacity:.48;transition:opacity .45s}
+#rexAvatarStage .rex-v15-portal-edge{position:absolute;display:block;box-shadow:0 0 13px rgba(44,221,255,.36),inset 0 0 9px rgba(44,221,255,.2)}
+#rexAvatarStage .rex-v15-portal-edge.left{left:0;top:10%;bottom:0;width:3px;background:linear-gradient(transparent,#5feaff 40%,#5feaff 85%,transparent)}
+#rexAvatarStage .rex-v15-portal-edge.right{right:0;top:10%;bottom:0;width:3px;background:linear-gradient(transparent,#5feaff 40%,#5feaff 85%,transparent)}
+#rexAvatarStage .rex-v15-portal-edge.bottom{bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#5feaff 20%,#5feaff 80%,transparent)}
+#rexAvatarStage.rex-v15-portal-active .rex-v15-portal{opacity:1;filter:drop-shadow(0 0 12px #25d7ff)}
+#rexAvatarStage .rex-v15-portal-label{position:absolute;z-index:8;bottom:47px;left:50%;transform:translateX(-50%);color:#6ad8f3;font:9px monospace;white-space:nowrap;pointer-events:none;opacity:.85}
+
+/* R.E.X. V19: professional clean enclosure. No falling metal drops. */
+#rexAvatarStage .rex-v15-droplet,
+#rexAvatarStage .rex-metal-droplet,
+#rexAvatarStage .rex-liquid-drop,
+#rexAvatarStage .rex-liquid-metal-drip { display:none !important; }
+#rexAvatarStage .rex-v15-portal-active .rex-v15-portal { opacity:1; }
+
+/* V20: clean integrated head display; remove any lingering decorative drops. */
+#rexAvatarStage .rex-v15-droplet, #rexAvatarStage .rex-metal-drop { display:none !important; }
+
+/* R.E.X. V21: premium portal interaction, no falling liquid-metal overlays */
+#rexAvatarStage .rex-v21-portal-step {border:1px solid rgba(85,218,248,.43);border-radius:7px;background:rgba(2,16,27,.90);color:#9befff;font:700 9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.05em;padding:6px 8px;cursor:pointer;transition:background .2s,box-shadow .2s;}
+#rexAvatarStage .rex-v21-portal-step:hover,#rexAvatarStage .rex-v21-portal-step:focus-visible {background:rgba(34,120,160,.25);box-shadow:0 0 12px rgba(60,200,240,.25)}
+#rexAvatarStage .rex-v15-droplet,#rexAvatarStage .rex-metal-droplet,#rexAvatarStage .rex-metal-drop {display:none!important;}
