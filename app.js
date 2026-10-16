@@ -2190,6 +2190,7 @@ const rex3D = {
   face:null, faceMode:0, portalStart:-1, portalDuration:8.5,
   portalStep:"full", droplets:[],
   originalModelPosition:null,
+  gpuDemo:null,
   /* IMPROVED v1.0-PHASE2: per-frame delta for slerp damping */
   lastFrameTime:0,
   /* IMPROVED v1.0-PHASE2: micro-saccade state */
@@ -2248,6 +2249,246 @@ function rex3DApplyLocalRotation(key,x=0,y=0,z=0,smoothFactor=8){
   const target=base.clone().multiply(offset);
   bone.quaternion.slerp(target,alpha);
 }
+
+/* V4.0 GPU PRESENTATION — self-contained procedural demonstration object.
+   Does not connect to hardware or authorize repairs. */
+function rexGpuSmooth(v){v=rex3DClamp(v,0,1);return v*v*(3-2*v);}
+function rexGpuBuild(){
+  const T=rex3D.THREE;
+  if(!T||!rex3D.scene||rex3D.gpuDemo?.object)return;
+  // V5.5: refined, palm-centered GPU hologram. Existing arm and palm animations remain untouched.
+  const root=new T.Group();root.name="REX_V55_FLOATING_GPU_HOLOGRAM";
+  const cyan=0x20d9e8,bright=0xa7fbff,blue=0x2f81f7;
+  const pcbMat=new T.MeshStandardMaterial({color:0x0b2637,emissive:0x09506d,emissiveIntensity:.70,transparent:true,opacity:.92,metalness:.32,roughness:.27,depthWrite:false,side:T.DoubleSide});
+  const chipMat=new T.MeshStandardMaterial({color:0x061727,emissive:0x1185a6,emissiveIntensity:1.0,transparent:true,opacity:.97,depthWrite:false});
+  const traceMat=new T.MeshBasicMaterial({color:cyan,transparent:true,opacity:.72,depthWrite:false});
+  const edgeMat=new T.LineBasicMaterial({color:bright,transparent:true,opacity:.94,depthWrite:false});
+  // Model units match the existing R.E.X. rig scale. Hologram is intentionally illustrative.
+  const board=new T.Mesh(new T.BoxGeometry(.122,.005,.085),pcbMat);root.add(board);
+  const outline=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(.124,.009,.087)),edgeMat);root.add(outline);
+  const chip=new T.Mesh(new T.BoxGeometry(.039,.010,.039),chipMat);chip.position.y=.009;root.add(chip);
+  const chipBorder=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(.042,.012,.042)),edgeMat);chipBorder.position.y=.009;root.add(chipBorder);
+  const chipCore=new T.Mesh(new T.BoxGeometry(.018,.0018,.018),new T.MeshBasicMaterial({color:0x9af7ff,transparent:true,opacity:.80,depthWrite:false}));
+  chipCore.position.y=.015;root.add(chipCore);
+  for(const x of [-.045,-.029,.029,.045])for(const z of[-.029,.029]){
+    const memory=new T.Mesh(new T.BoxGeometry(.011,.004,.012),pcbMat);
+    memory.position.set(x,.005,z);root.add(memory);
+  }
+  const traces=new T.Group();root.add(traces);
+  for(const z of[-.035,-.025,.025,.035]){
+    const line=new T.Mesh(new T.BoxGeometry(.108,.001,.0015),traceMat);
+    line.position.set(0,.005,z);traces.add(line);
+  }
+  for(const x of[-.052,-.038,.038,.052]){
+    const line=new T.Mesh(new T.BoxGeometry(.0015,.001,.072),traceMat);
+    line.position.set(x,.005,0);traces.add(line);
+  }
+  // Energy field reaches down toward the hand while GPU itself stays above it.
+  const beamMat=new T.MeshBasicMaterial({color:cyan,transparent:true,opacity:.17,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const beam=new T.Mesh(new T.CylinderGeometry(.019,.033,.057,32,1,true),beamMat);
+  beam.position.y=-.034;root.add(beam);
+  const ringMat=new T.MeshBasicMaterial({color:bright,transparent:true,opacity:.88,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const ring=new T.Mesh(new T.TorusGeometry(.050,.0013,8,64),ringMat);
+  ring.rotation.x=Math.PI/2;ring.position.y=-.063;root.add(ring);
+  const upperRing=new T.Mesh(new T.TorusGeometry(.071,.0009,6,64),ringMat.clone());
+  upperRing.rotation.x=Math.PI/2;upperRing.position.y=-.012;root.add(upperRing);
+  const halo=new T.PointLight(blue,.43,.28);halo.position.set(0,.020,0);root.add(halo);
+  root.visible=false;rex3D.scene.add(root);
+  // V5.6: inspection scan plane and evidence-safe highlighting.
+  const scanMat=new T.MeshBasicMaterial({color:0x55efff,transparent:true,opacity:.0,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const scan=new T.Mesh(new T.PlaneGeometry(.18,.14),scanMat);
+  scan.rotation.x=-Math.PI/2;scan.visible=false;root.add(scan);
+  const scanEdge=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(.126,.012,.089)),new T.LineBasicMaterial({color:0x68f7ff,transparent:true,opacity:.0,depthWrite:false}));
+  scanEdge.visible=false;root.add(scanEdge);
+  // V5.7: named, illustrative inspection targets. These are visual regions,
+  // not evidence of a real hardware defect.
+  const targets=new T.Group();targets.name="REX_V57_INSPECTION_TARGETS";root.add(targets);
+  const targetDefs=[
+    {name:"PROCESSOR",x:0,z:0,color:0x8dfaff},
+    {name:"MEMORY",x:-.039,z:.028,color:0x82bbff},
+    {name:"CONNECTORS",x:.052,z:0,color:0xffca80}
+  ];
+  const markers=[];
+  for(const d of targetDefs){
+    const marker=new T.Mesh(new T.TorusGeometry(.014,.0016,6,36),
+      new T.MeshBasicMaterial({color:d.color,transparent:true,opacity:.9,depthWrite:false,blending:T.AdditiveBlending}));
+    marker.rotation.x=Math.PI/2;marker.position.set(d.x,.021,d.z);
+    targets.add(marker);markers.push(marker);
+  }
+  targets.visible=false;
+  rex3D.gpuDemo={object:root,board,chip,beam,ring,upperRing,traces,scan,scanEdge,targets,markers,targetDefs,start:-1,duration:12,active:false,examining:false,inspectionStage:-1};
+}
+function rexGpuStart(){
+  if(!rex3D.ready||!rex3D.clock)return;
+  if(!rex3D.gpuDemo?.object)rexGpuBuild();
+  if(!rex3D.gpuDemo)return;
+  rex3D.portalStart=-1;
+  rex3D.gpuDemo.start=rex3D.clock.getElapsedTime();rex3D.gpuDemo.active=true;rex3D.gpuDemo.examining=false;rex3D.gpuDemo.duration=12;
+  if(rex3D.gpuDemo.targets)rex3D.gpuDemo.targets.visible=false;
+  const status=document.getElementById("rex-gpu-inspection-status");if(status)status.style.display="none";
+  const b=document.getElementById("rex-gpu-demo-button");if(b)b.textContent="GPU PRESENTATION ACTIVE";
+}
+/* V5.6: Examination reuses the VERIFIED GPU presentation pose and hand anchor.
+   No new arm/hand bone rotations are introduced. */
+function rexGpuExamineStart(){
+  if(!rex3D.ready||!rex3D.clock)return;
+  rexGpuStart();
+  const g=rex3D.gpuDemo;if(!g)return;
+  g.examining=true;
+  g.duration=22;
+  g.inspectionStage=-1;
+  const b=document.getElementById("rex-gpu-examine-button");
+  if(b)b.textContent="EXAMINING GPU";
+}
+function rexGpuInstallExamineButton(){
+  if(document.getElementById("rex-gpu-examine-button"))return;
+  const present=document.getElementById("rex-gpu-demo-button");
+  if(!present?.parentElement)return;
+  const button=document.createElement("button");
+  button.id="rex-gpu-examine-button";button.type="button";
+  button.textContent="GPU EXAMINATION";
+  button.setAttribute("aria-label","Examine the holographic GPU with a diagnostic scan");
+  button.className=present.className;
+  present.insertAdjacentElement("afterend",button);
+  if(!document.getElementById("rex-gpu-inspection-status")){
+    const status=document.createElement("span");
+    status.id="rex-gpu-inspection-status";
+    status.setAttribute("role","status");
+    status.setAttribute("aria-live","polite");
+    status.style.cssText="font:600 10px/1.4 monospace;color:#7defff;white-space:nowrap;padding:5px 8px;display:none";
+    button.insertAdjacentElement("afterend",status);
+  }
+  button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();rexGpuExamineStart();});
+}
+/* V4.6: Locate the palm from the actual skinned hand bones, not a guessed
+   fixed offset behind the wrist. The GPU remains horizontal in world space. */
+function rexGpuPalmFrame(){
+  const T=rex3D.THREE,b=rex3D.bones;
+  if(!T||!b.handR)return null;
+  b.handR.updateWorldMatrix(true,true);
+  const wrist=new T.Vector3();b.handR.getWorldPosition(wrist);
+  const middle=new T.Vector3(),index=new T.Vector3(),pinky=new T.Vector3();
+  const hasMiddle=!!b.middle1R,hasIndex=!!b.index1R,hasPinky=!!b.pinky1R;
+  if(hasMiddle)b.middle1R.getWorldPosition(middle);
+  if(hasIndex)b.index1R.getWorldPosition(index);
+  if(hasPinky)b.pinky1R.getWorldPosition(pinky);
+  const toward=hasMiddle?middle.clone().sub(wrist):new T.Vector3(0,0,.027);
+  const span=hasIndex&&hasPinky?index.clone().sub(pinky):new T.Vector3(.02,0,0);
+  // Actual palm center lies between wrist and knuckle line.
+  const center=wrist.clone().addScaledVector(toward,.57);
+  return {wrist,center,toward,span};
+}
+function rexGpuOrientPalm(progress){
+  const T=rex3D.THREE,hand=rex3D.bones.handR;
+  if(!T||!hand||!hand.parent)return;
+  const f=rexGpuPalmFrame();if(!f||f.toward.lengthSq()<1e-9||f.span.lengthSq()<1e-9)return;
+  // Twist ONLY around the hand's long axis, preserving elbow and reach pose.
+  const axis=f.toward.clone().normalize();
+  const normal=f.span.clone().cross(axis).normalize();
+  const up=new T.Vector3(0,1,0);
+  const projected=up.clone().addScaledVector(axis,-up.dot(axis)).normalize();
+  if(projected.lengthSq()<1e-8)return;
+  const signed=Math.atan2(axis.dot(normal.clone().cross(projected)),normal.dot(projected));
+  // Rig orientation may be mirrored: choose the smallest correction to face up.
+  const angle=rex3DClamp(signed,-1.35,1.35)*rexGpuSmooth(progress);
+  const twist=new T.Quaternion().setFromAxisAngle(axis,angle);
+  const worldQ=new T.Quaternion();hand.getWorldQuaternion(worldQ);
+  const parentQ=new T.Quaternion();hand.parent.getWorldQuaternion(parentQ);
+  const desired=parentQ.clone().invert().multiply(twist.multiply(worldQ));
+  const dt=Math.min(rex3D.lastFrameTime||.016,.05);
+  hand.quaternion.slerp(desired,1-Math.exp(-15*dt));
+  hand.updateWorldMatrix(true,true);
+}
+function rexGpuUpdate(t){
+  const g=rex3D.gpuDemo,T=rex3D.THREE;
+  if(!g?.object||!T)return;
+  if(!g.active||!rex3D.bones.handR){g.object.visible=false;return;}
+  const p=rex3DClamp((t-g.start)/g.duration,0,1);
+  const reveal=rexGpuSmooth((p-.19)/.12)*(1-rexGpuSmooth((p-.90)/.10));
+  g.object.visible=reveal>.005;
+  if(g.object.visible){
+    const frame=rexGpuPalmFrame();
+    if(frame){
+      // Hover above palm, with a tiny vertical oscillation. No skeletal rotation changes.
+      const hover=.067+Math.sin(t*2.1)*.0022;
+      // Offset toward R.E.X. from the knuckles to keep the projection centered over the palm.
+      // Do not modify the working shoulder, elbow, wrist, or finger rotations.
+      const palmBack=frame.toward.clone().normalize().multiplyScalar(-.011);
+      g.object.position.copy(frame.center).add(palmBack).add(new T.Vector3(0,hover,0));
+      // Examination rotates the hologram only; the supporting hand stays locked.
+      // V5.7 inspection choreography: rotate -> pause at processor -> memory
+      // -> connectors -> return. Never changes the verified supporting-arm pose.
+      let inspectionStage=-1;
+      let angle=Math.sin(t*.42)*.17;
+      if(g.examining){
+        if(p<.29){inspectionStage=0;angle=rexGpuSmooth((p-.19)/.10)*.52;}
+        else if(p<.45){inspectionStage=1;angle=.52;}
+        else if(p<.59){inspectionStage=2;angle=.52+rexGpuSmooth((p-.45)/.14)*.75;}
+        else if(p<.74){inspectionStage=3;angle=1.27;}
+        else if(p<.88){inspectionStage=4;angle=1.27+rexGpuSmooth((p-.74)/.14)*.65;}
+        else {inspectionStage=5;angle=1.92*(1-rexGpuSmooth((p-.88)/.10));}
+      }
+      g.object.rotation.set(0,angle,0);
+      if(g.targets){
+        g.targets.visible=g.examining&&inspectionStage>=1&&inspectionStage<=4;
+        g.markers.forEach((marker,i)=>{
+          const active=(inspectionStage===1&&i===0)||(inspectionStage===2&&i===1)||(inspectionStage>=3&&i===2);
+          marker.visible=active;
+          marker.scale.setScalar(active?1+.12*Math.sin(t*5):1);
+        });
+      }
+      if(g.examining&&inspectionStage!==g.inspectionStage){
+        g.inspectionStage=inspectionStage;
+        const status=document.getElementById("rex-gpu-inspection-status");
+        const messages=["ROTATING GPU","INSPECTING PROCESSOR","INSPECTING MEMORY","INSPECTING CONNECTORS","REVIEWING CONNECTIONS","RETURNING TO PRESENTATION"];
+        if(status){status.style.display="inline-block";status.textContent=messages[inspectionStage]||"GPU EXAMINATION";}
+      }
+      if(g.scan){
+        g.scan.visible=g.examining&&p>.24&&p<.87;
+        g.scan.position.y=.010;
+        g.scan.position.z=-.056+.112*((t-g.start)*.45%1);
+        g.scan.material.opacity=g.scan.visible?.12:0;
+      }
+      if(g.scanEdge){
+        g.scanEdge.visible=g.examining&&p>.24&&p<.87;
+        g.scanEdge.material.opacity=g.scanEdge.visible?.55+.30*Math.sin(t*5):0;
+      }
+      g.object.scale.setScalar(Math.max(.001,reveal*1.38));
+      if(g.beam?.material)g.beam.material.opacity=.14+.06*(.5+.5*Math.sin(t*3.8));
+      if(g.ring)g.ring.rotation.z=t*.62;
+      if(g.upperRing)g.upperRing.rotation.z=-t*.36;
+      if(g.chip?.material)g.chip.material.emissiveIntensity=.95+.18*Math.sin(t*4);
+      if(g.traces)g.traces.visible=true;
+    }
+  }
+  if(p>=1){g.active=false;g.examining=false;g.object.visible=false;
+    if(g.targets)g.targets.visible=false;
+    const status=document.getElementById("rex-gpu-inspection-status");
+    if(status){status.style.display="none";status.textContent="";}
+    const b=document.getElementById("rex-gpu-demo-button");if(b)b.textContent="PRESENT GPU";
+    const e=document.getElementById("rex-gpu-examine-button");if(e)e.textContent="GPU EXAMINATION";
+  }
+}
+function rexGpuInstallButton(){
+  if(document.getElementById("rex-gpu-demo-button")){
+    const existing=document.getElementById("rex-gpu-demo-button");
+    if(existing.parentElement&&existing.parentElement.firstElementChild!==existing)existing.parentElement.insertBefore(existing,existing.parentElement.firstElementChild);
+    rexGpuInstallExamineButton();
+    return;
+  }
+  const portal=document.getElementById("rex-v15-portal-trigger");
+  const stage=document.getElementById("rexAvatarStage");
+  if(!stage)return;
+  const button=document.createElement("button");button.id="rex-gpu-demo-button";button.type="button";
+  button.textContent="PRESENT GPU";button.setAttribute("aria-label","Play R.E.X. GPU presentation demonstration");
+  if(portal?.parentElement){portal.parentElement.insertBefore(button,portal.parentElement.firstElementChild);button.className=portal.className;}
+  else {stage.appendChild(button);button.style.cssText="position:absolute;z-index:30;top:12px;right:12px;padding:8px;background:#07263a;color:#65eaff;border:1px solid #20d9e8;border-radius:8px;cursor:pointer";}
+  button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();rexGpuStart();});
+  rexGpuInstallExamineButton();
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  rexGpuInstallButton();rexGpuInstallExamineButton();
+});
 
 function rex3DAnimate(){
   if(!rex3D.ready)return;
@@ -2395,6 +2636,24 @@ function rex3DAnimate(){
     rex3D.model.position.lerp(rex3D.originalModelPosition,.10);
   }
 
+  /* V4.0: coordinated GPU demonstration; existing portal and face remain intact. */
+  if(rex3D.gpuDemo?.active){
+    const p=rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1);
+    const lift=rexGpuSmooth(p/.25)*(1-rexGpuSmooth((p-.83)/.17));
+    const flip=rexGpuSmooth((p-.16)/.23)*(1-rexGpuSmooth((p-.83)/.17));
+    /* This rig's forward bend is POSITIVE X (as in the working portal reach).
+       Negative X was sending the presenting arm behind the torso. */
+    upperRX+=0.43*lift;upperRZ-=0.13*lift;
+    foreRX+=0.62*lift;foreRY+=0.12*flip;
+    handRX+=0.15*flip;handRZ-=0.05*flip;
+    fingerCurlR=0.06+0.07*flip;
+    /* During examination, add a restrained gaze tilt without changing the arm. */
+    if(rex3D.gpuDemo.examining){
+      const look=rexGpuSmooth((p-.16)/.20)*(1-rexGpuSmooth((p-.83)/.14));
+      headX+=0.045*look;
+    }
+  }
+
   rex3DApplyLocalRotation("hips",hipsX,hipsY,hipsZ);
   rex3DApplyLocalRotation("torso",torsoX,torsoY,torsoZ);
   rex3DApplyLocalRotation("chest",chestX,chestY,chestZ);
@@ -2431,6 +2690,12 @@ function rex3DAnimate(){
     rex3DApplyLocalRotation(`thumb3${side}`,curl*0.34,0,0,12);
   }
 
+  if(rex3D.gpuDemo?.active){
+    const progress=rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1);
+    const flip=rexGpuSmooth((progress-.16)/.23)*(1-rexGpuSmooth((progress-.83)/.17));
+    rexGpuOrientPalm(flip);
+  }
+  rexGpuUpdate(t);
   rexV15UpdateFace(t,mode);
   rex3D.renderer.render(rex3D.scene,rex3D.camera);
   rex3D.frame=requestAnimationFrame(rex3DAnimate);
@@ -2463,6 +2728,7 @@ function rex3DResize(){
 /* IMPROVED v1.0-PHASE2: dispose on error, cancelAnimationFrame on cleanup */
 function rex3DDispose(){
   if(rex3D.frame){cancelAnimationFrame(rex3D.frame);rex3D.frame=0;}
+  if(rex3D.gpuDemo?.object){rex3D.scene?.remove(rex3D.gpuDemo.object);rex3D.gpuDemo.object.traverse(o=>{o.geometry?.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());}});rex3D.gpuDemo=null;}
   if(rex3D.renderer){rex3D.renderer.dispose();rex3D.renderer=null;}
   rex3D.ready=false;
 }
@@ -2490,6 +2756,7 @@ async function initializeRex3DV11(){
     rex3DFitCamera();
     rex3D.originalModelPosition=rex3D.model.position.clone();
     rexV15InitializeFace();
+    rexGpuBuild();
     rex3D.clock=new THREE.Clock();
     rex3D.clock.previousTime=0;
     rex3D.ready=true;
@@ -3138,3 +3405,53 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
   document.getElementById("rex-v15-portal-trigger")?.addEventListener("click",()=>{rex3D.portalStep="full";rex3D.portalDuration=8.5;},{capture:true});
 });
+
+
+/* ================================================================
+   R.E.X. V4.5: ACCESSIBLE ACTION CONTROLS
+   Keep all portal / GPU buttons reachable without changing HTML/CSS.
+   The action strip scrolls horizontally when there is insufficient width.
+   ================================================================ */
+(function rexInstallActionStripFix(){
+  function apply(){
+    const portal=document.getElementById("rex-v15-portal-trigger");
+    const gpu=document.getElementById("rex-gpu-demo-button");
+    if(!portal)return;
+    const parent=portal.parentElement;
+    if(!parent)return;
+    if(gpu && gpu.parentElement!==parent){parent.appendChild(gpu);gpu.className=portal.className;}
+    const style=document.getElementById("rex-v45-actions-style")||document.createElement("style");
+    style.id="rex-v45-actions-style";
+    style.textContent=`
+      .rex-v45-actions {display:flex!important;flex-wrap:nowrap!important;gap:6px!important;
+        max-width:100%!important;width:100%!important;min-width:0!important;
+        overflow-x:auto!important;overflow-y:hidden!important;
+        scrollbar-width:thin!important;scrollbar-color:#20d9e8 #071426!important;
+        padding:4px 4px 11px!important;box-sizing:border-box!important;
+        -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain!important;}
+      .rex-v45-actions > button {flex:0 0 auto!important;white-space:nowrap!important;
+        max-width:none!important;min-width:max-content!important;}
+      .rex-v45-actions::-webkit-scrollbar {height:7px!important;}
+      .rex-v45-actions::-webkit-scrollbar-thumb {background:#20d9e8;border-radius:8px;}
+      .rex-v45-actions::-webkit-scrollbar-track {background:#071426;}
+    `;
+    if(!style.isConnected)document.head.appendChild(style);
+    parent.classList.add("rex-v45-actions");
+    parent.setAttribute("role","group");
+    parent.setAttribute("aria-label","R.E.X. animation actions. Scroll sideways to reach all controls.");
+    parent.tabIndex=0;
+    // Shift+wheel over the control strip scrolls horizontally.
+    if(parent.dataset.rexWheelBound!=="yes"){
+      parent.dataset.rexWheelBound="yes";
+      parent.addEventListener("wheel",event=>{
+        if(event.shiftKey && parent.scrollWidth>parent.clientWidth){
+          event.preventDefault();parent.scrollLeft+=event.deltaY||event.deltaX;
+        }
+      },{passive:false});
+    }
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{
+    apply();requestAnimationFrame(apply);
+  });
+  else {apply();requestAnimationFrame(apply);}
+})();
