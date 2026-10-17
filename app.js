@@ -1,3 +1,7 @@
+/* R.E.X. V5.8 | Diagnostic Pointing Prototype
+   Built on working V5.7. Adds a conservative LEFT-arm pointing pose during
+   GPU examination, leaving verified RIGHT-arm/palm/face logic unchanged.
+   Syntax-checked; 3D motion requires browser validation with rex.glb. */
 /*
 
   ================================================================
@@ -2647,10 +2651,19 @@ function rex3DAnimate(){
     foreRX+=0.62*lift;foreRY+=0.12*flip;
     handRX+=0.15*flip;handRZ-=0.05*flip;
     fingerCurlR=0.06+0.07*flip;
-    /* During examination, add a restrained gaze tilt without changing the arm. */
+    /* V5.8: Left-hand diagnostic pointing during component inspection.
+       Preserve all proven right-arm and palm values. Small, reversible FK
+       offsets are intentionally conservative pending visual rig calibration. */
     if(rex3D.gpuDemo.examining){
       const look=rexGpuSmooth((p-.16)/.20)*(1-rexGpuSmooth((p-.83)/.14));
       headX+=0.045*look;
+      const point=rexGpuSmooth((p-.27)/.10)*(1-rexGpuSmooth((p-.76)/.12));
+      upperLX+=0.24*point;
+      upperLZ+=0.07*point;
+      foreLX+=0.31*point;
+      foreLY-=0.06*point;
+      handLX+=0.04*point;
+      fingerCurlL=0.06+0.23*point;
     }
   }
 
@@ -2680,9 +2693,15 @@ function rex3DAnimate(){
     const curl=side==="L"?fingerCurlL:fingerCurlR;
     const flutter=mode==="speaking"?Math.sin(t*3.1+(side==="L"?0:1.1))*0.012:0;
     for(const [finger,factors] of Object.entries(fingerFactors)){
-      rex3DApplyLocalRotation(`${finger}1${side}`,curl*factors[0]+flutter,0,0,12);
-      rex3DApplyLocalRotation(`${finger}2${side}`,curl*factors[1]+flutter,0,0,12);
-      rex3DApplyLocalRotation(`${finger}3${side}`,curl*factors[2],0,0,12);
+      // During GPU inspection, straighten the left index finger while the
+      // other three fingers curl to create a readable pointing gesture.
+      const inspectionPoint=side==="L"&&rex3D.gpuDemo?.active&&rex3D.gpuDemo.examining
+        ?rexGpuSmooth((rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1)-.27)/.10)
+          *(1-rexGpuSmooth((rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1)-.76)/.12)):0;
+      const fingerCurl=finger==="index"?curl*(1-inspectionPoint*.94):curl+inspectionPoint*.14;
+      rex3DApplyLocalRotation(`${finger}1${side}`,fingerCurl*factors[0]+flutter,0,0,12);
+      rex3DApplyLocalRotation(`${finger}2${side}`,fingerCurl*factors[1]+flutter,0,0,12);
+      rex3DApplyLocalRotation(`${finger}3${side}`,fingerCurl*factors[2],0,0,12);
     }
     const sign=side==="L"?1:-1;
     rex3DApplyLocalRotation(`thumb1${side}`,curl*0.28,sign*curl*0.06,sign*curl*0.20,12);
