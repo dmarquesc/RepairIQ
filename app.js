@@ -1,6 +1,8 @@
-/* R.E.X. V5.8 | Diagnostic Pointing Prototype
-   Built on working V5.7. Adds a conservative LEFT-arm pointing pose during
-   GPU examination, leaving verified RIGHT-arm/palm/face logic unchanged.
+/* R.E.X. V5.15 | Hybrid-ready conversation + balanced performance tuning. */
+/* R.E.X. V5.14 | Connected GPU Visualization + Local Conversation */
+/* R.E.X. V5.13 | GPU Diagnostic Breakdown
+   Built on the supplied V5.8. Strengthens LEFT-arm examination pointing
+   while preserving RIGHT-arm GPU presentation, face, and application logic.
    Syntax-checked; 3D motion requires browser validation with rex.glb. */
 /*
 
@@ -1493,12 +1495,111 @@ function rexRememberV08(question) {
   rexMemoryV08.personal = rexMemoryV08.personal.slice(-20);
   return { text:`Got it. I'll keep this as a personal note in this browser: "${value}"`, source:"User supplied · local personal memory" };
 }
+/* V5.14: one evidence-aware narrative for the 3D inspection and chat. */
+const REX_GPU_NARRATIVE_V514={
+  breakdown:[
+    ["Preparing GPU breakdown","I'm separating an illustrative GPU assembly into functional regions. This is a visualization, not a physical disassembly instruction."],
+    ["Connector interface","These interfaces connect the GPU assembly to its host system. A connection-related symptom requires logs and appropriate inspection before drawing conclusions."],
+    ["GPU package","The GPU package performs accelerated computation. A highlighted region here does not mean a fault has been confirmed."],
+    ["Memory region","GPU memory supports high-bandwidth data access. We would correlate memory-related symptoms with actual test evidence before recommending action."],
+    ["Thermal assembly","Cooling and thermal interfaces influence operating conditions. Any hands-on procedure requires the site's approved process and technician authorization."],
+    ["Reassembling visualization","The layers are returning to their presentation position. To connect this illustration to a real unit, analyze a case and review its cited findings."]
+  ],
+  examination:[
+    ["Rotating GPU","I'm rotating the illustrative GPU to make its functional regions easier to inspect."],
+    ["Processor region","Here's the processor region. This highlight is educational, not evidence of a defect."],
+    ["Memory region","Now examining the memory region. Actual diagnostic findings require a case log."],
+    ["Connector region","I'm highlighting the connector area. A repair decision needs case evidence and technician review."],
+    ["Connection review","Reviewing relationships between GPU components and system connectivity."],
+    ["Examination complete","The illustrative examination is complete. Ask me about a region or load a case for evidence-led guidance."]
+  ]
+};
+function rexGpuNarrateV514(kind,stage){
+  const item=REX_GPU_NARRATIVE_V514[kind]?.[stage];
+  if(!item)return;
+  const g=rex3D?.gpuDemo;
+  if(!g||!g.active)return;
+  // Only the current sequence is allowed to publish a stage message.
+  const token=`${kind}:${g.start}:${stage}`;
+  if(g.lastNarrativeToken===token)return;
+  g.lastNarrativeToken=token;
+  const caseContext=!!state.knowledgeOutput;
+  const source=caseContext
+    ? "Illustrative 3D visualization · separate from case evidence"
+    : "Illustrative GPU anatomy · no diagnostic case loaded";
+  const conversation=rexConversationV08();
+  conversation.push({role:"rex",text:`${item[0]}. ${item[1]}`,source});
+  if(conversation.length>60)conversation.splice(0,conversation.length-60);
+  rexSaveV08();rexRenderV08();
+}
+/* V5.15: Hybrid-ready provider boundary. Disabled by default, so the offline
+   prototype remains fully functional. A future trusted same-origin backend can
+   implement POST /api/rex/chat and call local/cloud models server-side.
+   NEVER place model-provider API keys in this browser file. */
+const REX_HYBRID_V515={
+  enabled:false,
+  endpoint:"/api/rex/chat",
+  timeoutMs:6500,
+  speed:1.18,
+  maxContextMessages:8
+};
+function rexHybridSafeContextV515(){
+  const c=rexConversationV08();
+  return {
+    mode:rexScopeV08,
+    inspection:rex3D?.gpuDemo?.breakingDown?"gpu-breakdown":rex3D?.gpuDemo?.examining?"gpu-examination":rex3D?.gpuDemo?.active?"gpu-presentation":"general",
+    hasAnalyzedCase:!!state.knowledgeOutput,
+    // Deliberately exclude raw diagnostic logs, serial numbers and private notes.
+    messages:c.slice(-REX_HYBRID_V515.maxContextMessages).map(m=>({role:m.role==="user"?"user":"assistant",content:String(m.text||"").slice(0,800)}))
+  };
+}
+async function rexHybridReplyV515(question){
+  if(!REX_HYBRID_V515.enabled)return null;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),REX_HYBRID_V515.timeoutMs);
+  try{
+    const response=await fetch(REX_HYBRID_V515.endpoint,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:question,context:rexHybridSafeContextV515()}),
+      signal:controller.signal
+    });
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();
+    if(typeof data.reply!=="string"||!data.reply.trim())throw new Error("Invalid provider reply");
+    return {text:data.reply.trim().slice(0,3000),source:"Hybrid language model · unverified conversational output"};
+  }catch(error){
+    console.warn("R.E.X. provider unavailable; using local fallback:",error?.message||error);
+    return null;
+  }finally{clearTimeout(timeout);}
+}
+function rexHybridUseProviderV515(question){
+  if(!REX_HYBRID_V515.enabled)return false;
+  // All safety, repair, case-evidence, memory and animation instructions stay
+  // with the deterministic local controller. Only general conversation is routed.
+  return !/(gpu|hmc|bist|retest|verif|escalat|repair|fail|evidence|diagnos|component|server|log|replace|breakdown|scan|present|remember|recall|forget|danger|shock|smoke|fire|burn|injur)/i.test(question);
+}
 function rexReplyV08(question) {
   const q = question.toLowerCase();
   const remembered = rexRememberV08(question);
   if (remembered) return remembered;
   if (/forget (everything|all|my (personal )?notes)/.test(q)) { rexMemoryV08.personal = []; return { text:"I cleared the personal notes saved in this browser.", source:"Local personal memory" }; }
   if (/what do you remember|what (do you|have you) know about me|recall/.test(q)) return { text:rexMemoryV08.personal.length?`Here's what you explicitly asked me to remember:\n${rexMemoryV08.personal.map(x=>`• ${x.value}`).join("\n")}\nThese are your notes, not verified repair evidence.`:"I don't have any personal notes yet. Say 'Remember that…' and I'll save it in this browser.", source:"Local personal memory" };
+  // Conversation and animation share the same commands and state.
+  if (/\b(?:start|show|run|demonstrate|begin)\b.*\b(?:gpu )?(?:breakdown|exploded view)\b|\b(?:gpu breakdown|exploded view)\b/.test(q)) {
+    rexGpuBreakdownStart();
+    return {text:"Starting the illustrative GPU breakdown. I'll explain each functional layer as it separates. No hardware fault is implied.",source:"R.E.X. 3D action · illustrative demonstration"};
+  }
+  if (/\b(?:start|show|run|begin)\b.*\b(?:gpu )?(?:examination|inspection|scan)\b/.test(q)) {
+    rexGpuExamineStart();
+    return {text:"Starting GPU examination. I'll identify the highlighted regions as the hologram rotates; case evidence remains separate.",source:"R.E.X. 3D action · illustrative demonstration"};
+  }
+  if (/\b(?:show|present|display)\b.*\bgpu\b/.test(q)) {
+    rexGpuStart();
+    return {text:"Presenting the illustrative GPU hologram above my palm.",source:"R.E.X. 3D action · illustrative demonstration"};
+  }
+  if (/\b(?:what|explain|tell me about)\b.*\b(?:breakdown|exploded view|gpu layers)\b/.test(q)) {
+    return {text:"The breakdown separates connector interfaces, the GPU package, memory regions, and thermal structures to explain their roles. It is a simplified teaching model, not a verified hardware diagram or a diagnosis.",source:"Illustrative GPU anatomy · local knowledge"};
+  }
   if (/danger|shock|smoke|fire|electrical hazard|burn|injur/.test(q)) return { text:"Stop work and follow your site's safety and power isolation procedure. If there's immediate danger, leave the area and contact the appropriate safety team. I can't assess physical conditions from this chat.", source:"Safety guidance · no remote assessment" };
   const technical = /gpu|hmc|bist|retest|verify|escalat|repair|failure|pattern|evidence|check first|diagnos|component|server|log|replace/.test(q);
   if (technical && state.knowledgeOutput && rexScopeV08 === "case") { const result = answerREX(question); return { text:result.text, source:`Structured prototype case output · ${result.citation||"case context"}` }; }
@@ -1529,10 +1630,11 @@ function rexSendV08(value, input) {
   if (input) input.value = "";
   const recalling = /remember|recall|forget/i.test(question);
   rexSetMotionV09(recalling?"remembering":"analyzing", recalling?"R.E.X. is checking local memory":"R.E.X. is thinking");
-  rexReplyTimerV09 = setTimeout(() => {
+  rexReplyTimerV09 = setTimeout(async () => {
     if (interaction !== rexInteractionV09) return;
     rexReplyTimerV09 = null;
-    const reply = rexReplyV08(question);
+    const reply = (rexHybridUseProviderV515(question) ? await rexHybridReplyV515(question) : null) || rexReplyV08(question);
+    if (interaction !== rexInteractionV09) return;
     conversation.push({ role:"rex", ...reply });
     if (conversation.length > 60) conversation.splice(0, conversation.length - 60);
     rexSaveV08(); rexRenderV08();
@@ -2320,14 +2422,35 @@ function rexGpuBuild(){
     targets.add(marker);markers.push(marker);
   }
   targets.visible=false;
-  rex3D.gpuDemo={object:root,board,chip,beam,ring,upperRing,traces,scan,scanEdge,targets,markers,targetDefs,start:-1,duration:12,active:false,examining:false,inspectionStage:-1};
+  // V5.13: separate illustrative layers, independent of the proven palm rig.
+  const breakdown=new T.Group();breakdown.name="REX_GPU_EXPLODED_VIEW";root.add(breakdown);
+  const layerDefs=[
+    {name:"CONNECTOR INTERFACE",color:0xffca80,y:-.012,w:.115,d:.078},
+    {name:"GPU PACKAGE",color:0x8dfaff,y:.010,w:.070,d:.059},
+    {name:"MEMORY REGION",color:0x82bbff,y:.027,w:.105,d:.071},
+    {name:"THERMAL ASSEMBLY",color:0x9de6ff,y:.043,w:.113,d:.077}
+  ];
+  const layers=layerDefs.map((def,i)=>{
+    const group=new T.Group();group.position.y=def.y;breakdown.add(group);
+    const mat=new T.MeshBasicMaterial({color:def.color,transparent:true,opacity:.17,side:T.DoubleSide,depthWrite:false,blending:T.AdditiveBlending});
+    const plate=new T.Mesh(new T.BoxGeometry(def.w,.003,def.d),mat);group.add(plate);
+    const edge=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(def.w,.004,def.d)),new T.LineBasicMaterial({color:def.color,transparent:true,opacity:.9,depthWrite:false}));group.add(edge);
+    if(i===1){const core=new T.Mesh(new T.BoxGeometry(.035,.009,.035),new T.MeshBasicMaterial({color:def.color,transparent:true,opacity:.55,depthWrite:false}));core.position.y=.007;group.add(core);}
+    if(i===2){for(const x of[-.037,.037])for(const z of[-.025,.025]){const memory=new T.Mesh(new T.BoxGeometry(.014,.004,.013),new T.MeshBasicMaterial({color:def.color,transparent:true,opacity:.6,depthWrite:false}));memory.position.set(x,.004,z);group.add(memory);}}
+    return {group,base:def.y,name:def.name};
+  });
+  breakdown.visible=false;
+  rex3D.gpuDemo={object:root,board,chip,beam,ring,upperRing,traces,scan,scanEdge,targets,markers,targetDefs,breakdown,layers,start:-1,duration:12,active:false,examining:false,breakingDown:false,inspectionStage:-1};
 }
 function rexGpuStart(){
   if(!rex3D.ready||!rex3D.clock)return;
   if(!rex3D.gpuDemo?.object)rexGpuBuild();
   if(!rex3D.gpuDemo)return;
   rex3D.portalStart=-1;
-  rex3D.gpuDemo.start=rex3D.clock.getElapsedTime();rex3D.gpuDemo.active=true;rex3D.gpuDemo.examining=false;rex3D.gpuDemo.duration=12;
+  rex3D.gpuDemo.start=rex3D.clock.getElapsedTime();rex3D.gpuDemo.active=true;rex3D.gpuDemo.examining=false;rex3D.gpuDemo.breakingDown=false;rex3D.gpuDemo.duration=12/REX_HYBRID_V515.speed;
+  if(rex3D.gpuDemo.breakdown)rex3D.gpuDemo.breakdown.visible=false;
+  if(rex3D.gpuDemo.board)rex3D.gpuDemo.board.visible=true;
+  if(rex3D.gpuDemo.chip)rex3D.gpuDemo.chip.visible=true;
   if(rex3D.gpuDemo.targets)rex3D.gpuDemo.targets.visible=false;
   const status=document.getElementById("rex-gpu-inspection-status");if(status)status.style.display="none";
   const b=document.getElementById("rex-gpu-demo-button");if(b)b.textContent="GPU PRESENTATION ACTIVE";
@@ -2338,14 +2461,35 @@ function rexGpuExamineStart(){
   if(!rex3D.ready||!rex3D.clock)return;
   rexGpuStart();
   const g=rex3D.gpuDemo;if(!g)return;
-  g.examining=true;
-  g.duration=22;
+  g.examining=true;g.breakingDown=false;
+  g.duration=22/REX_HYBRID_V515.speed;
   g.inspectionStage=-1;
   const b=document.getElementById("rex-gpu-examine-button");
   if(b)b.textContent="EXAMINING GPU";
 }
+/* V5.13: illustrative exploded GPU demonstration; never represents a
+   verified mechanical drawing or a diagnosed hardware failure. */
+function rexGpuBreakdownStart(){
+  rexGpuExamineStart();
+  const g=rex3D.gpuDemo;if(!g)return;
+  g.breakingDown=true;g.duration=26/REX_HYBRID_V515.speed;g.inspectionStage=-1;
+  const b=document.getElementById("rex-gpu-breakdown-button");
+  if(b)b.textContent="GPU BREAKDOWN ACTIVE";
+}
+function rexGpuInstallBreakdownButton(){
+  if(document.getElementById("rex-gpu-breakdown-button"))return;
+  const exam=document.getElementById("rex-gpu-examine-button");
+  if(!exam)return;
+  const button=document.createElement("button");
+  button.id="rex-gpu-breakdown-button";button.type="button";
+  button.textContent="GPU BREAKDOWN";
+  button.className=exam.className;
+  button.setAttribute("aria-label","Show an illustrative exploded-view GPU component breakdown");
+  exam.insertAdjacentElement("afterend",button);
+  button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();rexGpuBreakdownStart();});
+}
 function rexGpuInstallExamineButton(){
-  if(document.getElementById("rex-gpu-examine-button"))return;
+  if(document.getElementById("rex-gpu-examine-button")){rexGpuInstallBreakdownButton();return;}
   const present=document.getElementById("rex-gpu-demo-button");
   if(!present?.parentElement)return;
   const button=document.createElement("button");
@@ -2363,6 +2507,7 @@ function rexGpuInstallExamineButton(){
     button.insertAdjacentElement("afterend",status);
   }
   button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();rexGpuExamineStart();});
+  rexGpuInstallBreakdownButton();
 }
 /* V4.6: Locate the palm from the actual skinned hand bones, not a guessed
    fixed offset behind the wrist. The GPU remains horizontal in world space. */
@@ -2432,9 +2577,25 @@ function rexGpuUpdate(t){
         else if(p<.88){inspectionStage=4;angle=1.27+rexGpuSmooth((p-.74)/.14)*.65;}
         else {inspectionStage=5;angle=1.92*(1-rexGpuSmooth((p-.88)/.10));}
       }
+      if(g.breakingDown){
+        const expand=rexGpuSmooth((p-.23)/.16)*(1-rexGpuSmooth((p-.81)/.14));
+        angle=.15+rexGpuSmooth((p-.15)/.14)*.22;
+        if(g.breakdown){
+          g.breakdown.visible=expand>.005;
+          g.layers.forEach((layer,i)=>{
+            layer.group.position.y=layer.base+expand*(i-.7)*.041;
+            layer.group.rotation.y=Math.sin(t*.5+i*.6)*.06*expand;
+            layer.group.scale.setScalar(1+expand*.13);
+            layer.group.visible=true;
+          });
+        }
+        if(g.board)g.board.visible=expand<.01;
+        if(g.chip)g.chip.visible=expand<.01;
+        inspectionStage=p<.23?0:p<.39?1:p<.52?2:p<.65?3:p<.79?4:5;
+      }
       g.object.rotation.set(0,angle,0);
       if(g.targets){
-        g.targets.visible=g.examining&&inspectionStage>=1&&inspectionStage<=4;
+        g.targets.visible=g.examining&&!g.breakingDown&&inspectionStage>=1&&inspectionStage<=4;
         g.markers.forEach((marker,i)=>{
           const active=(inspectionStage===1&&i===0)||(inspectionStage===2&&i===1)||(inspectionStage>=3&&i===2);
           marker.visible=active;
@@ -2445,7 +2606,9 @@ function rexGpuUpdate(t){
         g.inspectionStage=inspectionStage;
         const status=document.getElementById("rex-gpu-inspection-status");
         const messages=["ROTATING GPU","INSPECTING PROCESSOR","INSPECTING MEMORY","INSPECTING CONNECTORS","REVIEWING CONNECTIONS","RETURNING TO PRESENTATION"];
-        if(status){status.style.display="inline-block";status.textContent=messages[inspectionStage]||"GPU EXAMINATION";}
+        const breakdownMessages=["PREPARING GPU","CONNECTOR INTERFACE","GPU PACKAGE","MEMORY REGION","THERMAL ASSEMBLY","REASSEMBLING GPU"];
+        if(status){status.style.display="inline-block";status.textContent=(g.breakingDown?breakdownMessages:messages)[inspectionStage]||"GPU EXAMINATION";}
+        rexGpuNarrateV514(g.breakingDown?"breakdown":"examination",inspectionStage);
       }
       if(g.scan){
         g.scan.visible=g.examining&&p>.24&&p<.87;
@@ -2465,12 +2628,16 @@ function rexGpuUpdate(t){
       if(g.traces)g.traces.visible=true;
     }
   }
-  if(p>=1){g.active=false;g.examining=false;g.object.visible=false;
+  if(p>=1){g.active=false;g.examining=false;g.breakingDown=false;g.object.visible=false;
+    if(g.breakdown)g.breakdown.visible=false;
+    if(g.board)g.board.visible=true;
+    if(g.chip)g.chip.visible=true;
     if(g.targets)g.targets.visible=false;
     const status=document.getElementById("rex-gpu-inspection-status");
     if(status){status.style.display="none";status.textContent="";}
     const b=document.getElementById("rex-gpu-demo-button");if(b)b.textContent="PRESENT GPU";
     const e=document.getElementById("rex-gpu-examine-button");if(e)e.textContent="GPU EXAMINATION";
+    const bd=document.getElementById("rex-gpu-breakdown-button");if(bd)bd.textContent="GPU BREAKDOWN";
   }
 }
 function rexGpuInstallButton(){
@@ -2658,12 +2825,26 @@ function rex3DAnimate(){
       const look=rexGpuSmooth((p-.16)/.20)*(1-rexGpuSmooth((p-.83)/.14));
       headX+=0.045*look;
       const point=rexGpuSmooth((p-.27)/.10)*(1-rexGpuSmooth((p-.76)/.12));
-      upperLX+=0.24*point;
-      upperLZ+=0.07*point;
-      foreLX+=0.31*point;
-      foreLY-=0.06*point;
-      handLX+=0.04*point;
-      fingerCurlL=0.06+0.23*point;
+      /* V5.9: readable, staged examination pose. All values are local
+         offsets from the imported rig's bind pose. Tune only these values
+         if the left arm needs calibration for a different rex.glb. */
+      const REX_POINT_POSE={
+        upperForward:0.58, upperAcross:-0.24, upperOut:0.12,
+        elbowBend:0.70, elbowAcross:-0.20,
+        wristPitch:-0.10, wristYaw:0.04, wristRoll:-0.04
+      };
+      shoulderLX+=0.035*point;
+      shoulderLZ+=0.025*point;
+      upperLX+=REX_POINT_POSE.upperForward*point;
+      upperLY+=REX_POINT_POSE.upperAcross*point;
+      upperLZ+=REX_POINT_POSE.upperOut*point;
+      foreLX+=REX_POINT_POSE.elbowBend*point;
+      foreLY+=REX_POINT_POSE.elbowAcross*point;
+      handLX+=REX_POINT_POSE.wristPitch*point;
+      handLY+=REX_POINT_POSE.wristYaw*point;
+      handLZ+=REX_POINT_POSE.wristRoll*point;
+      /* Curl the non-pointing fingers; index remains extended below. */
+      fingerCurlL=0.06+0.31*point;
     }
   }
 
@@ -2698,15 +2879,19 @@ function rex3DAnimate(){
       const inspectionPoint=side==="L"&&rex3D.gpuDemo?.active&&rex3D.gpuDemo.examining
         ?rexGpuSmooth((rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1)-.27)/.10)
           *(1-rexGpuSmooth((rex3DClamp((t-rex3D.gpuDemo.start)/rex3D.gpuDemo.duration,0,1)-.76)/.12)):0;
-      const fingerCurl=finger==="index"?curl*(1-inspectionPoint*.94):curl+inspectionPoint*.14;
-      rex3DApplyLocalRotation(`${finger}1${side}`,fingerCurl*factors[0]+flutter,0,0,12);
-      rex3DApplyLocalRotation(`${finger}2${side}`,fingerCurl*factors[1]+flutter,0,0,12);
-      rex3DApplyLocalRotation(`${finger}3${side}`,fingerCurl*factors[2],0,0,12);
+      // V5.12: preserve the proven index pose; relax the other fingers individually.
+      const inspectionCurls={middle:0.15,ring:0.19,pinky:0.16};
+      const fingerCurl=finger==="index"?curl*(1-inspectionPoint):curl+inspectionPoint*(inspectionCurls[finger]||0);
+      const relaxedFactors={middle:[0.49,0.75,0.57],ring:[0.54,0.80,0.62],pinky:[0.48,0.73,0.55]};
+      const shaped=side==="L"&&inspectionPoint>0&&finger!=="index"?relaxedFactors[finger]:factors;
+      rex3DApplyLocalRotation(`${finger}1${side}`,fingerCurl*shaped[0]+flutter,0,0,12);
+      rex3DApplyLocalRotation(`${finger}2${side}`,fingerCurl*shaped[1]+flutter,0,0,12);
+      rex3DApplyLocalRotation(`${finger}3${side}`,fingerCurl*shaped[2],0,0,12);
     }
     const sign=side==="L"?1:-1;
-    rex3DApplyLocalRotation(`thumb1${side}`,curl*0.28,sign*curl*0.06,sign*curl*0.20,12);
-    rex3DApplyLocalRotation(`thumb2${side}`,curl*0.44,0,sign*curl*0.05,12);
-    rex3DApplyLocalRotation(`thumb3${side}`,curl*0.34,0,0,12);
+    rex3DApplyLocalRotation(`thumb1${side}`,curl*(side==="L"?0.20:0.28),sign*curl*(side==="L"?0.04:0.06),sign*curl*(side==="L"?0.12:0.20),12);
+    rex3DApplyLocalRotation(`thumb2${side}`,curl*(side==="L"?0.25:0.44),0,sign*curl*(side==="L"?0.03:0.05),12);
+    rex3DApplyLocalRotation(`thumb3${side}`,curl*(side==="L"?0.20:0.34),0,0,12);
   }
 
   if(rex3D.gpuDemo?.active){
@@ -2741,7 +2926,7 @@ function rex3DResize(){
   if(!canvas||!shell)return;
   const width=Math.max(1,shell.clientWidth),height=Math.max(1,shell.clientHeight);
   rex3D.camera.aspect=width/height;rex3D.camera.updateProjectionMatrix();
-  rex3D.renderer.setSize(width,height,false);rex3D.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+  rex3D.renderer.setSize(width,height,false);rex3D.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
 }
 
 /* IMPROVED v1.0-PHASE2: dispose on error, cancelAnimationFrame on cleanup */
