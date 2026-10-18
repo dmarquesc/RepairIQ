@@ -1,3 +1,13 @@
+/* R.E.X. V5.27 | Immediate level palm platform alignment; rotate platform as a group without ring wobble. */
+/* R.E.X. V5.26 | Near-solid NVIDIA GPU, restrained edge glow, single clear palm platform. */
+/* R.E.X. V5.25 | Semi-solid GPU: restored metallic contrast and legible NVIDIA details. */
+/* R.E.X. V5.24 | Shared tracked palm anchor: independent level platform and chest-height GPU. */
+/* R.E.X. V5.23 | Palm-centered GPU, horizontal rotating cyan pedestal. */
+/* R.E.X. V5.22 | Chest-height centered GPU, 20% smaller, single tilted cyan platform. */
+/* R.E.X. V5.20 | Rotating palm projector, concentric rings and focused cyan beam. */
+/* R.E.X. V5.19 | Cyan holographic NVIDIA GPU projection, preserving R.E.X. animation. */
+/* R.E.X. V5.18 | Realistic NVIDIA-inspired PNG GPU presentation with preserved V5.15 rig and breakdown. */
+/* R.E.X. V5.21 | Clean GPU + single rotating holographic platform. */
 /* R.E.X. V5.15 | Hybrid-ready conversation + balanced performance tuning. */
 /* R.E.X. V5.14 | Connected GPU Visualization + Local Conversation */
 /* R.E.X. V5.13 | GPU Diagnostic Breakdown
@@ -2398,7 +2408,41 @@ function rexGpuBuild(){
   ring.rotation.x=Math.PI/2;ring.position.y=-.063;root.add(ring);
   const upperRing=new T.Mesh(new T.TorusGeometry(.071,.0009,6,64),ringMat.clone());
   upperRing.rotation.x=Math.PI/2;upperRing.position.y=-.012;root.add(upperRing);
-  const halo=new T.PointLight(blue,.43,.28);halo.position.set(0,.020,0);root.add(halo);
+  // V5.20: concentric palm-projector platform. Pure visual elements, no rig changes.
+  const projector=new T.Group();projector.name="REX_V524_WORLD_LEVEL_PALM_PLATFORM";rex3D.scene.add(projector);
+  const projectorMat=new T.MeshBasicMaterial({color:0x44edff,transparent:true,opacity:.68,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const projectorOuter=new T.Mesh(new T.TorusGeometry(.069,.00155,8,96),projectorMat.clone());
+  projectorOuter.rotation.x=Math.PI/2;projectorOuter.position.y=0;projector.add(projectorOuter);
+  const projectorInner=new T.Mesh(new T.TorusGeometry(.037,.00115,6,80),projectorMat.clone());
+  projectorInner.rotation.x=Math.PI/2;projectorInner.position.y=-.062;projector.add(projectorInner);
+  const projectorDashes=new T.Group();projector.add(projectorDashes);
+  for(let i=0;i<16;i++){
+    const a=i*Math.PI/8;
+    const dash=new T.Mesh(new T.BoxGeometry(.012,.0006,.0018),projectorMat.clone());
+    dash.position.set(Math.cos(a)*.061,-.062,Math.sin(a)*.061);
+    dash.rotation.y=-a;projectorDashes.add(dash);
+  }
+  const beamCoreMat=new T.MeshBasicMaterial({color:0x7af8ff,transparent:true,opacity:.085,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const beamCore=new T.Mesh(new T.CylinderGeometry(.034,.006,.112,48,1,true),beamCoreMat);
+  beamCore.position.y=-.007;projector.add(beamCore);
+  const beamShaftMat=new T.MeshBasicMaterial({color:0x18cfff,transparent:true,opacity:.065,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+  const beamShaft=new T.Mesh(new T.CylinderGeometry(.050,.013,.112,48,1,true),beamShaftMat);
+  beamShaft.position.y=-.007;projector.add(beamShaft);
+  const projectorDisk=new T.Mesh(new T.CircleGeometry(.030,48),new T.MeshBasicMaterial({color:0x36e8ff,transparent:true,opacity:.15,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending}));
+  projectorDisk.rotation.x=-Math.PI/2;projectorDisk.position.y=-.063;projector.add(projectorDisk);
+  // V5.21: keep only the NVIDIA GPU and one restrained rotating platform.
+  // Legacy beams and extra rings stay allocated for compatibility but are hidden.
+  beam.visible=false;
+  ring.visible=false;
+  upperRing.visible=false;
+  projectorInner.visible=false;
+  projectorDashes.visible=false;
+  beamCore.visible=false;
+  beamShaft.visible=false;
+  projectorDisk.visible=false;
+  projectorOuter.material.opacity=.82;
+  const halo=new T.PointLight(blue,.24,.22);halo.position.set(0,.020,0);root.add(halo);
+  projector.visible=false;
   root.visible=false;rex3D.scene.add(root);
   // V5.6: inspection scan plane and evidence-safe highlighting.
   const scanMat=new T.MeshBasicMaterial({color:0x55efff,transparent:true,opacity:.0,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
@@ -2440,7 +2484,58 @@ function rexGpuBuild(){
     return {group,base:def.y,name:def.name};
   });
   breakdown.visible=false;
-  rex3D.gpuDemo={object:root,board,chip,beam,ring,upperRing,traces,scan,scanEdge,targets,markers,targetDefs,breakdown,layers,start:-1,duration:12,active:false,examining:false,breakingDown:false,inspectionStage:-1};
+  // V5.18: independent camera-facing GPU photo display. It is an illustrative
+  // 2D texture, not an engineering-accurate or rotatable 3D hardware model.
+  const photoGroup=new T.Group();photoGroup.name="REX_V518_REAL_GPU_PHOTO";
+  const photoMaterial=new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.98,side:T.DoubleSide,depthWrite:true,blending:T.NormalBlending});
+  const photo=new T.Mesh(new T.PlaneGeometry(.195,.110),photoMaterial);
+  photoGroup.add(photo);photoGroup.position.set(0,.045,0);
+  // V5.19: faint enlarged luminous silhouette behind the holographic GPU.
+  const photoGlowMat=new T.MeshBasicMaterial({color:0x16cfff,transparent:true,opacity:.018,side:T.DoubleSide,depthWrite:false,blending:T.AdditiveBlending});
+  const photoGlow=new T.Mesh(new T.PlaneGeometry(.198,.112),photoGlowMat);
+  photoGlow.position.z=-.0015;photoGroup.add(photoGlow);
+  photoGroup.visible=false;root.add(photoGroup);
+  const textureLoader=new T.TextureLoader();
+  textureLoader.load("assets/nvidia-gpu.png",texture=>{
+    if("colorSpace" in texture&&T.SRGBColorSpace)texture.colorSpace=T.SRGBColorSpace;
+    const w=texture.image?.width||1672,h=texture.image?.height||941;
+    photo.geometry.dispose();photo.geometry=new T.PlaneGeometry(.195,.195*h/w);
+    // Remove the near-black studio backdrop and add fine hologram scan lines.
+    // This is a browser-side texture treatment, not a new hardware model.
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.min(1024,w);canvas.height=Math.round(canvas.width*h/w);
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    if(ctx){
+      ctx.drawImage(texture.image,0,0,canvas.width,canvas.height);
+      const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const pixels=frame.data;
+      for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
+        const i=(y*canvas.width+x)*4,r=pixels[i],gr=pixels[i+1],b=pixels[i+2];
+        const lum=.2126*r+.7152*gr+.0722*b;
+        // Dark neutral backdrop fades away. Fine GPU details remain visible.
+        const neutral=Math.max(r,gr,b)-Math.min(r,gr,b)<19;
+        const backdrop=neutral&&lum<32;
+        const cut=backdrop?Math.max(0,Math.min(1,(lum-8)/20)):1;
+        const stripe=1; // V5.26: no scan lines across NVIDIA branding
+        pixels[i]=r;
+        pixels[i+1]=gr;
+        pixels[i+2]=b;
+        pixels[i+3]=Math.round(pixels[i+3]*cut*stripe);
+      }
+      ctx.putImageData(frame,0,0);
+      const holoTexture=new T.CanvasTexture(canvas);
+      if("colorSpace" in holoTexture&&T.SRGBColorSpace)holoTexture.colorSpace=T.SRGBColorSpace;
+      photoMaterial.map=holoTexture;photoGlowMat.map=holoTexture;
+      photoGlow.geometry.dispose();photoGlow.geometry=new T.PlaneGeometry(.198,.198*h/w);
+      photoGlowMat.needsUpdate=true;
+    }else{photoMaterial.map=texture;photoGlowMat.map=texture;}
+    photoMaterial.needsUpdate=true;
+    photoGroup.userData.loaded=true;
+  },undefined,error=>{
+    console.warn("R.E.X. V5.18: assets/nvidia-gpu.png unavailable; retaining procedural GPU.",error);
+    photoGroup.userData.loaded=false;
+  });
+  rex3D.gpuDemo={object:root,board,chip,beam,ring,upperRing,projector,projectorOuter,projectorInner,projectorDashes,beamCore,beamShaft,projectorDisk,traces,scan,scanEdge,targets,markers,targetDefs,breakdown,layers,photoGroup,start:-1,duration:12,active:false,examining:false,breakingDown:false,inspectionStage:-1};
 }
 function rexGpuStart(){
   if(!rex3D.ready||!rex3D.clock)return;
@@ -2551,19 +2646,28 @@ function rexGpuOrientPalm(progress){
 function rexGpuUpdate(t){
   const g=rex3D.gpuDemo,T=rex3D.THREE;
   if(!g?.object||!T)return;
-  if(!g.active||!rex3D.bones.handR){g.object.visible=false;return;}
+  if(!g.active||!rex3D.bones.handR){g.object.visible=false;if(g.projector)g.projector.visible=false;return;}
   const p=rex3DClamp((t-g.start)/g.duration,0,1);
   const reveal=rexGpuSmooth((p-.19)/.12)*(1-rexGpuSmooth((p-.90)/.10));
   g.object.visible=reveal>.005;
+  if(g.projector)g.projector.visible=g.object.visible;
   if(g.object.visible){
     const frame=rexGpuPalmFrame();
     if(frame){
       // Hover above palm, with a tiny vertical oscillation. No skeletal rotation changes.
-      const hover=.067+Math.sin(t*2.1)*.0022;
+      const hover=.051+Math.sin(t*2.1)*.0017;
       // Offset toward R.E.X. from the knuckles to keep the projection centered over the palm.
       // Do not modify the working shoulder, elbow, wrist, or finger rotations.
+      // V5.24: one tracked palm origin drives BOTH independent visuals.
+      // Platform is scene-level so its orientation never inherits GPU rotation.
       const palmBack=frame.toward.clone().normalize().multiplyScalar(-.011);
-      g.object.position.copy(frame.center).add(palmBack).add(new T.Vector3(0,hover,0));
+      const anchor=frame.center.clone().add(palmBack).add(new T.Vector3(.018,0,.014));
+      g.object.position.copy(anchor).add(new T.Vector3(0,hover,0));
+      if(g.projector){
+        g.projector.position.copy(anchor).add(new T.Vector3(0,.015,0));
+        // Snap immediately to the same tracked palm anchor; rotate only around world vertical.
+        g.projector.rotation.set(0,t*.35,0);
+      }
       // Examination rotates the hologram only; the supporting hand stays locked.
       // V5.7 inspection choreography: rotate -> pause at processor -> memory
       // -> connectors -> return. Never changes the verified supporting-arm pose.
@@ -2589,13 +2693,40 @@ function rexGpuUpdate(t){
             layer.group.visible=true;
           });
         }
-        if(g.board)g.board.visible=expand<.01;
-        if(g.chip)g.chip.visible=expand<.01;
+        if(g.board)g.board.visible=expand<.01&&!g.photoGroup?.userData.loaded;
+        if(g.chip)g.chip.visible=expand<.01&&!g.photoGroup?.userData.loaded;
         inspectionStage=p<.23?0:p<.39?1:p<.52?2:p<.65?3:p<.79?4:5;
       }
       g.object.rotation.set(0,angle,0);
+      // Photo faces the active scene camera, even as the underlying inspection
+      // hologram rotates. Fade it out while the exploded-view layers expand.
+      const photoReady=!!g.photoGroup?.userData.loaded;
+      const expansion=g.breakingDown?rexGpuSmooth((p-.23)/.16)*(1-rexGpuSmooth((p-.81)/.14)):0;
+      if(g.photoGroup){
+        g.photoGroup.visible=photoReady&&expansion<.98;
+        if(g.photoGroup.visible){
+          if(rex3D.camera){
+            g.photoGroup.quaternion.copy(rex3D.camera.quaternion);
+            g.photoGroup.quaternion.premultiply(g.object.quaternion.clone().invert());
+          }
+          const mat=g.photoGroup.children[0]?.material;
+          if(mat)mat.opacity=(.985+.010*Math.sin(t*2.2))*(1-expansion);
+          const glow=g.photoGroup.children[1];
+          if(glow?.material)glow.material.opacity=(.012+.005*Math.sin(t*3.0))*(1-expansion);
+          g.photoGroup.position.y=.050+.0015*Math.sin(t*2.1);
+        }
+      }
+      if(!photoReady&&!g.breakingDown){const proceduralOutline=g.object.children.find(c=>c.isLineSegments&&c!==g.scanEdge);if(proceduralOutline)proceduralOutline.visible=true;if(g.board)g.board.visible=true;if(g.chip)g.chip.visible=true;}
+      if(photoReady){
+        const proceduralOutline=g.object.children.find(c=>c.isLineSegments&&c!==g.scanEdge);
+        if(proceduralOutline)proceduralOutline.visible=false;
+        if(g.board)g.board.visible=false;
+        if(g.chip)g.chip.visible=false;
+        if(g.traces)g.traces.visible=false;
+        if(g.targets)g.targets.visible=false;
+      }
       if(g.targets){
-        g.targets.visible=g.examining&&!g.breakingDown&&inspectionStage>=1&&inspectionStage<=4;
+        g.targets.visible=!photoReady&&g.examining&&!g.breakingDown&&inspectionStage>=1&&inspectionStage<=4;
         g.markers.forEach((marker,i)=>{
           const active=(inspectionStage===1&&i===0)||(inspectionStage===2&&i===1)||(inspectionStage>=3&&i===2);
           marker.visible=active;
@@ -2611,24 +2742,35 @@ function rexGpuUpdate(t){
         rexGpuNarrateV514(g.breakingDown?"breakdown":"examination",inspectionStage);
       }
       if(g.scan){
-        g.scan.visible=g.examining&&p>.24&&p<.87;
+        g.scan.visible=false; // V5.21: clean GPU view
         g.scan.position.y=.010;
         g.scan.position.z=-.056+.112*((t-g.start)*.45%1);
         g.scan.material.opacity=g.scan.visible?.12:0;
       }
       if(g.scanEdge){
-        g.scanEdge.visible=g.examining&&p>.24&&p<.87;
+        g.scanEdge.visible=false; // V5.21: clean GPU view
         g.scanEdge.material.opacity=g.scanEdge.visible?.55+.30*Math.sin(t*5):0;
       }
-      g.object.scale.setScalar(Math.max(.001,reveal*1.38));
+      g.object.scale.setScalar(Math.max(.001,reveal*1.10));
       if(g.beam?.material)g.beam.material.opacity=.14+.06*(.5+.5*Math.sin(t*3.8));
       if(g.ring)g.ring.rotation.z=t*.62;
       if(g.upperRing)g.upperRing.rotation.z=-t*.36;
+      // V5.20: counter-rotating platform and breathing beam, synced to reveal.
+      // Outer ring stays level; rotating the parent group avoids the slow vertical wobble.
+      if(g.projectorOuter)g.projectorOuter.rotation.y=0;
+      if(g.projectorInner)g.projectorInner.rotation.z=-t*.77;
+      if(g.projectorDashes)g.projectorDashes.rotation.y=-t*.55;
+      const beamPulse=.5+.5*Math.sin(t*3.1);
+      if(g.beamCore?.material)g.beamCore.material.opacity=(.055+.065*beamPulse)*(1-.48*(g.breakingDown?expansion:0));
+      if(g.beamShaft?.material)g.beamShaft.material.opacity=.035+.045*beamPulse;
+      if(g.projectorDisk?.material)g.projectorDisk.material.opacity=.10+.11*beamPulse;
+      if(g.projectorOuter?.material)g.projectorOuter.material.opacity=.78+.05*beamPulse;
+      if(g.projectorInner?.material)g.projectorInner.material.opacity=.46+.24*(1-beamPulse);
       if(g.chip?.material)g.chip.material.emissiveIntensity=.95+.18*Math.sin(t*4);
-      if(g.traces)g.traces.visible=true;
+      if(g.traces)g.traces.visible=!g.photoGroup?.userData.loaded;
     }
   }
-  if(p>=1){g.active=false;g.examining=false;g.breakingDown=false;g.object.visible=false;
+  if(p>=1){g.active=false;g.examining=false;g.breakingDown=false;g.object.visible=false;if(g.projector)g.projector.visible=false;
     if(g.breakdown)g.breakdown.visible=false;
     if(g.board)g.board.visible=true;
     if(g.chip)g.chip.visible=true;
